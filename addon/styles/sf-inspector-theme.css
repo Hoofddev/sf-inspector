@@ -614,3 +614,102 @@ body.sfi-page .slds-tabs_default__content > div > .slds-grid:hover {
     background-color: var(--slds-g-color-surface-container-1);
   }
 }
+
+/* ================================================================================================
+ * Tool pages
+ *
+ * Data Export, Show All Data, Data Import, Org Limits, REST Explorer and API Statistics all render
+ * into .sfir-page-container, which had no styling at all -- so it is the hook for giving them the
+ * same treatment the settings pages got.
+ *
+ * The measure here is far wider than on the settings pages on purpose: these show result grids that
+ * genuinely need the room. It exists to stop rows stretching across a 27-inch display, not to make
+ * a column of text.
+ * ============================================================================================== */
+
+body.sfi-page .sfir-page-container {
+  max-width: 1680px;
+  margin-inline: auto;
+}
+
+/* Sections within a tool: the query editor, the result panel, the filters. */
+body.sfi-page .area {
+  background-color: light-dark(rgba(255, 255, 255, .74), rgba(28, 28, 32, .70));
+  -webkit-backdrop-filter: var(--sfi-glass-blur);
+  backdrop-filter: var(--sfi-glass-blur);
+  border: 1px solid var(--sfi-glass-border);
+  border-radius: var(--slds-g-radius-border-3);
+  box-shadow:
+    var(--slds-g-shadow-2),
+    inset 0 1px 0 light-dark(rgba(255, 255, 255, .85), rgba(255, 255, 255, .06));
+  padding: 1rem 1.15rem;
+  margin: 1rem 1rem 0;
+}
+
+/* The bar above the results: a toolbar, so it gets a shade rather than a border. */
+body.sfi-page .result-bar {
+  padding: .7rem 1.15rem;
+  border-radius: var(--slds-g-radius-border-2);
+  background-color: light-dark(rgba(255, 255, 255, .42), rgba(255, 255, 255, .05));
+  border: 1px solid light-dark(rgba(255, 255, 255, .6), rgba(255, 255, 255, .07));
+  margin: 0 1rem .5rem;
+}
+
+body.sfi-page .result-info,
+body.sfi-page .result-status {
+  color: var(--slds-g-color-on-surface-2);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Where the data actually lives, the glass stops. Result grids, the field table in Show All Data,
+   the query editor and the response viewer are all read closely and at length, and translucency
+   costs contrast there for nothing. They sit as opaque paper on top of the frosted panel. */
+body.sfi-page .data-table,
+body.sfi-page .result-table,
+body.sfi-page table.slds-table,
+body.sfi-page .sfir-inspect-table-text,
+body.sfi-page textarea,
+body.sfi-page .editor,
+body.sfi-page pre {
+  background-color: var(--slds-g-color-surface-container-1);
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+
+body.sfi-page table.slds-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background-color: var(--slds-g-color-surface-container-2);
+  box-shadow: inset 0 -1px 0 var(--slds-g-color-border-1);
+}
+
+/* Zebra striping earns its keep on grids this wide: it is what stops the eye losing its row
+   halfway across. Kept very faint so it does not fight the text. */
+body.sfi-page table.slds-table tbody tr:nth-child(even) > td {
+  background-color: light-dark(rgba(17, 21, 28, .022), rgba(255, 255, 255, .022));
+}
+
+body.sfi-page table.slds-table tbody tr:hover > td {
+  background-color: light-dark(rgba(0, 113, 227, .06), rgba(10, 132, 255, .10));
+}
+
+/* Autocomplete floats over the editor, so it is chrome and gets the frost. */
+body.sfi-page .autocomplete-results {
+  background-color: light-dark(rgba(255, 255, 255, .88), rgba(32, 32, 36, .86));
+  -webkit-backdrop-filter: var(--sfi-glass-blur);
+  backdrop-filter: var(--sfi-glass-blur);
+  border: 1px solid var(--sfi-glass-border);
+  border-radius: var(--slds-g-radius-border-3);
+  box-shadow: var(--slds-g-shadow-3);
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  body.sfi-page .area,
+  body.sfi-page .result-bar,
+  body.sfi-page .autocomplete-results {
+    background-color: var(--slds-g-color-surface-container-1);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+}
