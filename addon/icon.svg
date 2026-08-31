@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0.25" y2="1">
+      <stop offset="0" stop-color="#4BA3FF"/>
+      <stop offset="0.55" stop-color="#0A72E8"/>
+      <stop offset="1" stop-color="#0748B0"/>
+    </linearGradient>
+    <linearGradient id="sheen" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.30"/>
+      <stop offset="0.5" stop-color="#ffffff" stop-opacity="0.04"/>
+      <stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="512" height="512" rx="115" fill="url(#bg)"/>
+  <rect width="512" height="512" rx="115" fill="url(#sheen)"/>
+
+  <!-- Lens: the field rows being inspected sit inside it, so the mark still reads as a plain
+       magnifier once it is scaled down to 16px and the detail disappears. -->
+  <circle cx="228" cy="228" r="132" fill="#ffffff" fill-opacity="0.16"/>
+  <g fill="#ffffff">
+    <rect x="160" y="186" width="136" height="26" rx="13"/>
+    <rect x="160" y="238" width="94"  height="26" rx="13"/>
+  </g>
+  <circle cx="228" cy="228" r="132" fill="none" stroke="#ffffff" stroke-width="38"/>
+  <path d="M322 322 L410 410" stroke="#ffffff" stroke-width="52" stroke-linecap="round"/>
+</svg>
