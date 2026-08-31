@@ -1,4 +1,13 @@
 
+// Browser polyfill for cross-browser compatibility.
+// The mirror image of the shim in utils.js and popup.js: this file is written against `chrome`,
+// but Safari's background context only defines `browser`. Without this the very first statement
+// below throws and the whole extension is dead on Safari.
+if (typeof chrome === "undefined") {
+  // eslint-disable-next-line no-var
+  var chrome = browser;
+}
+
 let sfHost;
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
