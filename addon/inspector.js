@@ -71,10 +71,12 @@ export let sfConn = {
         this.instanceHostname = getMyDomain(message.hostname);
         this.sessionId = message.key;
       } else if (isSafari()) {
-        // Safari does return the session cookie, but only while the org leaves "Require HttpOnly
-        // attribute" off in Session Settings. With it on the cookie is withheld and OAuth is the
-        // only way in. That setting is off in older orgs and on in newer ones, so both paths are
-        // live and which one applies is a property of the org, not of the browser.
+        // Reaching here means no session cookie at all, which on Safari is unusual: measured on
+        // Safari 26.6.2, cookies.get returns the "sid" cookie even with HttpOnly set, provided the
+        // store is named explicitly. Apple's older statement that HttpOnly cookies are never
+        // exposed no longer holds. So this is the same fallback the other browsers use when there
+        // is no usable session -- typically an org with API Access Control enabled, where OAuth is
+        // the way in.
         sessionError = {
           text: "No readable Salesforce session. Connect this org from the popup to continue.",
           type: "info",

@@ -143,16 +143,6 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       bodyBase64: ""
     }));
     return true; // Tell Chrome that we want to call sendResponse asynchronously.
-  } else if (request.message == "restProbe") {
-    // Temporary, see addon/safari-cookie-diagnostic.js. The page console shows Salesforce refusing
-    // the extension origin for CORS. Establish whether the background context is refused too: if it
-    // is not, API calls can be proxied through it regardless of how the session is obtained.
-    runRestProbe(request.host).then(sendResponse, err => sendResponse({error: String(err)}));
-    return true; // Tell Chrome that we want to call sendResponse asynchronously.
-  } else if (request.message == "cookieDiagnostic") {
-    // See addon/safari-cookie-diagnostic.js. Temporary; remove once the answer is recorded.
-    runCookieDiagnostic(request.host).then(sendResponse, err => sendResponse({error: String(err)}));
-    return true; // Tell Chrome that we want to call sendResponse asynchronously.
   } else if (request.message == "createWindow") {
     const brow = typeof browser === "undefined" ? chrome : browser;
     brow.windows.create({
@@ -228,87 +218,6 @@ async function clearSobjectsListCache() {
 }
 // Not implemented in Safari, where calling it throws.
 chrome.runtime.setUninstallURL?.("https://forms.gle/y7LbTNsFqEqSrtyc6");
-
-// --- Temporary diagnostic, see addon/safari-cookie-diagnostic.js ---------------------------------
-// Answers one question: can this Safari read the HttpOnly Salesforce "sid" cookie? Delete this
-// function, the "cookieDiagnostic" handler above, and addon/safari-cookie-diagnostic.js once done.
-
-async function runCookieDiagnostic(host) {
-  const url = "https://" + host;
-  const report = {host, userAgent: navigator.userAgent, stores: [], sidFound: false, anyCookieFound: false};
-
-  let stores;
-  try {
-    stores = await promisify(cb => chrome.cookies.getAllCookieStores(cb));
-  } catch (e) {
-    // Fall back to the implicit default store so the run still says something useful.
-    report.getAllCookieStoresError = String(e);
-    stores = [{id: undefined}];
-  }
-
-  for (const store of stores || []) {
-    const entry = {storeId: store.id ?? "(default)", sid: null, otherCookies: [], errors: []};
-
-    try {
-      const sid = await promisify(cb => chrome.cookies.get({url, name: "sid", storeId: store.id}, cb));
-      if (sid) {
-        // Never log the value itself; its length and flags are enough to answer the question.
-        entry.sid = {valueLength: sid.value.length, domain: sid.domain, httpOnly: sid.httpOnly, secure: sid.secure};
-        report.sidFound = true;
-      }
-    } catch (e) {
-      entry.errors.push("get(sid): " + e);
-    }
-
-    try {
-      const all = await promisify(cb => chrome.cookies.getAll({url, storeId: store.id}, cb));
-      entry.otherCookies = (all || []).map(c => c.name);
-      if (entry.otherCookies.length) {
-        report.anyCookieFound = true;
-      }
-    } catch (e) {
-      entry.errors.push("getAll: " + e);
-    }
-
-    report.stores.push(entry);
-  }
-
-  return report;
-}
-
-async function runRestProbe(host) {
-  // Reuse the cookie the diagnostic just proved is readable, so this measures CORS alone.
-  let sid = null;
-  try {
-    const stores = await promisify(cb => chrome.cookies.getAllCookieStores(cb));
-    for (const store of stores || []) {
-      const cookie = await promisify(cb => chrome.cookies.get({url: "https://" + host, name: "sid", storeId: store.id}, cb));
-      if (cookie) {
-        sid = cookie.value;
-        break;
-      }
-    }
-  } catch (e) {
-    return {error: "could not read sid: " + e};
-  }
-  if (!sid) {
-    return {error: "no sid cookie for " + host};
-  }
-
-  const url = `https://${host}/services/data/v66.0/limits`;
-  try {
-    const response = await fetch(url, {headers: {Authorization: "Bearer " + sid}});
-    return {
-      from: "background",
-      url,
-      status: response.status,
-      ok: response.ok,
-      bodyStart: (await response.text()).slice(0, 80)
-    };
-  } catch (e) {
-    return {from: "background", url, error: String(e)};
-  }
-}
 
 // --- Salesforce API proxy for Safari ------------------------------------------------------------
 
