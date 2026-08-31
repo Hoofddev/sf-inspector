@@ -115,7 +115,6 @@
 .slds-modal__header,
 .slds-modal__footer,
 .slds-page-header,
-.slds-builder-header,
 .slds-docked-composer,
 .slds-context-bar,
 #insext .slds-card,
@@ -135,7 +134,6 @@
   .slds-modal__header,
   .slds-modal__footer,
   .slds-page-header,
-  .slds-builder-header,
   .slds-docked-composer,
   .slds-context-bar,
   #insext .slds-card,
@@ -318,10 +316,9 @@ code,
 body.sfi-page {
   background-color: var(--slds-g-color-surface-1);
   background-image:
-    radial-gradient(56rem 40rem at 4% -14%,  light-dark(rgba(0, 113, 227, .30),  rgba(10, 132, 255, .34)),  transparent 64%),
-    radial-gradient(44rem 34rem at 100% 2%,  light-dark(rgba(124, 92, 255, .26), rgba(150, 120, 255, .30)), transparent 62%),
-    radial-gradient(50rem 38rem at 46% 112%, light-dark(rgba(0, 191, 190, .22),  rgba(0, 205, 205, .24)),   transparent 60%),
-    radial-gradient(34rem 30rem at 82% 68%,  light-dark(rgba(255, 92, 168, .14), rgba(255, 110, 180, .16)), transparent 64%);
+    radial-gradient(60rem 44rem at -6% -18%, light-dark(rgba(0, 106, 224, .38),  rgba(10, 132, 255, .42)),  transparent 66%),
+    radial-gradient(50rem 40rem at 106% -6%, light-dark(rgba(96, 76, 255, .32),  rgba(130, 108, 255, .38)), transparent 64%),
+    radial-gradient(56rem 42rem at 50% 120%, light-dark(rgba(0, 176, 196, .26),  rgba(0, 190, 210, .28)),   transparent 62%);
   background-attachment: fixed;
 }
 
@@ -462,4 +459,87 @@ body {
 #insext .page-button {
   justify-content: flex-start;
   font-weight: 500;
+}
+
+/* ================================================================================================
+ * Layout
+ *
+ * The tools render edge to edge, which is what made them read as a web form rather than as an app:
+ * rows running the full width of a 27-inch display with nothing containing them. Giving the content
+ * a measure and floating it as one panel is most of the difference, and it is also what makes the
+ * translucency legible -- there is finally a boundary for the ground to show around.
+ * ============================================================================================== */
+
+body.sfi-page {
+  padding: 1.75rem 1.5rem 3rem;
+}
+
+/* The tab container is the panel on every settings-style page. */
+body.sfi-page .slds-tabs_default {
+  max-width: 1160px;
+  margin-inline: auto;
+  border-radius: var(--slds-g-radius-border-4);
+  overflow: hidden;
+  background-color: light-dark(rgba(255, 255, 255, .74), rgba(28, 28, 32, .70));
+  -webkit-backdrop-filter: var(--sfi-glass-blur);
+  backdrop-filter: var(--sfi-glass-blur);
+  border: 1px solid var(--sfi-glass-border);
+  box-shadow:
+    var(--slds-g-shadow-4),
+    inset 0 1px 0 light-dark(rgba(255, 255, 255, .9), rgba(255, 255, 255, .07));
+}
+
+body.sfi-page .slds-tabs_default__nav {
+  padding: .5rem .75rem 0;
+  background-color: light-dark(rgba(255, 255, 255, .35), rgba(255, 255, 255, .04));
+}
+
+body.sfi-page .slds-tabs_default__content {
+  padding: .25rem .5rem .5rem;
+}
+
+/* Setting rows: hairlines rather than full borders, and enough height to breathe. */
+body.sfi-page .slds-tabs_default__content > div > .slds-grid {
+  border-bottom: 1px solid light-dark(rgba(17, 21, 28, .07), rgba(255, 255, 255, .07)) !important;
+  padding: .7rem 1rem !important;
+  border-radius: var(--slds-g-radius-border-1);
+  transition: background-color .12s ease;
+}
+
+body.sfi-page .slds-tabs_default__content > div > .slds-grid:last-child {
+  border-bottom: 0 !important;
+}
+
+body.sfi-page .slds-tabs_default__content > div > .slds-grid:hover {
+  background-color: light-dark(rgba(17, 21, 28, .035), rgba(255, 255, 255, .045));
+}
+
+/* The builder header is meant to be dark. Give it its own dark frost instead of the light one,
+   which turned white text onto a pale ground. */
+.slds-builder-header {
+  background-color: light-dark(rgba(20, 26, 40, .82), rgba(12, 14, 20, .82)) !important;
+  -webkit-backdrop-filter: var(--sfi-glass-blur);
+  backdrop-filter: var(--sfi-glass-blur);
+  border-bottom: 1px solid light-dark(rgba(255, 255, 255, .12), rgba(255, 255, 255, .08));
+  color: #fff;
+}
+
+.slds-builder-header a,
+.slds-builder-header button,
+.slds-builder-header .slds-text-heading_small,
+.slds-builder-header__item-label {
+  color: #fff;
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  body.sfi-page .slds-tabs_default {
+    background-color: var(--slds-g-color-surface-container-1);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+  .slds-builder-header {
+    background-color: light-dark(#141a28, #0c0e14) !important;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
 }
