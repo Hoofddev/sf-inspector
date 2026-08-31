@@ -1,0 +1,275 @@
+/*
+ * SF Inspector theme
+ *
+ * Loaded after slds.css and after each page's own stylesheet, so it has the last word.
+ *
+ * The Lightning Design System exposes global styling hooks (--slds-g-*), so most of this is
+ * redefining tokens rather than fighting selectors. SLDS already resolves them through
+ * light-dark(), which means both appearances come from one declaration.
+ *
+ * Where the glass goes, and where it does not:
+ *   Translucency is applied to chrome only -- the popup shell, page headers, toolbars, modals,
+ *   dropdowns. Content surfaces stay opaque. These are reading tools: record grids, SOQL results,
+ *   debug logs and XML are dense text, and putting a blurred backdrop behind them costs contrast
+ *   for no gain. Apple's own dense interfaces work the same way: glass in the chrome, solid paper
+ *   under the content.
+ */
+
+:root {
+  color-scheme: light dark;
+
+  /* --- Type ------------------------------------------------------------------------------- */
+  --slds-g-font-family-base:
+    -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", system-ui, sans-serif;
+  --slds-g-font-family-monospace:
+    ui-monospace, "SF Mono", SFMono-Regular, Menlo, monospace;
+
+  /* --- Surfaces --------------------------------------------------------------------------- */
+  /* Neutrals carry a slight blue cast rather than being pure grey, which is what makes an
+     interface read as macOS rather than as a default stylesheet. */
+  --slds-g-color-surface-1:           light-dark(#f5f6f8, #1c1c1e);
+  --slds-g-color-surface-2:           light-dark(#eceef2, #242426);
+  --slds-g-color-surface-3:           light-dark(#e2e5eb, #2c2c2e);
+  --slds-g-color-surface-container-1: light-dark(#ffffff, #232326);
+  --slds-g-color-surface-container-2: light-dark(#f7f8fa, #2a2a2d);
+  --slds-g-color-surface-container-3: light-dark(#eef0f4, #313134);
+
+  --slds-g-color-on-surface-1: light-dark(#11151c, #f2f2f7);
+  --slds-g-color-on-surface-2: light-dark(#3c4350, #c7c7cc);
+  --slds-g-color-on-surface-3: light-dark(#69707d, #98989f);
+
+  --slds-g-color-border-1:      light-dark(#dcdfe6, #38383c);
+  --slds-g-color-border-2:      light-dark(#c9cdd6, #48484c);
+  --slds-g-color-border-base-1: light-dark(#dcdfe6, #38383c);
+
+  /* --- Accent ----------------------------------------------------------------------------- */
+  /* macOS system blue, which is what a Safari-native tool should key off. */
+  --sfi-accent:       light-dark(#0071e3, #0a84ff);
+  --sfi-accent-hover: light-dark(#0062c4, #3d9bff);
+
+  --slds-g-color-accent-1:           var(--sfi-accent);
+  --slds-g-color-accent-2:           var(--sfi-accent-hover);
+  --slds-g-color-accent-container-1: var(--sfi-accent);
+  --slds-g-color-accent-container-2: var(--sfi-accent-hover);
+  --slds-g-color-border-accent-1:    var(--sfi-accent);
+  --slds-g-color-border-accent-2:    var(--sfi-accent-hover);
+  --slds-g-color-brand-base-50:      var(--sfi-accent);
+  --slds-g-color-brand-base-60:      var(--sfi-accent-hover);
+
+  /* --- Shape ------------------------------------------------------------------------------ */
+  /* Apple's radii are larger than SLDS's, and it is most of what separates the two visually. */
+  --slds-g-radius-border-1: 6px;
+  --slds-g-radius-border-2: 10px;
+  --slds-g-radius-border-3: 14px;
+  --slds-g-radius-border-4: 18px;
+
+  /* --- Depth ------------------------------------------------------------------------------ */
+  /* Softer and more diffuse than SLDS's, which reads flatter and more modern. */
+  --slds-g-shadow-1: 0 1px 2px light-dark(rgba(17, 21, 28, .06), rgba(0, 0, 0, .5));
+  --slds-g-shadow-2: 0 2px 8px light-dark(rgba(17, 21, 28, .08), rgba(0, 0, 0, .55));
+  --slds-g-shadow-3: 0 8px 24px light-dark(rgba(17, 21, 28, .10), rgba(0, 0, 0, .6));
+  --slds-g-shadow-4: 0 16px 48px light-dark(rgba(17, 21, 28, .14), rgba(0, 0, 0, .7));
+
+  /* --- Glass ------------------------------------------------------------------------------ */
+  --sfi-glass-bg:     light-dark(rgba(255, 255, 255, .72), rgba(30, 30, 34, .68));
+  --sfi-glass-border: light-dark(rgba(255, 255, 255, .55), rgba(255, 255, 255, .09));
+  --sfi-glass-blur:   saturate(180%) blur(22px);
+}
+
+/* Chrome surfaces. Backdrop blur is expensive, so it is applied to a short list rather than
+   broadcast across the interface. */
+.slds-popover,
+.slds-dropdown,
+.slds-modal__container,
+.slds-modal__header,
+.slds-modal__footer,
+.slds-page-header,
+.slds-builder-header,
+.slds-docked-composer,
+.slds-context-bar,
+#insext .slds-card,
+.sfi-glass {
+  background-color: var(--sfi-glass-bg);
+  -webkit-backdrop-filter: var(--sfi-glass-blur);
+  backdrop-filter: var(--sfi-glass-blur);
+  border-color: var(--sfi-glass-border);
+}
+
+/* macOS lets people turn translucency off system-wide. Honour it: fall back to opaque
+   surfaces rather than leaving a washed-out panel with no blur behind it. */
+@media (prefers-reduced-transparency: reduce) {
+  .slds-popover,
+  .slds-dropdown,
+  .slds-modal__container,
+  .slds-modal__header,
+  .slds-modal__footer,
+  .slds-page-header,
+  .slds-builder-header,
+  .slds-docked-composer,
+  .slds-context-bar,
+  #insext .slds-card,
+  .sfi-glass {
+    background-color: var(--slds-g-color-surface-container-1);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+}
+
+/* Content surfaces stay opaque: these are the parts people read. */
+.slds-table,
+.slds-table td,
+.slds-table th,
+.slds-textarea,
+.slds-input,
+pre,
+code {
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+
+/* --- Controls ------------------------------------------------------------------------------ */
+
+.slds-button {
+  border-radius: var(--slds-g-radius-border-2);
+  font-weight: 500;
+  letter-spacing: -.006em;
+  transition: background-color .15s ease, border-color .15s ease, transform .06s ease;
+}
+
+.slds-button:active {
+  transform: scale(.975);
+}
+
+.slds-button_neutral {
+  background-color: var(--slds-g-color-surface-container-1);
+  border-color: var(--slds-g-color-border-1);
+  box-shadow: var(--slds-g-shadow-1);
+}
+
+.slds-button_neutral:hover:not(:disabled) {
+  background-color: var(--slds-g-color-surface-container-3);
+}
+
+.slds-button_brand {
+  background-color: var(--sfi-accent);
+  border-color: transparent;
+  color: #fff;
+  box-shadow: var(--slds-g-shadow-1);
+}
+
+.slds-button_brand:hover:not(:disabled),
+.slds-button_brand:focus:not(:disabled) {
+  background-color: var(--sfi-accent-hover);
+  border-color: transparent;
+  color: #fff;
+}
+
+.slds-input,
+.slds-textarea,
+.slds-select {
+  border-radius: var(--slds-g-radius-border-2);
+  border-color: var(--slds-g-color-border-1);
+  background-color: var(--slds-g-color-surface-container-1);
+  transition: border-color .15s ease, box-shadow .15s ease;
+}
+
+.slds-input:focus,
+.slds-textarea:focus,
+.slds-select:focus {
+  border-color: var(--sfi-accent);
+  box-shadow: 0 0 0 3px light-dark(rgba(0, 113, 227, .18), rgba(10, 132, 255, .28));
+  outline: none;
+}
+
+/* A visible ring for keyboard users, since the focus styles above are also used for pointer
+   focus and are deliberately quiet. */
+:focus-visible {
+  outline: 2px solid var(--sfi-accent);
+  outline-offset: 2px;
+}
+
+.slds-form-element__label {
+  color: var(--slds-g-color-on-surface-2);
+  font-weight: 500;
+}
+
+/* --- Data surfaces -------------------------------------------------------------------------- */
+
+.slds-table th {
+  background-color: var(--slds-g-color-surface-container-2);
+  color: var(--slds-g-color-on-surface-2);
+  font-weight: 600;
+  letter-spacing: .01em;
+}
+
+.slds-table td,
+.slds-table th {
+  border-color: var(--slds-g-color-border-1);
+}
+
+/* Digits in a column should line up; most of this interface is identifiers and counts. */
+.slds-table td {
+  font-variant-numeric: tabular-nums;
+}
+
+pre,
+code,
+.slds-textarea {
+  font-family: var(--slds-g-font-family-monospace);
+}
+
+/* --- Chrome details ------------------------------------------------------------------------- */
+
+.slds-modal__container {
+  border-radius: var(--slds-g-radius-border-4);
+  box-shadow: var(--slds-g-shadow-4);
+  overflow: hidden;
+}
+
+.slds-dropdown,
+.slds-popover {
+  border-radius: var(--slds-g-radius-border-3);
+  box-shadow: var(--slds-g-shadow-3);
+  border-width: 1px;
+  border-style: solid;
+}
+
+.slds-dropdown__item > a:hover,
+.slds-dropdown__item > a:focus {
+  background-color: var(--sfi-accent);
+  color: #fff;
+  border-radius: var(--slds-g-radius-border-1);
+}
+
+/* Overlay scrollbars, the way macOS draws them. */
+::-webkit-scrollbar {
+  width: 11px;
+  height: 11px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: light-dark(rgba(17, 21, 28, .22), rgba(255, 255, 255, .22));
+  border: 3px solid transparent;
+  background-clip: content-box;
+  border-radius: 999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: light-dark(rgba(17, 21, 28, .36), rgba(255, 255, 255, .36));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .slds-button,
+  .slds-input,
+  .slds-textarea,
+  .slds-select {
+    transition: none;
+  }
+  .slds-button:active {
+    transform: none;
+  }
+}
