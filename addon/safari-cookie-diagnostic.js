@@ -31,7 +31,10 @@
     return [...new Set([here, apiHost])];
   }
 
-  function ask(host) {
+  // A silent background script is itself a finding, so probe() never hangs waiting for one.
+  const ask = host => probe("cookieDiagnostic", host);
+
+  function probe(message, host) {
     return new Promise(resolve => {
       let settled = false;
       const done = result => {
@@ -40,10 +43,9 @@
           resolve(result);
         }
       };
-      // A silent background script is itself a finding, so never hang waiting for it.
-      setTimeout(() => done({error: "no response from the background script within 5s"}), 5000);
+      setTimeout(() => done({error: "no response from the background script within 10s"}), 10000);
       try {
-        api.runtime.sendMessage({message: "cookieDiagnostic", host}, result => {
+        api.runtime.sendMessage({message, host}, result => {
           const err = api.runtime.lastError;
           done(err ? {error: err.message} : result);
         });
@@ -53,10 +55,25 @@
     });
   }
 
+  // Can a content script reach the REST API at all? The page console shows Salesforce refusing the
+  // extension origin, so measure it here and compare against the same call from the background.
+  async function contentScriptFetch(host) {
+    const url = `https://${host}/services/data/v66.0/limits`;
+    try {
+      const response = await fetch(url, {credentials: "include"});
+      return {from: "content script", url, status: response.status, ok: response.ok};
+    } catch (e) {
+      return {from: "content script", url, error: String(e)};
+    }
+  }
+
   (async () => {
     for (const host of candidateHosts()) {
       const report = await ask(host);
-      console.log(TAG, host, report);
+      // Stringified so the whole thing can be copied out of the console in one piece.
+      console.log(TAG, host, "COOKIES", JSON.stringify(report, null, 2));
+      console.log(TAG, host, "REST from background", JSON.stringify(await probe("restProbe", host)));
+      console.log(TAG, host, "REST from content script", JSON.stringify(await contentScriptFetch(host)));
 
       if (!report || report.error) {
         console.warn(TAG, host, "INCONCLUSIVE:", report?.error ?? "no report");

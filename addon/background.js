@@ -71,6 +71,12 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       }
     });
     return true; // Tell Chrome that we want to call sendResponse asynchronously.
+  } else if (request.message == "restProbe") {
+    // Temporary, see addon/safari-cookie-diagnostic.js. The page console shows Salesforce refusing
+    // the extension origin for CORS. Establish whether the background context is refused too: if it
+    // is not, API calls can be proxied through it regardless of how the session is obtained.
+    runRestProbe(request.host).then(sendResponse, err => sendResponse({error: String(err)}));
+    return true; // Tell Chrome that we want to call sendResponse asynchronously.
   } else if (request.message == "cookieDiagnostic") {
     // See addon/safari-cookie-diagnostic.js. Temporary; remove once the answer is recorded.
     runCookieDiagnostic(request.host).then(sendResponse, err => sendResponse({error: String(err)}));
@@ -219,4 +225,38 @@ async function runCookieDiagnostic(host) {
   }
 
   return report;
+}
+
+async function runRestProbe(host) {
+  // Reuse the cookie the diagnostic just proved is readable, so this measures CORS alone.
+  let sid = null;
+  try {
+    const stores = await promisify(cb => chrome.cookies.getAllCookieStores(cb));
+    for (const store of stores || []) {
+      const cookie = await promisify(cb => chrome.cookies.get({url: "https://" + host, name: "sid", storeId: store.id}, cb));
+      if (cookie) {
+        sid = cookie.value;
+        break;
+      }
+    }
+  } catch (e) {
+    return {error: "could not read sid: " + e};
+  }
+  if (!sid) {
+    return {error: "no sid cookie for " + host};
+  }
+
+  const url = `https://${host}/services/data/v66.0/limits`;
+  try {
+    const response = await fetch(url, {headers: {Authorization: "Bearer " + sid}});
+    return {
+      from: "background",
+      url,
+      status: response.status,
+      ok: response.ok,
+      bodyStart: (await response.text()).slice(0, 80)
+    };
+  } catch (e) {
+    return {from: "background", url, error: String(e)};
+  }
 }
