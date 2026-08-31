@@ -463,8 +463,16 @@ body {
  * translucency legible -- there is finally a boundary for the ground to show around.
  * ============================================================================================== */
 
+/* The padding sits on the containers, not on the page. Putting it on the body indented the header
+   along with everything else, so it read as another element inside the layout rather than as the
+   chrome above it. */
 body.sfi-page {
-  padding: 1.75rem 1.5rem 3rem;
+  padding: 0 0 3rem;
+}
+
+body.sfi-page .sfir-page-container,
+body.sfi-page > .slds-tabs_default {
+  padding-inline: 1.5rem;
 }
 
 /* The tab container is the panel on every settings-style page. */
@@ -1011,4 +1019,27 @@ body.sfi-page .sfi-group > .slds-grid:last-child {
 
 body.sfi-page .sfi-group > .slds-grid:hover {
   background-color: light-dark(rgba(60, 50, 90, .03), rgba(255, 255, 255, .04)) !important;
+}
+
+/* ================================================================================================
+ * Page header
+ *
+ * It sits above the content as a sibling, so it should read as the chrome of the window rather than
+ * as the first element of the page: full width, square, and staying put while the content scrolls
+ * under it.
+ * ============================================================================================== */
+
+body.sfi-page .slds-builder-header {
+  position: sticky;
+  inset-block-start: 0;
+  z-index: 100;
+  margin: 0;
+  border-radius: 0;
+  padding-inline: 1.5rem;
+  box-shadow: 0 1px 0 light-dark(rgba(60, 50, 90, .10), rgba(0, 0, 0, .5));
+}
+
+/* Space between the chrome and the first panel, replacing the body padding that used to provide it. */
+body.sfi-page .slds-builder-header + * {
+  margin-block-start: 1.75rem;
 }
