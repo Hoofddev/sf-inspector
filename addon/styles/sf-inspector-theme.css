@@ -75,6 +75,14 @@
   --sfi-info-surface:    light-dark(#e6f4f8, #102a33);
   --sfi-info-on:         light-dark(#0b5468, #93d5e6);
 
+  /* --- Value types ------------------------------------------------------------------------- */
+  /* Show All Data tints values by type. The original colours were picked for a white page and go
+     unreadable on a dark one, so each gets a pair. */
+  --sfi-value-object:       light-dark(#8a7a00, #d6c25a);
+  --sfi-value-number:       light-dark(#9026a0, #dda0e8);
+  --sfi-value-boolean:      light-dark(#a01c1c, #f09090);
+  --sfi-value-boolean-true: light-dark(#0d7377, #5fd0d4);
+
   /* --- Shape ------------------------------------------------------------------------------ */
   /* Apple's radii are larger than SLDS's, and it is most of what separates the two visually. */
   --slds-g-radius-border-1: 6px;

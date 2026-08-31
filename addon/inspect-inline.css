@@ -1,5 +1,5 @@
 .salesforce-inspector-details.sticky {
-	background: linear-gradient(to right, #eee, #ddd);
+	background: linear-gradient(to right, var(--slds-g-color-surface-container-3), var(--slds-g-color-border-1));
 	border: solid 1px grey; 
 }
 .salesforce-inspector-details table {
@@ -13,9 +13,9 @@
 	font-size: 0.7em;
 }
 .salesforce-inspector-details {
-	color: #333333;
+	color: var(--slds-g-color-on-surface-1);
 	z-index:1; 
-	background: linear-gradient(to right, #ddd, #ccc); 
+	background: linear-gradient(to right, var(--slds-g-color-border-1), var(--slds-g-color-border-1)); 
 	position:absolute; 
 	border: solid 1px grey; 
 	width: 200px; 

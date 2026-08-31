@@ -1,8 +1,8 @@
 :root {
   /* Button-specific variables */
-  --sfir-btn-white: #ffffff;
-  --sfir-btn-border: #c9c9c9;
-  --sfir-btn-border-active: #0176d3;
+  --sfir-btn-white: var(--slds-g-color-surface-container-1);
+  --sfir-btn-border: var(--slds-g-color-border-1);
+  --sfir-btn-border-active: var(--sfi-accent);
   --sfir-btn-shadow: rgba(0, 0, 0, 0.15);
   --sfir-btn-shadow-inset: rgba(255, 255, 255, 0.1);
   --sfir-btn-shadow-light: rgba(0, 0, 0, 0.16);
@@ -11,7 +11,7 @@
   --sfir-btn-z-base: 1000;
   --sfir-btn-z-high: 9999;
   --sfir-btn-z-fixed: 10000;
-  --sfir-btn-success: #28a745;
+  --sfir-btn-success: var(--sfi-success);
 }
 
 #insext {
@@ -28,7 +28,7 @@
     background-color: var(--sfir-btn-white);
     border-radius: var(--sfir-btn-radius-sm);
     z-index: 1;
-    border: 1px solid #d8dde6;
+    border: 1px solid var(--slds-g-color-border-1);
     display: none;
   }
 

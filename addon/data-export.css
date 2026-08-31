@@ -32,7 +32,7 @@ textarea {
   padding: 8px 10px;
   border-bottom-right-radius: 0.25rem;
   border-bottom-left-radius: 0.25rem;
-  border: 1px solid #dddbda;
+  border: 1px solid var(--slds-g-color-border-1);
 }
 
 textarea[hidden] {
@@ -40,8 +40,8 @@ textarea[hidden] {
 }
 
 .help-text {
-  background: #fff;
-  border: 1px solid #dddbda;
+  background: var(--slds-g-color-surface-container-1);
+  border: 1px solid var(--slds-g-color-border-1);
   padding: 0 15px;
   border-radius: 0.25rem;
   margin-top: 10px;
@@ -71,7 +71,7 @@ textarea[hidden] {
 .result-info {
   font-style: italic;
   margin-left: 9px;
-  color: #8c8c8c;
+  color: var(--slds-g-color-on-surface-3);
 }
 
 #result-text {
@@ -83,15 +83,15 @@ textarea[hidden] {
 #result-table {
   overflow: auto;
   flex: 1 1 0;
-  background-color: #fff;
-  border-top: 1px solid #dddbda;
+  background-color: var(--slds-g-color-surface-container-1);
+  border-top: 1px solid var(--slds-g-color-border-1);
 }
 
 .area {
-  background-color: #f8f8f8;
+  background-color: var(--slds-g-color-surface-container-2);
   padding: 8px 12px;
   border-radius: 5px;
-  border: 1px solid #dddbda;
+  border: 1px solid var(--slds-g-color-border-1);
   margin: 12px 12px 0 12px;
 }
 
@@ -140,7 +140,7 @@ input[type="default"] {
   width: 8.5rem;
   font-family: inherit;
   padding: 5px 13px;
-  border: 1px solid #dddbda;
+  border: 1px solid var(--slds-g-color-border-1);
   height: 32px;
   position: relative;
   border-radius: 0.25rem;
@@ -195,38 +195,38 @@ select:focus {
 button:active,
 button:focus {
   background-color: rgb(238, 241, 246);
-  color: #005fb2;
+  color: var(--sfi-accent-hover);
 }
 
 button:disabled,
 input:disabled {
-  color: #dddbda;
+  color: var(--slds-g-color-border-1);
   cursor: default;
 }
 
 button:disabled > svg.button-icon {
-  fill: #dddbda;
+  fill: var(--slds-g-color-border-1);
 }
 
 button > svg.disabled {
-  fill: #dddbda;
+  fill: var(--slds-g-color-border-1);
 }
 
 .highlighted {
   background-color: rgb(0, 112, 210);
   border-color: rgb(0, 112, 210);
-  color: #fff;
+  color: var(--slds-g-color-surface-container-1);
 }
 
 .highlighted:disabled {
-  background-color: #c9c7c5;
-  border-color: #c9c7c5;
-  color: #fff;
+  background-color: var(--slds-g-color-border-1);
+  border-color: var(--slds-g-color-border-1);
+  color: var(--slds-g-color-surface-container-1);
 }
 
 .highlighted:disabled:hover {
-  background-color: #c9c7c5;
-  color: #fff;
+  background-color: var(--slds-g-color-border-1);
+  color: var(--slds-g-color-surface-container-1);
 }
 
 option[value="null"][disabled] {
@@ -237,7 +237,7 @@ textarea[readonly] {
   outline: none;
   border-radius: 0;
   border: none;
-  border-top: 1px solid #dddbda;
+  border-top: 1px solid var(--slds-g-color-border-1);
 }
 
 .flex-right {
@@ -252,13 +252,13 @@ textarea[readonly] {
 
 .cancel-btn {
   margin-left: 1em;
-  color: #c23934;
+  color: var(--sfi-danger);
 }
 
 .cancel-btn:not(:disabled):hover,
 .cancel-btn:not(:disabled):active,
 .cancel-btn:not(:disabled):focus {
-  color: #a12b2b;
+  color: var(--sfi-danger);
 }
 
 .delete-btn {
@@ -312,13 +312,13 @@ button[hidden],
 
 button,
 .button {
-  border: 1px solid #dddbda;
+  border: 1px solid var(--slds-g-color-border-1);
   height: 32px;
   display: inline-block;
   text-decoration: none;
   background-color: white;
   padding: 0 16px;
-  color: #0070d2;
+  color: var(--sfi-accent);
   cursor: pointer;
   outline: none;
   position: relative;
@@ -339,7 +339,7 @@ button.toggle .button-toggle-icon,
 button.toggle .button-icon {
   -webkit-mask-repeat: no-repeat;
   -webkit-mask-size: 1rem;
-  background-color: #706e6b;
+  background-color: var(--slds-g-color-on-surface-3);
   display: inline-block;
   width: 16px;
   height: 16px;
@@ -362,7 +362,7 @@ button.toggle .button-icon {
 }
 
 ul > li > a > span {
-  color: #0176d3;
+  color: var(--sfi-accent);
 }
 
 svg.button-icon {
@@ -371,7 +371,7 @@ svg.button-icon {
   display: inline-block;
   width: 16px;
   height: 16px;
-  fill: #0070d2;
+  fill: var(--sfi-accent);
   vertical-align: sub;
 }
 
@@ -405,7 +405,7 @@ svg.button-icon {
   margin: 0px 2px -1px 1px;
   -webkit-mask-repeat: no-repeat;
   -webkit-mask-size: 0.95rem;
-  background-color: #706e6b;
+  background-color: var(--slds-g-color-on-surface-3);
   width: 16px;
   height: 16px;
   scale: 0.9;
@@ -423,12 +423,12 @@ svg.button-icon {
 
 .relationshipName .sfir-autocomplete-icon {
   -webkit-mask-image: url(images/relate.svg);
-  background-color: #0070d2;
+  background-color: var(--sfi-accent);
 }
 
 .object .sfir-autocomplete-icon {
   -webkit-mask-image: url(images/sobject.svg);
-  background-color: #04844b;
+  background-color: var(--sfi-success);
 }
 
 .variable .sfir-autocomplete-icon {
@@ -542,7 +542,7 @@ svg.button-icon {
 }
 .help-text a,
 .help-text a:visited {
-  color: #0176d3;
+  color: var(--sfi-accent);
 }
 
 .unified-search-input {
@@ -554,16 +554,16 @@ svg.button-icon {
 .filter-input {
   width: 100%;
   padding: 8px 32px 8px 12px;
-  border: 1px solid #dddbda;
+  border: 1px solid var(--slds-g-color-border-1);
   border-radius: 4px;
   height: 32px;
   font-size: 0.8125rem;
-  color: #16325c;
+  color: var(--slds-g-color-on-surface-1);
 }
 
 .filter-input:focus {
-  border-color: #1589ee;
-  box-shadow: 0 0 3px #0070d2;
+  border-color: var(--sfi-accent);
+  box-shadow: 0 0 3px var(--sfi-accent);
 }
 
 .dropdown-menu {
@@ -574,7 +574,7 @@ svg.button-icon {
   max-height: 250px;
   overflow: auto;
   background-color: white;
-  border: 1px solid #dddbda;
+  border: 1px solid var(--slds-g-color-border-1);
   border-radius: 4px;
   z-index: 1000;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
@@ -588,25 +588,25 @@ svg.button-icon {
   align-items: center;
   padding: 8px 12px;
   font-size: 0.8125rem;
-  color: #16325c;
+  color: var(--slds-g-color-on-surface-1);
   transition: background-color 0.1s linear;
 }
 
 .dropdown-item:hover {
-  background-color: #f4f6f9;
+  background-color: var(--slds-g-color-surface-container-2);
 }
 
 .dropdown-item input[type="checkbox"] {
   margin-right: 8px;
   width: 1rem;
   height: 1rem;
-  border: 1px solid #dddbda;
+  border: 1px solid var(--slds-g-color-border-1);
   border-radius: 0.125rem;
   flex-shrink: 0;
 }
 
 .dropdown-item.selected {
-  background-color: #f4f6f9;
+  background-color: var(--slds-g-color-surface-container-2);
   font-weight: 700;
 }
 
@@ -622,10 +622,10 @@ svg.button-icon {
   border-left: 0em;
 }
 svg.icon {
-  fill: #919191;
+  fill: var(--slds-g-color-on-surface-3);
 }
 svg.icon:hover {
-  fill: #818181;
+  fill: var(--slds-g-color-on-surface-3);
 }
 .icon {
   display: inline-block;
@@ -662,18 +662,18 @@ svg.icon:hover {
 }
 
 .query-tab:hover {
-  background-color: #f4f6f9;
+  background-color: var(--slds-g-color-surface-container-2);
 }
 
 .query-tab.active {
-  background: #fff;
-  border-color: #dddbda;
-  border-bottom-color: #fff;
+  background: var(--slds-g-color-surface-container-1);
+  border-color: var(--slds-g-color-border-1);
+  border-bottom-color: var(--slds-g-color-surface-container-1);
   margin-bottom: -1px;
 }
 
 .query-tab.active:hover {
-  background: #fff;
+  background: var(--slds-g-color-surface-container-1);
 }
 
 .query-tab.dragging {
@@ -692,7 +692,7 @@ svg.icon:hover {
   top: 0;
   bottom: 0;
   width: 2px;
-  background: #706e6b;
+  background: var(--slds-g-color-on-surface-3);
   border-radius: 1px;
   z-index: 10;
   box-shadow: 0 0 2px rgba(112, 110, 107, 0.3);
@@ -710,12 +710,12 @@ svg.icon:hover {
 }
 
 .query-tab-name-input {
-  border: 1px solid #1589ee;
+  border: 1px solid var(--sfi-accent);
   border-radius: 2px;
   padding: 2px 4px;
   font-size: inherit;
   font-family: inherit;
-  background: #fff;
+  background: var(--slds-g-color-surface-container-1);
   min-width: 60px;
   max-width: 120px;
 }
@@ -733,19 +733,19 @@ svg.icon:hover {
   justify-content: center;
   border-radius: 50%;
   font-size: 12px;
-  color: #706e6b;
+  color: var(--slds-g-color-on-surface-3);
   transition: background-color 0.1s;
 }
 
 .query-tab-close:hover {
-  background: #f3f2f2;
-  color: #c23934;
+  background: var(--slds-g-color-surface-container-2);
+  color: var(--sfi-danger);
 }
 
 .add-tab-button {
   padding: 8px;
   cursor: pointer;
-  color: #706e6b;
+  color: var(--slds-g-color-on-surface-3);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -754,5 +754,5 @@ svg.icon:hover {
 }
 
 .add-tab-button:hover {
-  background: #f3f2f2;
+  background: var(--slds-g-color-surface-container-2);
 }

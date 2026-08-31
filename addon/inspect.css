@@ -4,28 +4,28 @@
 }
 
 .sfir-inspect-table-text.value-is-object {
-  color: #990;
+  color: var(--sfi-value-object);
 }
 
 .sfir-inspect-table-text.value-is-number {
-  color: #909;
+  color: var(--sfi-value-number);
 }
 
 .sfir-inspect-table-text.value-is-boolean {
-  color: #900;
+  color: var(--sfi-value-boolean);
 }
 
 .sfir-inspect-table-text.value-is-boolean-true {
-  color: #099;
+  color: var(--sfi-value-boolean-true);
 }
 
 .sfir-inspect-table-text.value-is-blank {
-  color: #aaa;
+  color: var(--slds-g-color-border-1);
   font-style: italic;
 }
 
 .sfir-inspect-table-text.value-is-unknown {
-  color: #aaa;
+  color: var(--slds-g-color-border-1);
   font-style: italic;
 }
 
@@ -35,7 +35,7 @@ tr.fieldCalculated {
 
 tr.fieldHidden,
 tr.fieldHidden a[href] {
-  color: #777;
+  color: var(--slds-g-color-on-surface-3);
 }
 
 .sfir-field-column {
@@ -47,9 +47,9 @@ tr.fieldHidden a[href] {
   right: 0.75rem;
   position: absolute;
   top: 20%;
-  fill: #9faab5;
+  fill: var(--slds-g-color-border-2);
   line-height: 1;
-  color: #54698d;
+  color: var(--slds-g-color-on-surface-2);
 }
 
 .sfir-filter-clear-icon {

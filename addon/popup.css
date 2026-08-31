@@ -4,18 +4,18 @@
   --sfir-blue-color: var(--slds-g-color-palette-electric-blue-50);
 
   /* Color palette */
-  --sfir-white: #ffffff;
-  --sfir-light-gray: #f3f3f3;
+  --sfir-white: var(--slds-g-color-surface-container-1);
+  --sfir-light-gray: var(--slds-g-color-surface-container-2);
   --sfir-dark-blue: var(--slds-g-color-surface-inverse-1);
-  --sfir-text-primary: #16325c;
-  --sfir-text-secondary: #54698d;
-  --sfir-border-color: #d8dde6;
-  --sfir-focus-color: #1589ee;
-  --sfir-focus-shadow: #0070d2;
-  --sfir-success-color: #28a745;
+  --sfir-text-primary: var(--slds-g-color-on-surface-1);
+  --sfir-text-secondary: var(--slds-g-color-on-surface-2);
+  --sfir-border-color: var(--slds-g-color-border-1);
+  --sfir-focus-color: var(--sfi-accent);
+  --sfir-focus-shadow: var(--sfi-accent);
+  --sfir-success-color: var(--sfi-success);
   --sfir-error-color: red;
-  --sfir-inactive-color: #c0c0c0;
-  --sfir-icon-color: #706e6b;
+  --sfir-inactive-color: var(--slds-g-color-border-1);
+  --sfir-icon-color: var(--slds-g-color-on-surface-3);
 
   /* Spacing */
   --sfir-spacing-xs: 0.25rem;
@@ -338,8 +338,8 @@ input.api-input {
 
 @keyframes bg-load {
   50% {
-    background-color: #eef6f1;
-    color: #006b2d;
+    background-color: var(--sfi-success-surface);
+    color: var(--sfi-success);
   }
 }
 

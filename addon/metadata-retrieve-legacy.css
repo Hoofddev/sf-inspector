@@ -50,29 +50,29 @@ body {
 .progress {
   margin: 0 0.3rem;
   display: inline-block;
-  background-color: #f88;
+  background-color: var(--sfi-danger);
   padding: 8px 12px;
   border-radius: 3px;
 }
 .progress-ready {
-  background-color: #bbb;
+  background-color: var(--slds-g-color-border-1);
 }
 @keyframes working {
   50% {
-    background-color: #ccf;
+    background-color: color-mix(in srgb, var(--sfi-accent) 8%, var(--slds-g-color-surface-container-1));
   }
 }
 .progress-working {
-  background-color: #88f;
+  background-color: var(--sfi-accent);
   animation: working 1s cubic-bezier(0.5, 0.4, 0.5, 0.6) infinite;
 }
 .progress-done {
-  background-color: #8f8;
+  background-color: var(--sfi-success);
 }
 .button {
   margin: 0 0.3rem;
   display: inline-block;
-  border: 1px solid #ddd;
+  border: 1px solid var(--slds-g-color-border-1);
   padding: 6px 10px;
   border-radius: 3px;
   font: unset;

@@ -60,16 +60,16 @@
 
 /* Preview search highlights */
 mark.sfir-highlight {
-  background: #ffe58a !important;
-  color: #000 !important;
+  background: var(--sfi-warning-surface) !important;
+  color: var(--slds-g-color-on-surface-1) !important;
   padding: 0 0.2rem;
   border-radius: 2px;
   font-weight: 500;
 }
 
 mark.sfir-highlight.current {
-  background: #f8d24e !important;
-  outline: 2px solid #e1b600;
+  background: var(--sfi-warning) !important;
+  outline: 2px solid var(--sfi-warning);
   outline-offset: 1px;
   font-weight: 600;
 }

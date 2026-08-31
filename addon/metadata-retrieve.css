@@ -51,7 +51,7 @@
 }
 @keyframes working {
   50% {
-    background-color: #b1adab;
+    background-color: var(--slds-g-color-border-1);
   }
 }
 .progress-working,
@@ -63,7 +63,7 @@
   font-family: Arial, Helvetica, sans-serif;
   font-size: 11px;
   box-sizing: border-box;
-  background-color: #ffffff;
+  background-color: var(--slds-g-color-surface-container-1);
   margin: 0;
 }
 .flex {
@@ -80,7 +80,7 @@ label {
   margin-bottom: 20px;
 }
 .result-bar a:visited {
-  color: #0176d3;
+  color: var(--sfi-accent);
 }
 h2 {
   font-size: 14px;
@@ -97,7 +97,7 @@ ul {
   position: absolute;
   top: 50%;
   margin-top: -0.5rem;
-  fill: #9faab5;
+  fill: var(--slds-g-color-border-2);
 }
 textarea {
   display: block;
@@ -120,9 +120,9 @@ textarea {
   font: inherit;
   width: 20em;
   padding: 0 2.5rem;
-  background-color: #fff;
-  color: #16325c;
-  border: 1px solid #d8dde6;
+  background-color: var(--slds-g-color-surface-container-1);
+  color: var(--slds-g-color-on-surface-1);
+  border: 1px solid var(--slds-g-color-border-1);
   border-radius: 0.25rem;
   transition: border 0.1s linear, background-color 0.1s linear;
   display: inline-block;
@@ -132,9 +132,9 @@ textarea {
 .filter-input:active,
 .filter-input:focus {
   outline: 0;
-  border-color: #1589ee;
-  background-color: #fff;
-  box-shadow: 0 0 3px #0070d2;
+  border-color: var(--sfi-accent);
+  background-color: var(--slds-g-color-surface-container-1);
+  box-shadow: 0 0 3px var(--sfi-accent);
 }
 .filter-icon {
   left: 0.75rem;
@@ -143,7 +143,7 @@ textarea {
   position: absolute;
   top: 50%;
   margin-top: -0.5rem;
-  fill: #9faab5;
+  fill: var(--slds-g-color-border-2);
 }
 .filter-clear {
   right: 0.75rem;
@@ -152,10 +152,10 @@ textarea {
   position: absolute;
   top: 50%;
   margin-top: -0.5rem;
-  fill: #9faab5;
+  fill: var(--slds-g-color-border-2);
   line-height: 1;
   vertical-align: middle;
-  color: #54698d;
+  color: var(--slds-g-color-on-surface-2);
   display: inline-block;
   border: 1px solid transparent;
   border-radius: 0.25rem;
@@ -193,7 +193,7 @@ textarea {
 .options-text > h2 {
   font-size: 0.9rem;
   display: inline;
-  color: #080707;
+  color: var(--slds-g-color-on-surface-1);
   font-weight: 700;
   line-height: 1.25;
   margin: revert;

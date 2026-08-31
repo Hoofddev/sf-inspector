@@ -16,7 +16,7 @@
 }
 
 #result-table table tr:hover>td {
-  background-color: #F3F2F2;
+  background-color: var(--slds-g-color-surface-container-2);
 }
 
 .scrolltable-scrolled {
@@ -29,7 +29,7 @@
 }
 
 .scrolltable-cell {
-  border: 1px solid #DDDBDA;
+  border: 1px solid var(--slds-g-color-border-1);
   overflow: visible;
   padding: 0 4px;
   background-color: white;
@@ -40,7 +40,7 @@
 
 .scrolltable-cell.header {
   font-weight: 700;
-  background-color: #FAFAF9;
+  background-color: var(--slds-g-color-surface-container-2);
   border-top: none;
   padding-top: 7px;
   padding-bottom: 7px;
@@ -56,7 +56,7 @@
 }
 
 #result-table table tr:hover>td {
-  background-color: #F3F2F2;
+  background-color: var(--slds-g-color-surface-container-2);
 }
 
 .scrolltable-scrolled {
@@ -70,7 +70,7 @@
 
 .scrolltable-cell.header {
   font-weight: 700;
-  background-color: #FAFAF9;
+  background-color: var(--slds-g-color-surface-container-2);
   border-top: none;
   padding-top: 7px;
   padding-bottom: 7px;

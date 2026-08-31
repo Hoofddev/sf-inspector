@@ -49,7 +49,7 @@ figcaption > div {
   left: 2.5rem;
   width: 5rem;
   height: 2.5rem;
-  background: #ffffff;
+  background: var(--slds-g-color-surface-container-1);
   border-radius: 2.5rem 2.5rem 0 0;
 }
 .meter {
@@ -71,7 +71,7 @@ figcaption > div {
 }
 .meter-value {
   font: bold 1.25rem/1.6 sans-serif;
-  color: #333;
+  color: var(--slds-g-color-on-surface-1);
   line-height: 2.5rem;
   white-space: pre;
   transition: 1.5s;

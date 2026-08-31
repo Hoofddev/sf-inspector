@@ -3,7 +3,7 @@
   width: 100%;
   font-family: inherit;
   padding: 5px 13px;
-  border: 1px solid #dddbda;
+  border: 1px solid var(--slds-g-color-border-1);
   border-radius: 0.25rem;
   height: 32px;
   position: relative;
@@ -48,7 +48,7 @@ textarea {
   font-size: 0.9rem;
   padding: 8px 10px;
   border-radius: 0.25rem;
-  border: 1px solid #dddbda;
+  border: 1px solid var(--slds-g-color-border-1);
   margin-top: 4px;
 }
 .fieldsLink:visited {
@@ -59,10 +59,10 @@ textarea[hidden] {
 }
 .area {
   overflow-x: auto;
-  background-color: #f8f8f8;
+  background-color: var(--slds-g-color-surface-container-2);
   padding: 8px 12px;
   border-radius: 5px;
-  border: 1px solid #dddbda;
+  border: 1px solid var(--slds-g-color-border-1);
   margin: 12px 12px 0 12px;
 }
 .area input[type="radio"],
@@ -83,7 +83,7 @@ input[type="default"] {
   width: 8.5rem;
   font-family: inherit;
   padding: 5px 13px;
-  border: 1px solid #dddbda;
+  border: 1px solid var(--slds-g-color-border-1);
   height: 32px;
   position: relative;
   border-radius: 0.25rem;
@@ -107,7 +107,7 @@ select:focus {
 }
 button:disabled,
 input:disabled {
-  color: #dddbda;
+  color: var(--slds-g-color-border-1);
   cursor: default;
 }
 .form-group {
@@ -116,21 +116,21 @@ input:disabled {
 }
 button:disabled:hover,
 input:disabled:hover {
-  background-color: #fff;
-  color: #dddbda;
+  background-color: var(--slds-g-color-surface-container-1);
+  color: var(--slds-g-color-border-1);
 }
 .highlighted {
   background-color: rgb(0, 112, 210);
   border-color: rgb(0, 112, 210);
-  color: #fff;
+  color: var(--slds-g-color-surface-container-1);
 }
 button:active {
   background-color: rgb(238, 241, 246) !important;
-  color: #005fb2 !important;
+  color: var(--sfi-accent-hover) !important;
 }
 .highlighted:hover {
   background-color: rgb(0, 95, 178);
-  color: #fff;
+  color: var(--slds-g-color-surface-container-1);
 }
 .ulItem {
   position: fixed;
@@ -138,7 +138,7 @@ button:active {
   max-height: 200px;
   overflow-y: auto;
   z-index: 10001;
-  border: 1px solid #ccc;
+  border: 1px solid var(--slds-g-color-border-1);
   border-top: none;
   border-radius: 0 0 4px 4px;
   background-color: white;
@@ -148,13 +148,13 @@ button:active {
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 .highlighted:disabled {
-  background-color: #c9c7c5 !important;
-  border-color: #c9c7c5 !important;
-  color: #fff !important;
+  background-color: var(--slds-g-color-border-1) !important;
+  border-color: var(--slds-g-color-border-1) !important;
+  color: var(--slds-g-color-surface-container-1) !important;
 }
 .highlighted:disabled:hover {
-  background-color: #c9c7c5;
-  color: #fff;
+  background-color: var(--slds-g-color-border-1);
+  color: var(--slds-g-color-surface-container-1);
 }
 option[value="null"][disabled] {
   display: none;
@@ -163,17 +163,17 @@ textarea[readonly] {
   outline: none;
   border-radius: 0;
   border: none;
-  border-top: 1px solid #dddbda;
+  border-top: 1px solid var(--slds-g-color-border-1);
 }
 button,
 .button {
-  border: 1px solid #dddbda;
+  border: 1px solid var(--slds-g-color-border-1);
   height: 32px;
   display: inline-block;
   text-decoration: none;
   background-color: white;
   padding: 0 16px;
-  color: #0070d2;
+  color: var(--sfi-accent);
   cursor: pointer;
   outline: none;
   position: relative;
@@ -184,8 +184,8 @@ button,
 }
 button:hover,
 .button:hover {
-  background-color: #f4f6f9;
-  color: #005fb2;
+  background-color: var(--slds-g-color-surface-container-2);
+  color: var(--sfi-accent-hover);
 }
 .modal-dialog {
   position: absolute;
@@ -193,12 +193,12 @@ button:hover,
   left: 50%;
   transform: translate(-50%, -50%);
   width: 90%;
-  background-color: #fff;
+  background-color: var(--slds-g-color-surface-container-1);
   padding: 20px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   border-radius: 8px;
   scrollbar-width: auto;
-  scrollbar-color: #b0c4df transparent;
+  scrollbar-color: var(--slds-g-color-border-2) transparent;
 }
 .modal-dialog::-webkit-scrollbar {
   width: 8px;
@@ -207,14 +207,14 @@ button:hover,
   background: transparent;
 }
 .modal-dialog::-webkit-scrollbar-thumb {
-  background-color: #b0c4df;
+  background-color: var(--slds-g-color-border-2);
   border-radius: 4px;
   border: 2px solid transparent;
 }
 .modal-title {
   font-size: 1.25rem;
   font-weight: 700;
-  color: #16325c;
+  color: var(--slds-g-color-on-surface-1);
 }
 .modalOverlay {
   position: fixed;
@@ -356,13 +356,13 @@ button:hover,
   scrollbar-width: thin;
 }
 .scrollbarColorBlue {
-  scrollbar-color: #b0c4df transparent;
+  scrollbar-color: var(--slds-g-color-border-2) transparent;
 }
 .padding8 {
   padding: 8px;
 }
 .border1SolidCcc {
-  border: 1px solid #ccc;
+  border: 1px solid var(--slds-g-color-border-1);
 }
 .borderRadius4 {
   border-radius: 4px;
@@ -371,13 +371,13 @@ button:hover,
   margin-top: 15px;
 }
 .borderTop1SolidE5 {
-  border-top: 1px solid #e5e5e5;
+  border-top: 1px solid var(--slds-g-color-surface-container-3);
 }
 .padding15_0 {
   padding: 15px 0;
 }
 .backgroundWhite {
-  background-color: #fff;
+  background-color: var(--slds-g-color-surface-container-1);
 }
 .stickyBottom {
   position: sticky;
@@ -408,16 +408,16 @@ button:hover,
   width: 20px;
 }
 .fillBlue {
-  fill: #005fb2;
+  fill: var(--sfi-accent-hover);
 }
 .fillGreen {
-  fill: #2e844a;
+  fill: var(--sfi-success);
 }
 .fillRed {
-  fill: #ba0517;
+  fill: var(--sfi-danger);
 }
 .fillGray {
-  fill: #9c9c9c;
+  fill: var(--slds-g-color-on-surface-3);
 }
 .fontSize20 {
   font-size: 20px;
@@ -465,7 +465,7 @@ button:hover,
   transition: background-color 0.2s;
 }
 .objectListItem:hover {
-  background-color: #f0f0f0;
+  background-color: var(--slds-g-color-surface-container-2);
 }
 /* Text Styles */
 .errorText {
@@ -484,7 +484,7 @@ button:hover,
   width: 100%;
   font-family: inherit;
   padding: 5px 13px;
-  border: 1px solid #dddbda;
+  border: 1px solid var(--slds-g-color-border-1);
   border-radius: 0.25rem;
   height: 32px;
 }
