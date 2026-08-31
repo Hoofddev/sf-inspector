@@ -28,6 +28,7 @@ We all know and love Salesforce Inspector: As the great Søren Krabbe did not ma
 - [Development](#development)
   - [Chrome](#chrome)
   - [Firefox](#firefox)
+  - [Safari](#safari)
   - [Unit tests](#unit-tests)
   - [Linting](#linting)
 - [Release](#release)
@@ -223,6 +224,30 @@ This branch will be merged into beta and then master when the new version is pub
 3. Select `This Firefox` at the top left.
 4. Click `Load Temporary Add-on…`.
 5. Select the file `target/firefox/dist/manifest.json`.
+
+### Safari
+
+Safari never exposes the HttpOnly `sid` cookie to an extension, so on Safari the extension
+authenticates through OAuth only. That needs a Connected App whose callback URL is a page you host,
+because Safari gives every installation of an extension a different UUID and a
+`safari-web-extension://` URL therefore cannot be registered as a callback.
+
+1. Publish `docs/oauth/callback.html` over HTTPS and point `SAFARI_OAUTH_CALLBACK` in
+   `addon/utils.js` at it. Enabling GitHub Pages on your fork (branch `safari-port`, folder
+   `/docs`) is enough.
+2. Create a Connected App in your org with that same URL as its callback URL, PKCE enabled, and the
+   `api`, `refresh_token` and `web` scopes. Set its consumer key as `Constants.DEFAULT_CLIENT_ID`,
+   or enter it per org from the extension's options page.
+3. Build the macOS app with `npm run safari-app-build`. Pass `-- --regenerate` after adding or
+   removing files in `addon/`: the generated Xcode project references every resource explicitly and
+   fails on a reference it cannot resolve.
+4. Open the built app once. Then in Safari enable `Settings > Advanced > Show features for web
+   developers`, tick `Developer > Allow unsigned extensions` (this resets whenever Safari restarts)
+   and enable the extension under `Settings > Extensions`.
+
+Building requires Xcode. If `xcode-select` points at the Command Line Tools, the build script falls
+back to `/Applications/Xcode.app` by itself. Build output is written outside the repository, because
+an iCloud-synced checkout makes code signing fail.
 
 ### Unit tests
 
