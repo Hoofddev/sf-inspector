@@ -28,7 +28,7 @@
     "https://*.crmforce.mil/*",
     "https://*.force.com.mcas.ms/*",
     "https://*.builder.salesforce-experience.com/*",
-    "https://hoofddev.github.io/Salesforce-Inspector-reloaded/oauth/*"
+    "https://hoofddev.github.io/sf-inspector/oauth/*"
   ],
   "content_scripts": [
     {
@@ -65,7 +65,7 @@
     },
     {
       "matches": [
-        "https://hoofddev.github.io/Salesforce-Inspector-reloaded/oauth/*"
+        "https://hoofddev.github.io/sf-inspector/oauth/*"
       ],
       "all_frames": false,
       "js": [

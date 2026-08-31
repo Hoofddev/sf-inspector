@@ -513,7 +513,7 @@ export function createSpinForMethod(context) {
 // redirect URI (an exact match is required and wildcards are not allowed). Authorization returns
 // to this hosted page instead, and addon/oauth-callback.js hands the code back to the extension.
 // Point this at your own fork's GitHub Pages site and register the same URL in your Connected App.
-export const SAFARI_OAUTH_CALLBACK = "https://hoofddev.github.io/Salesforce-Inspector-reloaded/oauth/callback.html";
+export const SAFARI_OAUTH_CALLBACK = "https://hoofddev.github.io/sf-inspector/oauth/callback.html";
 
 export function getBrowserType() {
   const userAgent = navigator.userAgent ?? "";
