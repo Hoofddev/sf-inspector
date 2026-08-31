@@ -1,4 +1,4 @@
-import {getRedirectUri, getClientId, isSettingEnabled, isValidRedirectUri, isSafari, Constants} from "./utils.js";
+import {getRedirectUri, getClientId, isSettingEnabled, isValidRedirectUri, isSafari, safariApiRequest, Constants} from "./utils.js";
 import {apiStatistics} from "./api-statistics.js";
 
 export let defaultApiVersion = "66.0";
@@ -64,21 +64,23 @@ export let sfConn = {
       }
     } else if (oldToken) {
       this.sessionId = oldToken;
-    } else if (isSafari()) {
-      // Safari never hands an HttpOnly cookie to an extension, and Salesforce marks "sid" HttpOnly,
-      // so there is no browser session to borrow. OAuth is the only way in on this platform.
-      sessionError = {
-        text: "Safari cannot read the Salesforce session cookie. Connect this org from the popup to continue.",
-        type: "info",
-        icon: "info"
-      };
-      showToastBanner();
     } else {
       let message = await new Promise(resolve =>
         chrome.runtime.sendMessage({message: "getSession", sfHost}, resolve));
       if (message) {
         this.instanceHostname = getMyDomain(message.hostname);
         this.sessionId = message.key;
+      } else if (isSafari()) {
+        // Safari does return the session cookie, but only while the org leaves "Require HttpOnly
+        // attribute" off in Session Settings. With it on the cookie is withheld and OAuth is the
+        // only way in. That setting is off in older orgs and on in newer ones, so both paths are
+        // live and which one applies is a property of the org, not of the browser.
+        sessionError = {
+          text: "No readable Salesforce session. Connect this org from the popup to continue.",
+          type: "info",
+          icon: "info"
+        };
+        showToastBanner();
       }
     }
     if (this.sessionId && localStorage.getItem(sfHost + "_trialExpirationDate") == null) {
@@ -134,18 +136,20 @@ export let sfConn = {
     // Track API call start time for statistics
     const startTime = performance.now();
 
-    let xhr = new XMLHttpRequest();
     if (useCache) {
       url += (url.includes("?") ? "&" : "?") + "cache=" + Math.random();
     }
     const sfHost = "https://" + this.instanceHostname;
     const fullUrl = new URL(url, sfHost);
-    xhr.open(method, fullUrl.toString(), true);
 
+    // Headers are collected rather than set on the request as we go, because on Safari the request
+    // is handed to the background script instead of being sent from here. The order below is the
+    // order they used to be applied in, and is load-bearing: Sforce-Call-Options goes last.
+    const requestHeaders = {};
     if (api == "bulk") {
-      xhr.setRequestHeader("X-SFDC-Session", this.sessionId);
+      requestHeaders["X-SFDC-Session"] = this.sessionId;
     } else if (api == "normal") {
-      xhr.setRequestHeader("Authorization", "Bearer " + this.sessionId);
+      requestHeaders["Authorization"] = "Bearer " + this.sessionId;
     } else {
       throw new Error("Unknown api");
     }
@@ -154,13 +158,13 @@ export let sfConn = {
     const protectedHeaders = ["Sforce-Call-Options"];
     for (let [name, value] of Object.entries(headers)) {
       if (!protectedHeaders.includes(name)) {
-        xhr.setRequestHeader(name, value);
+        requestHeaders[name] = value;
       }
     }
 
     // Set default Content-Type header if body is present and Content-Type not provided by custom headers
     if (body !== undefined && !headers.hasOwnProperty("Content-Type")) {
-      xhr.setRequestHeader("Content-Type", "application/json; charset=UTF-8");
+      requestHeaders["Content-Type"] = "application/json; charset=UTF-8";
     }
 
     if (body !== undefined) {
@@ -175,30 +179,45 @@ export let sfConn = {
 
     // Set default Accept header if not provided by custom headers
     if (!headers.hasOwnProperty("Accept")) {
-      xhr.setRequestHeader("Accept", "application/json; charset=UTF-8");
+      requestHeaders["Accept"] = "application/json; charset=UTF-8";
     }
 
     // Always set this header last to ensure it cannot be overridden
-    xhr.setRequestHeader("Sforce-Call-Options", `client=${getCallOptionsClientId()}`);
+    requestHeaders["Sforce-Call-Options"] = `client=${getCallOptionsClientId()}`;
 
-    xhr.responseType = responseType;
-    await new Promise((resolve, reject) => {
+    let xhr;
+    if (isSafari()) {
+      // Aborting is not carried across the message boundary yet, so the handler is neutralised
+      // rather than left pointing at a request this context no longer owns.
       if (progressHandler) {
-        progressHandler.abort = () => {
-          let err = new Error("The request was aborted.");
-          err.name = "AbortError";
-          reject(err);
-          xhr.abort();
-        };
+        progressHandler.abort = () => {};
       }
-
-      xhr.onreadystatechange = () => {
-        if (xhr.readyState == 4) {
-          resolve();
+      xhr = await safariApiRequest({method, url: fullUrl.toString(), headers: requestHeaders, body, responseType});
+    } else {
+      xhr = new XMLHttpRequest();
+      xhr.open(method, fullUrl.toString(), true);
+      for (let [name, value] of Object.entries(requestHeaders)) {
+        xhr.setRequestHeader(name, value);
+      }
+      xhr.responseType = responseType;
+      await new Promise((resolve, reject) => {
+        if (progressHandler) {
+          progressHandler.abort = () => {
+            let err = new Error("The request was aborted.");
+            err.name = "AbortError";
+            reject(err);
+            xhr.abort();
+          };
         }
-      };
-      xhr.send(body);
-    });
+
+        xhr.onreadystatechange = () => {
+          if (xhr.readyState == 4) {
+            resolve();
+          }
+        };
+        xhr.send(body);
+      });
+    }
 
     // Calculate duration and track statistics
     const duration = performance.now() - startTime;
@@ -304,11 +323,12 @@ export let sfConn = {
     // Track API call start time for statistics
     const startTime = performance.now();
 
-    let xhr = new XMLHttpRequest();
-    xhr.open("POST", "https://" + this.instanceHostname + wsdl.servicePortAddress + "?cache=" + Math.random(), true);
-    xhr.setRequestHeader("Content-Type", "text/xml");
-    xhr.setRequestHeader("SOAPAction", '""');
-    xhr.setRequestHeader("CallOptions", `client:${getCallOptionsClientId()}`);
+    const soapUrl = "https://" + this.instanceHostname + wsdl.servicePortAddress + "?cache=" + Math.random();
+    const soapHeaders = {
+      "Content-Type": "text/xml",
+      "SOAPAction": '""',
+      "CallOptions": `client:${getCallOptionsClientId()}`
+    };
 
     let sessionHeaderKey = wsdl.apiName == "Metadata" ? "met:SessionHeader" : "SessionHeader";
     let sessionIdKey = wsdl.apiName == "Metadata" ? "met:sessionId" : "sessionId";
@@ -331,15 +351,33 @@ export let sfConn = {
       }
     });
 
-    xhr.responseType = "document";
-    await new Promise(resolve => {
-      xhr.onreadystatechange = () => {
-        if (xhr.readyState == 4) {
-          resolve(xhr);
-        }
-      };
-      xhr.send(requestBody);
-    });
+    let xhr;
+    if (isSafari()) {
+      // Same reason as in rest(): Salesforce refuses the extension origin, so the background sends
+      // this. It relays the body as text, which is parsed back into a document on this side.
+      xhr = await safariApiRequest({
+        method: "POST",
+        url: soapUrl,
+        headers: soapHeaders,
+        body: requestBody,
+        responseType: "document"
+      });
+    } else {
+      xhr = new XMLHttpRequest();
+      xhr.open("POST", soapUrl, true);
+      for (let [name, value] of Object.entries(soapHeaders)) {
+        xhr.setRequestHeader(name, value);
+      }
+      xhr.responseType = "document";
+      await new Promise(resolve => {
+        xhr.onreadystatechange = () => {
+          if (xhr.readyState == 4) {
+            resolve(xhr);
+          }
+        };
+        xhr.send(requestBody);
+      });
+    }
 
     // Calculate duration and track statistics
     const duration = performance.now() - startTime;

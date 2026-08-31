@@ -560,6 +560,66 @@ export function getRedirectUri(page = "data-export.html") {
   return `${browser}-extension://${extensionId}/${page}`;
 }
 
+// Salesforce API transport for Safari
+//
+// Safari refuses the extension origin for cross-origin requests to Salesforce, so every call made
+// from an extension page fails with "Load failed" -- including the popup, which button.js injects
+// as an iframe into the Salesforce page. The background context is not subject to that check, so on
+// Safari the request is handed to it and the response is relayed back.
+//
+// The response crosses the message boundary base64-encoded, which keeps binary payloads intact
+// (Metadata Retrieve ships a zip) and leaves the choice of JSON, XML or Blob to this side.
+
+function decodeApiBody(bodyBase64, responseType) {
+  if (!bodyBase64) {
+    return null;
+  }
+  const binary = atob(bodyBase64);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) {
+    bytes[i] = binary.charCodeAt(i);
+  }
+
+  if (responseType === "blob") {
+    return new Blob([bytes]);
+  }
+  const text = new TextDecoder().decode(bytes);
+  if (responseType === "document") {
+    return new DOMParser().parseFromString(text, "text/xml");
+  }
+  if (responseType === "text" || !responseType) {
+    return text;
+  }
+  try {
+    return JSON.parse(text);
+  } catch {
+    // Salesforce answers some errors with a non-JSON body; the caller inspects the status anyway.
+    return text;
+  }
+}
+
+// Returns an object shaped like the parts of XMLHttpRequest that sfConn.rest() and sfConn.soap()
+// read after sending, so the calling code needs no further changes.
+export async function safariApiRequest({method, url, headers, body, responseType}) {
+  const result = await new Promise(resolve =>
+    chrome.runtime.sendMessage({
+      message: "apiFetch",
+      request: {method, url, headers, body, hasBody: body !== undefined}
+    }, resolve));
+
+  if (!result) {
+    // rest() and soap() both treat status 0 as a network-level failure.
+    return {status: 0, statusText: "No response from the background script", response: null};
+  }
+
+  return {
+    status: result.status,
+    statusText: result.statusText,
+    response: decodeApiBody(result.bodyBase64, responseType),
+    getResponseHeader: name => result.headers?.[String(name).toLowerCase()] ?? null
+  };
+}
+
 // PKCE (Proof Key for Code Exchange) utilities
 export async function getPKCEParameters(sfHost) {
   try {

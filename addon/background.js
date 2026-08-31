@@ -8,6 +8,59 @@ if (typeof chrome === "undefined") {
   var chrome = browser;
 }
 
+// Safari and Firefox return promises from extension APIs; Chrome uses callbacks. Support both
+// without pulling in a polyfill.
+function promisify(fn) {
+  return new Promise((resolve, reject) => {
+    let maybePromise;
+    try {
+      maybePromise = fn(result => {
+        const err = chrome.runtime.lastError;
+        if (err) {
+          reject(new Error(err.message));
+        } else {
+          resolve(result);
+        }
+      });
+    } catch (e) {
+      reject(e);
+      return;
+    }
+    if (maybePromise && typeof maybePromise.then === "function") {
+      maybePromise.then(resolve, reject);
+    }
+  });
+}
+
+// Safari reports several cookie stores and answers from an empty one unless a storeId is named, so
+// a lookup that comes back empty is retried against every store in turn. Chrome and Firefox answer
+// on the first attempt, which leaves their incognito handling (via sender.tab.cookieStoreId)
+// untouched -- enumerating unconditionally could return a cookie from the wrong profile there.
+async function eachCookieStore(query) {
+  const direct = await query(undefined).catch(() => null);
+  if (direct && (!Array.isArray(direct) || direct.length)) {
+    return direct;
+  }
+  const stores = await promisify(cb => chrome.cookies.getAllCookieStores(cb)).catch(() => []);
+  for (const store of stores || []) {
+    const found = await query(store.id).catch(() => null);
+    if (found && (!Array.isArray(found) || found.length)) {
+      return found;
+    }
+  }
+  return Array.isArray(direct) ? [] : null;
+}
+
+function getCookie(details, storeId) {
+  return eachCookieStore(fallbackStoreId =>
+    promisify(cb => chrome.cookies.get({...details, storeId: fallbackStoreId ?? storeId}, cb)));
+}
+
+function getAllCookies(details, storeId) {
+  return eachCookieStore(fallbackStoreId =>
+    promisify(cb => chrome.cookies.getAll({...details, storeId: fallbackStoreId ?? storeId}, cb)));
+}
+
 let sfHost;
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
@@ -23,7 +76,8 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     // http://salesforce.stackexchange.com/questions/23277/different-session-ids-in-different-contexts
     // There is no straight forward way to unambiguously understand if the user authenticated against salesforce.com or cloudforce.com
     // (and thereby the domain of the relevant cookie) cookie domains are therefore tried in sequence.
-    chrome.cookies.get({url: request.url, name: "sid", storeId: sender.tab.cookieStoreId}, cookie => {
+    (async () => {
+      const cookie = await getCookie({url: request.url, name: "sid"}, sender.tab?.cookieStoreId);
       if (!cookie || currentDomain.endsWith(".mcas.ms")) { //Domain used by Microsoft Defender for Cloud Apps, where sid exists but cannot be read
         sendResponse(currentDomain);
         return;
@@ -31,28 +85,28 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       const [orgId] = cookie.value.split("!");
       const orderedDomains = ["salesforce.com", "cloudforce.com", "salesforce.mil", "cloudforce.mil", "sfcrmproducts.cn", "force.com"];
 
-      orderedDomains.forEach(currentDomain => {
-        chrome.cookies.getAll({name: "sid", domain: currentDomain, secure: true, storeId: sender.tab.cookieStoreId}, cookies => {
-
-          let sessionCookie = cookies.find(c => c.value.startsWith(orgId + "!") && c.domain != "help.salesforce.com");
-          if (sessionCookie) {
-            sendResponse(sessionCookie.domain);
-          }
-        });
-      });
-    });
+      for (const domain of orderedDomains) {
+        const cookies = await getAllCookies({name: "sid", domain, secure: true}, sender.tab?.cookieStoreId);
+        const sessionCookie = (cookies || []).find(c => c.value.startsWith(orgId + "!") && c.domain != "help.salesforce.com");
+        if (sessionCookie) {
+          sendResponse(sessionCookie.domain);
+          return;
+        }
+      }
+      // Nothing better found; the caller falls back to the domain it is already on.
+      sendResponse(currentDomain);
+    })();
     return true; // Tell Chrome that we want to call sendResponse asynchronously.
   }
   if (request.message == "getSession") {
     sfHost = request.sfHost;
-    chrome.cookies.get({url: "https://" + request.sfHost, name: "sid", storeId: sender.tab.cookieStoreId}, sessionCookie => {
+    getCookie({url: "https://" + request.sfHost, name: "sid"}, sender.tab?.cookieStoreId).then(sessionCookie => {
       if (!sessionCookie) {
         sendResponse(null);
         return;
       }
-      let session = {key: sessionCookie.value, hostname: sessionCookie.domain};
-      sendResponse(session);
-    });
+      sendResponse({key: sessionCookie.value, hostname: sessionCookie.domain});
+    }, () => sendResponse(null));
     return true; // Tell Chrome that we want to call sendResponse asynchronously.
   } else if (request.message == "oauthCallback") {
     // Safari only. Salesforce cannot redirect into an extension whose origin UUID differs per
@@ -70,6 +124,18 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         chrome.tabs.remove(sender.tab.id);
       }
     });
+    return true; // Tell Chrome that we want to call sendResponse asynchronously.
+  } else if (request.message == "apiFetch") {
+    // Safari refuses the extension origin for cross-origin requests to Salesforce, so requests made
+    // from an extension page (including the popup, which button.js injects as an iframe) fail with
+    // "Load failed". The background context is not subject to that check, so it performs the request
+    // on their behalf. See sfConn.rest() and sfConn.soap() in inspector.js for the calling side.
+    apiFetch(request.request).then(sendResponse, err => sendResponse({
+      status: 0,
+      statusText: String(err),
+      headers: {},
+      bodyBase64: ""
+    }));
     return true; // Tell Chrome that we want to call sendResponse asynchronously.
   } else if (request.message == "restProbe") {
     // Temporary, see addon/safari-cookie-diagnostic.js. The page console shows Salesforce refusing
@@ -161,29 +227,6 @@ chrome.runtime.setUninstallURL?.("https://forms.gle/y7LbTNsFqEqSrtyc6");
 // Answers one question: can this Safari read the HttpOnly Salesforce "sid" cookie? Delete this
 // function, the "cookieDiagnostic" handler above, and addon/safari-cookie-diagnostic.js once done.
 
-function promisify(fn) {
-  // Safari and Firefox return promises; Chrome uses callbacks. Support both without a polyfill.
-  return new Promise((resolve, reject) => {
-    let maybePromise;
-    try {
-      maybePromise = fn(result => {
-        const err = chrome.runtime.lastError;
-        if (err) {
-          reject(new Error(err.message));
-        } else {
-          resolve(result);
-        }
-      });
-    } catch (e) {
-      reject(e);
-      return;
-    }
-    if (maybePromise && typeof maybePromise.then === "function") {
-      maybePromise.then(resolve, reject);
-    }
-  });
-}
-
 async function runCookieDiagnostic(host) {
   const url = "https://" + host;
   const report = {host, userAgent: navigator.userAgent, stores: [], sidFound: false, anyCookieFound: false};
@@ -258,5 +301,46 @@ async function runRestProbe(host) {
     };
   } catch (e) {
     return {from: "background", url, error: String(e)};
+  }
+}
+
+// --- Salesforce API proxy for Safari ------------------------------------------------------------
+
+function bytesToBase64(bytes) {
+  // Chunked, because String.fromCharCode with a large spread overflows the argument limit.
+  let binary = "";
+  const chunk = 0x8000;
+  for (let i = 0; i < bytes.length; i += chunk) {
+    binary += String.fromCharCode.apply(null, bytes.subarray(i, i + chunk));
+  }
+  return btoa(binary);
+}
+
+async function apiFetch({method, url, headers, body, hasBody}) {
+  // The response is returned base64-encoded rather than decoded here: the caller knows whether it
+  // wants JSON, XML or a Blob, and this keeps binary responses (Metadata Retrieve ships a zip)
+  // intact across the message boundary.
+  try {
+    const response = await fetch(url, {
+      method,
+      headers,
+      body: hasBody ? body : undefined,
+      // The session is carried in the Authorization header, so cookies are neither needed nor sent.
+      credentials: "omit"
+    });
+    const buffer = await response.arrayBuffer();
+    const responseHeaders = {};
+    response.headers.forEach((value, name) => {
+      responseHeaders[name] = value;
+    });
+    return {
+      status: response.status,
+      statusText: response.statusText,
+      headers: responseHeaders,
+      bodyBase64: bytesToBase64(new Uint8Array(buffer))
+    };
+  } catch (e) {
+    // rest() already treats status 0 as "network error, offline or timeout".
+    return {status: 0, statusText: String(e), headers: {}, bodyBase64: ""};
   }
 }
