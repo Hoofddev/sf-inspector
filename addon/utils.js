@@ -507,12 +507,40 @@ export function createSpinForMethod(context) {
 }
 
 // OAuth utilities
+
+// Safari gives every installation of an extension its own random UUID, so
+// "safari-web-extension://<uuid>/data-export.html" cannot be registered as a Connected App
+// redirect URI (an exact match is required and wildcards are not allowed). Authorization returns
+// to this hosted page instead, and addon/oauth-callback.js hands the code back to the extension.
+// Point this at your own fork's GitHub Pages site and register the same URL in your Connected App.
+export const SAFARI_OAUTH_CALLBACK = "https://hoofddev.github.io/Salesforce-Inspector-reloaded/oauth/callback.html";
+
 export function getBrowserType() {
-  return navigator.userAgent?.includes("Chrome") ? "chrome" : "moz";
+  const userAgent = navigator.userAgent ?? "";
+  // Chrome's user agent also contains "Safari", so Chrome has to be tested first.
+  if (userAgent.includes("Chrome")) {
+    return "chrome";
+  }
+  return userAgent.includes("Safari") ? "safari" : "moz";
+}
+
+export function isSafari() {
+  return getBrowserType() === "safari";
 }
 
 export function getExtensionId() {
-  return chrome.i18n.getMessage("@@extension_id");
+  // runtime.id is available in every browser and does not depend on the i18n API.
+  return chrome.runtime?.id ?? chrome.i18n.getMessage("@@extension_id");
+}
+
+export function isValidRedirectUri(redirectUri) {
+  if (!redirectUri) {
+    return false;
+  }
+  if (isSafari()) {
+    return redirectUri.startsWith("https://");
+  }
+  return redirectUri.includes("-extension://") && !redirectUri.includes("undefined");
 }
 
 export function getClientId(sfHost) {
@@ -521,6 +549,12 @@ export function getClientId(sfHost) {
 }
 
 export function getRedirectUri(page = "data-export.html") {
+  // On Safari every install has a different extension origin, so the redirect always goes to the
+  // hosted callback. The page argument is ignored there; the background script decides which
+  // extension page to reopen once the callback hands back the authorization code.
+  if (isSafari()) {
+    return SAFARI_OAUTH_CALLBACK;
+  }
   const browser = getBrowserType();
   const extensionId = getExtensionId();
   return `${browser}-extension://${extensionId}/${page}`;

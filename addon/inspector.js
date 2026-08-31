@@ -1,4 +1,4 @@
-import {getRedirectUri, getClientId, isSettingEnabled, Constants} from "./utils.js";
+import {getRedirectUri, getClientId, isSettingEnabled, isValidRedirectUri, isSafari, Constants} from "./utils.js";
 import {apiStatistics} from "./api-statistics.js";
 
 export let defaultApiVersion = "66.0";
@@ -64,6 +64,15 @@ export let sfConn = {
       }
     } else if (oldToken) {
       this.sessionId = oldToken;
+    } else if (isSafari()) {
+      // Safari never hands an HttpOnly cookie to an extension, and Salesforce marks "sid" HttpOnly,
+      // so there is no browser session to borrow. OAuth is the only way in on this platform.
+      sessionError = {
+        text: "Safari cannot read the Salesforce session cookie. Connect this org from the popup to continue.",
+        type: "info",
+        icon: "info"
+      };
+      showToastBanner();
     } else {
       let message = await new Promise(resolve =>
         chrome.runtime.sendMessage({message: "getSession", sfHost}, resolve));
@@ -72,7 +81,7 @@ export let sfConn = {
         this.sessionId = message.key;
       }
     }
-    if (localStorage.getItem(sfHost + "_trialExpirationDate") == null) {
+    if (this.sessionId && localStorage.getItem(sfHost + "_trialExpirationDate") == null) {
       sfConn.rest("/services/data/v" + apiVersion + "/query/?q=SELECT+IsSandbox,+InstanceName+,TrialExpirationDate+FROM+Organization").then(res => {
         localStorage.setItem(sfHost + "_isSandbox", res.records[0].IsSandbox);
         localStorage.setItem(sfHost + "_orgInstance", res.records[0].InstanceName);
@@ -87,7 +96,7 @@ export let sfConn = {
     const clientId = getClientId(sfHost);
 
     // Validate redirect URI was successfully generated
-    if (!redirectUri || !redirectUri.includes("-extension://")) {
+    if (!isValidRedirectUri(redirectUri)) {
       throw new Error("Failed to generate redirect URI. Extension context may be invalidated. Please reload this page and try again.");
     }
 

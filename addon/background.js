@@ -45,6 +45,23 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       sendResponse(session);
     });
     return true; // Tell Chrome that we want to call sendResponse asynchronously.
+  } else if (request.message == "oauthCallback") {
+    // Safari only. Salesforce cannot redirect into an extension whose origin UUID differs per
+    // install, so the Connected App points at a hosted callback page and addon/oauth-callback.js
+    // relays the authorization code here. Reopening the extension page with the code and state lets
+    // sfConn.getSession() complete the PKCE exchange along its normal path.
+    const target = chrome.runtime.getURL("data-export.html")
+      + "?code=" + encodeURIComponent(request.code)
+      + "&state=" + encodeURIComponent(request.state);
+    chrome.tabs.create({url: target}, () => {
+      sendResponse({ok: true});
+      // Only close the callback tab once the extension page actually opened, so a failure to open
+      // it does not throw the authorization code away.
+      if (sender.tab?.id) {
+        chrome.tabs.remove(sender.tab.id);
+      }
+    });
+    return true; // Tell Chrome that we want to call sendResponse asynchronously.
   } else if (request.message == "createWindow") {
     const brow = typeof browser === "undefined" ? chrome : browser;
     brow.windows.create({
@@ -118,4 +135,5 @@ async function clearSobjectsListCache() {
     console.error("Error clearing sobjectsList cache on update:", e);
   }
 }
-chrome.runtime.setUninstallURL("https://forms.gle/y7LbTNsFqEqSrtyc6");
+// Not implemented in Safari, where calling it throws.
+chrome.runtime.setUninstallURL?.("https://forms.gle/y7LbTNsFqEqSrtyc6");

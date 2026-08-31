@@ -40,6 +40,15 @@
     }
   }
 
+  if (browserType === "safari") {
+    fs.copySync("addon/manifest-safari.json", `${target}/manifest.json`);
+    for (let unused of ["manifest-safari.json", "manifest-firefox.json"]) {
+      if (fs.existsSync(`${target}/${unused}`)) {
+        fs.unlinkSync(`${target}/${unused}`);
+      }
+    }
+  }
+
   // Use minified versions of React. The development versions contain extra checks and validations, which gives better error messages when developing, but are slower.
   replaceInFileSync({
     files: target + "/*.html",
