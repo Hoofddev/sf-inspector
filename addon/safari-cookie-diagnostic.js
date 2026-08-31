@@ -20,9 +20,24 @@
     return;
   }
 
-  // Opt in per page rather than running on every load: the report costs six network requests, and
-  // the extension is otherwise working normally. Add #sfir-diagnostic to the URL and reload.
-  if (!location.hash.includes("sfir-diagnostic")) {
+  // Opt in rather than running on every load: the report costs six network requests, and the
+  // extension is otherwise working normally.
+  //
+  // The URL hash alone is not enough to switch it on: Lightning is a single-page app whose router
+  // rewrites the hash before this script reads it. A flag in the page's localStorage survives that,
+  // and a content script shares localStorage with the page it runs in, so it can be set from the
+  // ordinary page console:
+  //
+  //   localStorage.setItem("sfirDiagnostic", "1")   then reload; "removeItem" to stop.
+  let enabled = location.hash.includes("sfir-diagnostic");
+  if (!enabled) {
+    try {
+      enabled = localStorage.getItem("sfirDiagnostic") != null;
+    } catch {
+      // Storage can be unavailable; the hash remains as the fallback switch.
+    }
+  }
+  if (!enabled) {
     return;
   }
 
