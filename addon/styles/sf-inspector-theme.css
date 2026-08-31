@@ -543,3 +543,74 @@ body.sfi-page .slds-tabs_default__content > div > .slds-grid:hover {
     backdrop-filter: none;
   }
 }
+
+/* ================================================================================================
+ * Popup
+ *
+ * Controls inside the panel were opaque white, so they sat on the frost as solid blocks rather than
+ * belonging to it. Nesting another backdrop-filter would do nothing -- the parent has already
+ * composited -- so they are translucent instead, letting the panel's own frost read through.
+ * ============================================================================================== */
+
+#insext .slds-button_neutral,
+#insext .page-button {
+  background-color: light-dark(rgba(255, 255, 255, .50), rgba(255, 255, 255, .06));
+  border-color: light-dark(rgba(255, 255, 255, .75), rgba(255, 255, 255, .12));
+  box-shadow: inset 0 1px 0 light-dark(rgba(255, 255, 255, .8), rgba(255, 255, 255, .05));
+  color: var(--sfi-accent);
+  font-weight: 500;
+}
+
+#insext .slds-button_neutral:hover:not(:disabled),
+#insext .page-button:hover:not(:disabled) {
+  background-color: light-dark(rgba(255, 255, 255, .82), rgba(255, 255, 255, .13));
+  border-color: light-dark(rgba(0, 113, 227, .35), rgba(10, 132, 255, .45));
+}
+
+#insext .slds-button_brand {
+  background-color: color-mix(in srgb, var(--sfi-accent) 88%, transparent);
+}
+
+#insext .slds-input,
+#insext .slds-select,
+#insext .slds-combobox__input {
+  background-color: light-dark(rgba(255, 255, 255, .58), rgba(255, 255, 255, .07));
+  border-color: light-dark(rgba(255, 255, 255, .8), rgba(255, 255, 255, .12));
+}
+
+#insext .slds-input:focus,
+#insext .slds-select:focus {
+  background-color: light-dark(rgba(255, 255, 255, .92), rgba(255, 255, 255, .14));
+}
+
+/* Section labels: quiet, spaced, and clearly subordinate to the controls under them. */
+#insext .slds-text-title,
+#insext .slds-text-title_caps,
+#insext .slds-section__title {
+  text-transform: uppercase;
+  font-size: .68rem;
+  font-weight: 600;
+  letter-spacing: .08em;
+  color: var(--slds-g-color-on-surface-3);
+}
+
+/* Tab row and footer are chrome within chrome: a shade of separation, not a hard edge. */
+#insext .slds-tabs_default__nav {
+  background-color: light-dark(rgba(255, 255, 255, .30), rgba(255, 255, 255, .04));
+  border-bottom-color: light-dark(rgba(17, 21, 28, .08), rgba(255, 255, 255, .08));
+}
+
+#insext #footer,
+#insext .slds-docked-form-footer {
+  background-color: light-dark(rgba(255, 255, 255, .38), rgba(255, 255, 255, .05));
+  border-top: 1px solid light-dark(rgba(17, 21, 28, .07), rgba(255, 255, 255, .07));
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  #insext .slds-button_neutral,
+  #insext .page-button,
+  #insext .slds-input,
+  #insext .slds-select {
+    background-color: var(--slds-g-color-surface-container-1);
+  }
+}
