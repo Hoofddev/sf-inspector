@@ -62,6 +62,10 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       }
     });
     return true; // Tell Chrome that we want to call sendResponse asynchronously.
+  } else if (request.message == "cookieDiagnostic") {
+    // See addon/safari-cookie-diagnostic.html. Temporary; remove once the answer is recorded.
+    runCookieDiagnostic(request.host).then(sendResponse, err => sendResponse({error: String(err)}));
+    return true; // Tell Chrome that we want to call sendResponse asynchronously.
   } else if (request.message == "createWindow") {
     const brow = typeof browser === "undefined" ? chrome : browser;
     brow.windows.create({
@@ -137,3 +141,73 @@ async function clearSobjectsListCache() {
 }
 // Not implemented in Safari, where calling it throws.
 chrome.runtime.setUninstallURL?.("https://forms.gle/y7LbTNsFqEqSrtyc6");
+
+// --- Temporary diagnostic, see addon/safari-cookie-diagnostic.html -------------------------------------
+// Answers one question: can this Safari read the HttpOnly Salesforce "sid" cookie? Delete this
+// function, the "cookieDiagnostic" handler above, and the two safari-cookie-diagnostic files once done.
+
+function promisify(fn) {
+  // Safari and Firefox return promises; Chrome uses callbacks. Support both without a polyfill.
+  return new Promise((resolve, reject) => {
+    let maybePromise;
+    try {
+      maybePromise = fn(result => {
+        const err = chrome.runtime.lastError;
+        if (err) {
+          reject(new Error(err.message));
+        } else {
+          resolve(result);
+        }
+      });
+    } catch (e) {
+      reject(e);
+      return;
+    }
+    if (maybePromise && typeof maybePromise.then === "function") {
+      maybePromise.then(resolve, reject);
+    }
+  });
+}
+
+async function runCookieDiagnostic(host) {
+  const url = "https://" + host;
+  const report = {host, userAgent: navigator.userAgent, stores: [], sidFound: false, anyCookieFound: false};
+
+  let stores;
+  try {
+    stores = await promisify(cb => chrome.cookies.getAllCookieStores(cb));
+  } catch (e) {
+    // Fall back to the implicit default store so the run still says something useful.
+    report.getAllCookieStoresError = String(e);
+    stores = [{id: undefined}];
+  }
+
+  for (const store of stores || []) {
+    const entry = {storeId: store.id ?? "(default)", sid: null, otherCookies: [], errors: []};
+
+    try {
+      const sid = await promisify(cb => chrome.cookies.get({url, name: "sid", storeId: store.id}, cb));
+      if (sid) {
+        // Never log the value itself; its length and flags are enough to answer the question.
+        entry.sid = {valueLength: sid.value.length, domain: sid.domain, httpOnly: sid.httpOnly, secure: sid.secure};
+        report.sidFound = true;
+      }
+    } catch (e) {
+      entry.errors.push("get(sid): " + e);
+    }
+
+    try {
+      const all = await promisify(cb => chrome.cookies.getAll({url, storeId: store.id}, cb));
+      entry.otherCookies = (all || []).map(c => c.name);
+      if (entry.otherCookies.length) {
+        report.anyCookieFound = true;
+      }
+    } catch (e) {
+      entry.errors.push("getAll: " + e);
+    }
+
+    report.stores.push(entry);
+  }
+
+  return report;
+}
