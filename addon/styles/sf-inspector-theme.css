@@ -419,7 +419,14 @@ body {
 
 .slds-tabs_default__nav {
   border-bottom: 1px solid var(--slds-g-color-border-1);
-  gap: .15rem;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+
+/* Labels must not be clipped or wrapped: these are names, and half a name is useless. */
+.slds-tabs_default__link {
+  white-space: nowrap;
 }
 
 .slds-tabs_default__link {
@@ -490,7 +497,6 @@ body.sfi-page .slds-tabs_default {
 }
 
 body.sfi-page .slds-tabs_default__nav {
-  padding: .5rem .75rem 0;
   background-color: light-dark(rgba(255, 255, 255, .35), rgba(255, 255, 255, .04));
 }
 
@@ -500,9 +506,8 @@ body.sfi-page .slds-tabs_default__content {
 
 /* Setting rows: hairlines rather than full borders, and enough height to breathe. */
 body.sfi-page .slds-tabs_default__content > div > .slds-grid {
-  border-bottom: 1px solid light-dark(rgba(17, 21, 28, .07), rgba(255, 255, 255, .07)) !important;
-  padding: .7rem 1rem !important;
-  border-radius: var(--slds-g-radius-border-1);
+  border-bottom: 1px solid light-dark(rgba(17, 21, 28, .07), rgba(255, 255, 255, .07));
+  align-items: center;
   transition: background-color .12s ease;
 }
 
@@ -711,5 +716,88 @@ body.sfi-page .autocomplete-results {
     background-color: var(--slds-g-color-surface-container-1);
     -webkit-backdrop-filter: none;
     backdrop-filter: none;
+  }
+}
+
+/* ================================================================================================
+ * Corrections
+ *
+ * Rounding every button independently breaks grouped ones: a button group is meant to read as one
+ * control with a seam down the middle, and giving each segment its own corners turns it into a row
+ * of separate pills with gaps punched through it. Only the outer edges get rounded.
+ * ============================================================================================== */
+
+.slds-button-group .slds-button,
+.slds-button-group-list .slds-button {
+  border-radius: 0;
+}
+
+.slds-button-group > .slds-button:first-child,
+.slds-button-group-list > *:first-child .slds-button {
+  border-start-start-radius: var(--slds-g-radius-border-2);
+  border-end-start-radius: var(--slds-g-radius-border-2);
+}
+
+.slds-button-group > .slds-button:last-child,
+.slds-button-group-list > *:last-child .slds-button {
+  border-start-end-radius: var(--slds-g-radius-border-2);
+  border-end-end-radius: var(--slds-g-radius-border-2);
+}
+
+.slds-button-group > .slds-button:only-child {
+  border-radius: var(--slds-g-radius-border-2);
+}
+
+/* Button labels are short and meaningful; wrapping them mid-phrase reads as breakage. */
+.slds-button {
+  white-space: nowrap;
+}
+
+/* ================================================================================================
+ * Production warning
+ *
+ * sfir.css floods the page with a flat pink when the org is production. That is a safety signal and
+ * it stays -- knowing at a glance that you are about to edit live data is worth more than any
+ * amount of polish -- but a flat wash overrides everything else and reads as a rendering fault
+ * rather than a warning.
+ *
+ * So it keeps the same meaning and gets louder, not quieter: the ground turns warm, and a solid bar
+ * runs along the top edge where a warning belongs. Unmissable, and deliberate.
+ * ============================================================================================== */
+
+html:has(body.sfir-prod),
+body.sfir-prod {
+  background-color: light-dark(#fbeef0, #241a1d) !important;
+  background-image:
+    radial-gradient(60rem 44rem at -6% -18%, light-dark(rgba(214, 48, 90, .34),  rgba(255, 90, 130, .32)), transparent 66%),
+    radial-gradient(50rem 40rem at 106% -6%, light-dark(rgba(232, 92, 62, .26),  rgba(255, 130, 90, .26)), transparent 64%),
+    radial-gradient(56rem 42rem at 50% 120%, light-dark(rgba(190, 40, 110, .20), rgba(230, 80, 150, .20)), transparent 62%) !important;
+  background-attachment: fixed !important;
+}
+
+body.sfir-prod::before {
+  content: "";
+  position: fixed;
+  inset-block-start: 0;
+  inset-inline: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #d6305a, #e85c3e);
+  z-index: 9999;
+  pointer-events: none;
+}
+
+/* Panels on a production org pick up a warm edge, so the signal survives even when the page is
+   scrolled and the bar is the only thing still in view. */
+body.sfir-prod .slds-tabs_default,
+body.sfir-prod .area,
+body.sfir-prod .slds-card {
+  border-color: light-dark(rgba(214, 48, 90, .30), rgba(255, 90, 130, .28));
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  html:has(body.sfir-prod),
+  body.sfir-prod {
+    background-image: none !important;
+    background-color: light-dark(#f6dfe4, #2b1e21) !important;
   }
 }
