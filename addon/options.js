@@ -71,11 +71,13 @@ class OptionsTabSelector extends React.Component {
         id: "user-experience",
         tabTitle: "User Experience",
         content: [
-          {option: ArrowButtonOption, props: {key: 1}},
-          {option: Option, props: {type: "toggle", title: "Inspect page - Show table borders", key: "displayInspectTableBorders"}},
-          {option: Option, props: {type: "toggle", title: "Always open links in a new tab", key: "openLinksInNewTab", tooltip: "Enabling this option will prevent Lightning Navigation (faster loading) to be used"}},
-          {option: Option, props: {type: "toggle", title: "Open Permission Set / Permission Set Group summary from shortcuts", key: "enablePermSetSummary"}},
-          {option: MultiCheckboxButtonGroup,
+          {group: "Popup", option: ArrowButtonOption, props: {key: 1}},
+          {group: "Inspect", option: Option, props: {type: "toggle", title: "Inspect page - Show table borders", key: "displayInspectTableBorders"}},
+          {group: "Navigation & links", option: Option, props: {type: "toggle", title: "Always open links in a new tab", key: "openLinksInNewTab", tooltip: "Enabling this option will prevent Lightning Navigation (faster loading) to be used"}},
+          {group: "Navigation & links", option: Option, props: {type: "toggle", title: "Open Permission Set / Permission Set Group summary from shortcuts", key: "enablePermSetSummary"}},
+          {
+            group: "Search",
+            option: MultiCheckboxButtonGroup,
             props: {title: "Searchable metadata from Shortcut tab",
               key: "metadataShortcutSearchOptions",
               checkboxes: [
@@ -85,8 +87,10 @@ class OptionsTabSelector extends React.Component {
                 {label: "Apex Classes", name: "classes", checked: false}
               ]}
           },
-          {option: Option, props: {type: "toggle", title: "Popup Dark theme", key: "popupDarkTheme"}},
-          {option: MultiCheckboxButtonGroup,
+          {group: "Popup", option: Option, props: {type: "toggle", title: "Popup Dark theme", key: "popupDarkTheme"}},
+          {
+            group: "Popup",
+            option: MultiCheckboxButtonGroup,
             props: {title: "Show buttons",
               key: "hideButtonsOption",
               length: 8,
@@ -100,17 +104,21 @@ class OptionsTabSelector extends React.Component {
                 {label: "Reset Password", name: "reset-password", checked: true}
               ]}
           },
-          {option: FaviconOption, props: {key: this.sfHost + FaviconOption.CUSTOM_FAVICON_KEY, tooltip: "You may need to add this domain to CSP trusted domains to see the favicon in Salesforce."}},
-          {option: Option, props: {type: "toggle", title: "Use favicon color on sandbox banner", key: "colorizeSandboxBanner"}},
-          {option: Option, props: {type: "toggle", title: "Highlight PROD (color from favicon)", key: "colorizeProdBanner", tooltip: "Top border in extension pages and banner on Salesforce"}},
-          {option: Option, props: {type: "text", title: "Banner text", inputSize: "6", key: this.sfHost + "_prodBannerText", tooltip: "Text that will be displayed in the banner (if enabled)", placeholder: "WARNING: THIS IS PRODUCTION"}},
-          {option: Option, props: {type: "toggle", title: "Enable Lightning Navigation", key: "lightningNavigation", default: true, tooltip: "Enable faster navigation by using standard e.force:navigateToURL method"}},
-          {option: MultiCheckboxButtonGroup,
+          {group: "Org appearance", option: FaviconOption, props: {key: this.sfHost + FaviconOption.CUSTOM_FAVICON_KEY, tooltip: "You may need to add this domain to CSP trusted domains to see the favicon in Salesforce."}},
+          {group: "Org appearance", option: Option, props: {type: "toggle", title: "Use favicon color on sandbox banner", key: "colorizeSandboxBanner"}},
+          {group: "Org appearance", option: Option, props: {type: "toggle", title: "Highlight PROD (color from favicon)", key: "colorizeProdBanner", tooltip: "Top border in extension pages and banner on Salesforce"}},
+          {group: "Org appearance", option: Option, props: {type: "text", title: "Banner text", inputSize: "6", key: this.sfHost + "_prodBannerText", tooltip: "Text that will be displayed in the banner (if enabled)", placeholder: "WARNING: THIS IS PRODUCTION"}},
+          {group: "Navigation & links", option: Option, props: {type: "toggle", title: "Enable Lightning Navigation", key: "lightningNavigation", default: true, tooltip: "Enable faster navigation by using standard e.force:navigateToURL method"}},
+          {
+            group: "Search",
+            option: MultiCheckboxButtonGroup,
             props: {title: "Exclude users from search (org specific)",
               key: this.sfHost + Constants.USER_SEARCH_EXCLUSIONS_KEY,
               checkboxes: Constants.USER_SEARCH_EXCLUSIONS_CHECKBOXES.map(({label, name}) => ({label, name, checked: false}))}
           },
-          {option: MultiCheckboxButtonGroup,
+          {
+            group: "Search",
+            option: MultiCheckboxButtonGroup,
             props: {title: "User Default Search Fields",
               key: "userDefaultSearchFieldsOptions",
               checkboxes: [
@@ -121,7 +129,9 @@ class OptionsTabSelector extends React.Component {
                 {label: "Profile Name", name: "profile.name"}
               ]}
           },
-          {option: MultiCheckboxButtonGroup,
+          {
+            group: "Popup",
+            option: MultiCheckboxButtonGroup,
             props: {title: "Default Popup Tab",
               key: "defaultPopupTab",
               unique: true,
@@ -132,8 +142,8 @@ class OptionsTabSelector extends React.Component {
                 {label: "Org", name: "org"}
               ]}
           },
-          {option: Option, props: {type: "toggle", title: "Enable Dynamic Popup Height", key: "popupHeighDynamictMode", default: false, tooltip: "When enabled, the popup height will be dynamically adjusted based on the content."}},
-          {option: Option, props: {type: "toggle", title: "Show recently viewed records in popup", key: Constants.ENABLE_RECENTLY_VIEWED_RECORDS, default: true, tooltip: "When enabled, queries and displays recently viewed records when focusing the Object search field in the popup."}},
+          {group: "Popup", option: Option, props: {type: "toggle", title: "Enable Dynamic Popup Height", key: "popupHeighDynamictMode", default: false, tooltip: "When enabled, the popup height will be dynamically adjusted based on the content."}},
+          {group: "Popup", option: Option, props: {type: "toggle", title: "Show recently viewed records in popup", key: Constants.ENABLE_RECENTLY_VIEWED_RECORDS, default: true, tooltip: "When enabled, queries and displays recently viewed records when focusing the Object search field in the popup."}},
         ]
       },
       {
@@ -550,17 +560,41 @@ class OptionsContainer extends React.Component {
     return h("div", {id: this.props.id, key: this.props.id, className: this.getClass(), role: "tabpanel"},
       this.renderTabHeader(),
       h("div", {},
-        this.props.content.map((c, index) =>
-          h(c.option, {
-            key: c.props?.key || `option-${index}`,
-            storageKey: c.props?.key,
-            ...c.props,
-            model: this.model,
-            appRef: this.appRef
-          })
+        this.groupContent().map((group, groupIndex) =>
+          h("section", {key: group.title || `group-${groupIndex}`, className: "sfi-group"},
+            group.title && h("h3", {className: "sfi-group__title"}, group.title),
+            group.items.map(({item, index}) =>
+              h(item.option, {
+                key: item.props?.key || `option-${index}`,
+                storageKey: item.props?.key,
+                ...item.props,
+                model: this.model,
+                appRef: this.appRef
+              })
+            )
+          )
         )
       )
     );
+  }
+
+  /**
+   * Collect this tab's options into groups, in the order the groups first appear. Options with no
+   * group fall into a single untitled one, so a tab that has not been arranged yet still renders as
+   * one panel.
+   */
+  groupContent() {
+    const order = [];
+    const byTitle = new Map();
+    this.props.content.forEach((item, index) => {
+      const title = item.group ?? null;
+      if (!byTitle.has(title)) {
+        byTitle.set(title, []);
+        order.push(title);
+      }
+      byTitle.get(title).push({item, index});
+    });
+    return order.map(title => ({title, items: byTitle.get(title)}));
   }
 
 }

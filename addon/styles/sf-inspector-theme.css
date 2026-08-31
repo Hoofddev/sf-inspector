@@ -453,20 +453,6 @@ body {
  * This one genuinely floats over the Salesforce page, so it is where the material belongs.
  * ============================================================================================== */
 
-#insext {
-  border-radius: var(--slds-g-radius-border-4);
-  box-shadow:
-    var(--slds-g-shadow-4),
-    inset 0 1px 0 light-dark(rgba(255, 255, 255, .9), rgba(255, 255, 255, .08));
-  overflow: hidden;
-}
-
-/* Full-width stacks of identical buttons are what make the popup look like a form rather than a
-   panel. Softening and grouping them costs nothing and reads far better. */
-#insext .page-button {
-  justify-content: flex-start;
-  font-weight: 500;
-}
 
 /* ================================================================================================
  * Layout
@@ -557,67 +543,6 @@ body.sfi-page .slds-tabs_default__content > div > .slds-grid:hover {
  * composited -- so they are translucent instead, letting the panel's own frost read through.
  * ============================================================================================== */
 
-#insext .slds-button_neutral,
-#insext .page-button {
-  background-color: light-dark(rgba(255, 255, 255, .50), rgba(255, 255, 255, .06));
-  border-color: light-dark(rgba(255, 255, 255, .75), rgba(255, 255, 255, .12));
-  box-shadow: inset 0 1px 0 light-dark(rgba(255, 255, 255, .8), rgba(255, 255, 255, .05));
-  color: var(--sfi-accent);
-  font-weight: 500;
-}
-
-#insext .slds-button_neutral:hover:not(:disabled),
-#insext .page-button:hover:not(:disabled) {
-  background-color: light-dark(rgba(255, 255, 255, .82), rgba(255, 255, 255, .13));
-  border-color: light-dark(rgba(0, 113, 227, .35), rgba(10, 132, 255, .45));
-}
-
-#insext .slds-button_brand {
-  background-color: color-mix(in srgb, var(--sfi-accent) 88%, transparent);
-}
-
-#insext .slds-input,
-#insext .slds-select,
-#insext .slds-combobox__input {
-  background-color: light-dark(rgba(255, 255, 255, .58), rgba(255, 255, 255, .07));
-  border-color: light-dark(rgba(255, 255, 255, .8), rgba(255, 255, 255, .12));
-}
-
-#insext .slds-input:focus,
-#insext .slds-select:focus {
-  background-color: light-dark(rgba(255, 255, 255, .92), rgba(255, 255, 255, .14));
-}
-
-/* Section labels: quiet, spaced, and clearly subordinate to the controls under them. */
-#insext .slds-text-title,
-#insext .slds-text-title_caps,
-#insext .slds-section__title {
-  text-transform: uppercase;
-  font-size: .68rem;
-  font-weight: 600;
-  letter-spacing: .08em;
-  color: var(--slds-g-color-on-surface-3);
-}
-
-/* Tab row and footer are chrome within chrome: a shade of separation, not a hard edge. */
-#insext .slds-tabs_default__nav {
-  background-color: light-dark(rgba(255, 255, 255, .30), rgba(255, 255, 255, .04));
-  border-bottom-color: light-dark(rgba(17, 21, 28, .08), rgba(255, 255, 255, .08));
-}
-
-#insext #footer,
-#insext .slds-docked-form-footer {
-  background-color: light-dark(rgba(255, 255, 255, .38), rgba(255, 255, 255, .05));
-  border-top: 1px solid light-dark(rgba(17, 21, 28, .07), rgba(255, 255, 255, .07));
-}
-
-@media (prefers-reduced-transparency: reduce) {
-  #insext .slds-button_neutral,
-  #insext .page-button,
-  #insext .slds-input,
-  #insext .slds-select {
-    background-color: var(--slds-g-color-surface-container-1);
-  }
 }
 
 /* ================================================================================================
@@ -990,4 +915,100 @@ body.sfi-page .slds-tabs_default__content > div > .slds-border_bottom:first-chil
     -webkit-backdrop-filter: none;
     backdrop-filter: none;
   }
+}
+
+/* ================================================================================================
+ * Popup, colour only
+ *
+ * The popup is a fixed-size iframe with tightly fitted contents. Earlier passes gave it radii,
+ * overflow:hidden and its own padding, which clipped the panel and pushed the footer over the
+ * buttons. Nothing here touches the box model -- background, border colour and backdrop only, all
+ * of which are free of layout consequences.
+ * ============================================================================================== */
+
+#insext {
+  background-color: var(--sfi-glass-bg);
+  -webkit-backdrop-filter: var(--sfi-glass-blur);
+  backdrop-filter: var(--sfi-glass-blur);
+}
+
+#insext .slds-button_neutral,
+#insext .page-button {
+  background-color: light-dark(rgba(255, 255, 255, .42), rgba(255, 255, 255, .06));
+  border-color: light-dark(rgba(255, 255, 255, .85), rgba(255, 255, 255, .12));
+}
+
+#insext .slds-button_neutral:hover:not(:disabled),
+#insext .page-button:hover:not(:disabled) {
+  background-color: light-dark(rgba(255, 255, 255, .8), rgba(255, 255, 255, .13));
+}
+
+#insext .slds-input,
+#insext .slds-select {
+  background-color: light-dark(rgba(255, 255, 255, .5), rgba(255, 255, 255, .07));
+  border-color: light-dark(rgba(255, 255, 255, .85), rgba(255, 255, 255, .12));
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  #insext,
+  #insext .slds-button_neutral,
+  #insext .page-button,
+  #insext .slds-input,
+  #insext .slds-select {
+    background-color: var(--slds-g-color-surface-container-1);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+}
+
+/* Tabs were still being clipped because the list items were allowed to shrink. They keep their
+   width now and the strip scrolls, so a label is never cut in half. */
+.slds-tabs_default__nav > li {
+  flex: 0 0 auto;
+}
+
+/* ================================================================================================
+ * Setting groups
+ * ============================================================================================== */
+
+body.sfi-page .sfi-group {
+  background-color: var(--sfi-glass-bg);
+  -webkit-backdrop-filter: var(--sfi-glass-blur);
+  backdrop-filter: var(--sfi-glass-blur);
+  border: 1px solid var(--sfi-glass-border);
+  border-radius: var(--slds-g-radius-border-4);
+  box-shadow:
+    var(--slds-g-shadow-3),
+    inset 0 1px 0 light-dark(rgba(255, 255, 255, .95), rgba(255, 255, 255, .05));
+  margin-bottom: 1rem;
+  overflow: hidden;
+}
+
+body.sfi-page .sfi-group__title {
+  font-size: .72rem;
+  font-weight: 600;
+  letter-spacing: .07em;
+  text-transform: uppercase;
+  color: var(--slds-g-color-on-surface-3);
+  padding: 1rem 1.35rem .35rem;
+  margin: 0;
+}
+
+/* Inside a group the rows go back to being rows: separated by light, not by their own cards. */
+body.sfi-page .sfi-group > .slds-grid {
+  background: none !important;
+  border: 0 !important;
+  border-bottom: 1px solid light-dark(rgba(60, 50, 90, .07), rgba(255, 255, 255, .06)) !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  margin-bottom: 0 !important;
+  padding: .95rem 1.35rem !important;
+}
+
+body.sfi-page .sfi-group > .slds-grid:last-child {
+  border-bottom: 0 !important;
+}
+
+body.sfi-page .sfi-group > .slds-grid:hover {
+  background-color: light-dark(rgba(60, 50, 90, .03), rgba(255, 255, 255, .04)) !important;
 }
