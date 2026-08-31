@@ -412,7 +412,7 @@ class App extends React.PureComponent {
                 h("div", {className: "slds-media__body"},
                   h("div", {className: "popup-header__name-title"},
                     h("h1", {},
-                      h("span", {className: "popup-header__title popup-title slds-truncate slds-text-align_center slds-p-left_small", title: "Salesforce Inspector Reloaded"}, "Salesforce Inspector Reloaded")
+                      h("span", {className: "popup-header__title popup-title slds-truncate slds-text-align_center slds-p-left_small", title: "SF Inspector"}, "SF Inspector")
                     )
                   )
                 )

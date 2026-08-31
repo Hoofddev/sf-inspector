@@ -969,9 +969,10 @@ body.sfi-page .slds-tabs_default__content > div > .slds-border_bottom:first-chil
   }
 }
 
-/* Tabs were still being clipped because the list items were allowed to shrink. They keep their
-   width now and the strip scrolls, so a label is never cut in half. */
-.slds-tabs_default__nav > li {
+/* Tabs on the full-width pages were clipped because the list items were allowed to shrink. They
+   keep their width there and the strip scrolls instead. Scoped to those pages deliberately: the
+   popup's tab strip is only a few hundred pixels wide and does need to shrink to fit. */
+body.sfi-page .slds-tabs_default__nav > li {
   flex: 0 0 auto;
 }
 
@@ -1042,4 +1043,29 @@ body.sfi-page .slds-builder-header {
 /* Space between the chrome and the first panel, replacing the body padding that used to provide it. */
 body.sfi-page .slds-builder-header + * {
   margin-block-start: 1.75rem;
+}
+
+/* The popup's own bars -- title, tab strip, footer -- were opaque white blocks sitting on the
+   frosted panel, which is what made it look assembled from separate pieces rather than being one
+   surface. Background only; their metrics are left exactly as they were. */
+#insext .popup-header,
+#insext .popup-header.slds-page-header,
+#insext .slds-tabs_default__nav,
+#insext #footer {
+  background-color: light-dark(rgba(255, 255, 255, .34), rgba(255, 255, 255, .05)) !important;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+
+#insext .slds-tabs_default__item.slds-is-active .slds-tabs_default__link {
+  background-color: light-dark(rgba(255, 255, 255, .55), rgba(255, 255, 255, .09));
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  #insext .popup-header,
+  #insext .popup-header.slds-page-header,
+  #insext .slds-tabs_default__nav,
+  #insext #footer {
+    background-color: var(--slds-g-color-surface-container-1) !important;
+  }
 }
