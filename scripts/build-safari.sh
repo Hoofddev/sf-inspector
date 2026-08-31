@@ -52,6 +52,22 @@ DERIVED_DATA="${TMPDIR:-/tmp}/inspector-reloaded-safari"
 echo "==> Building extension payload"
 node scripts/release-build.js safari
 
+# The generated project references every resource by name, so its file list has to match the payload
+# exactly. An added file is copied into Resources/ but never into the built bundle, and that fails
+# silently: the manifest ends up naming a script the extension does not ship. A removed file leaves
+# a dangling reference and fails the build outright.
+#
+# Compare against the list recorded when the project was generated. Resources/ itself is no use for
+# this, because the rsync below rewrites it on every run and so always appears to match.
+PAYLOAD_LIST="safari/.payload-files"
+
+if [ "$REGENERATE" = "0" ] && [ -d "$PROJECT" ]; then
+  if ! diff -q "$PAYLOAD_LIST" <(cd "$PAYLOAD" && ls -A) >/dev/null 2>&1; then
+    echo "==> Payload no longer matches what the Xcode project was generated from; regenerating"
+    REGENERATE=1
+  fi
+fi
+
 if [ "$REGENERATE" = "1" ] || [ ! -d "$PROJECT" ]; then
   echo "==> Regenerating the Xcode project"
   rm -rf safari
@@ -67,6 +83,13 @@ if [ "$REGENERATE" = "1" ] || [ ! -d "$PROJECT" ]; then
   APP_ID_FROM_NAME="be.hoofdvogel.${APP_NAME// /-}"
   perl -pi -e "s/PRODUCT_BUNDLE_IDENTIFIER = \"\Q$APP_ID_FROM_NAME\E\";/PRODUCT_BUNDLE_IDENTIFIER = $BUNDLE_ID;/g" \
     "$PROJECT/project.pbxproj"
+
+  (cd "$PAYLOAD" && ls -A) > "$PAYLOAD_LIST"
+
+  # Xcode's copy phase never deletes, so a resource dropped from the payload lingers in the built
+  # bundle and would ship. Regeneration is exactly when the file list changed, so discard the
+  # previous build products with it.
+  rm -rf "$DERIVED_DATA"
 fi
 
 echo "==> Syncing payload into the Xcode project"
