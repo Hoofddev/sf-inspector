@@ -1,8 +1,8 @@
 
 // Browser polyfill for cross-browser compatibility.
-// The mirror image of the shim in utils.js and popup.js: this file is written against `chrome`,
-// but Safari's background context only defines `browser`. Without this the very first statement
-// below throws and the whole extension is dead on Safari.
+// The mirror image of the shim in utils.js and popup.js: this file is written entirely against
+// `chrome`, and Firefox-derived engines define only `browser`. Safari is believed to expose both,
+// so this is defensive rather than known to be required.
 if (typeof chrome === "undefined") {
   // eslint-disable-next-line no-var
   var chrome = browser;
@@ -72,7 +72,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     });
     return true; // Tell Chrome that we want to call sendResponse asynchronously.
   } else if (request.message == "cookieDiagnostic") {
-    // See addon/safari-cookie-diagnostic.html. Temporary; remove once the answer is recorded.
+    // See addon/safari-cookie-diagnostic.js. Temporary; remove once the answer is recorded.
     runCookieDiagnostic(request.host).then(sendResponse, err => sendResponse({error: String(err)}));
     return true; // Tell Chrome that we want to call sendResponse asynchronously.
   } else if (request.message == "createWindow") {
@@ -151,9 +151,9 @@ async function clearSobjectsListCache() {
 // Not implemented in Safari, where calling it throws.
 chrome.runtime.setUninstallURL?.("https://forms.gle/y7LbTNsFqEqSrtyc6");
 
-// --- Temporary diagnostic, see addon/safari-cookie-diagnostic.html -------------------------------------
+// --- Temporary diagnostic, see addon/safari-cookie-diagnostic.js ---------------------------------
 // Answers one question: can this Safari read the HttpOnly Salesforce "sid" cookie? Delete this
-// function, the "cookieDiagnostic" handler above, and the two safari-cookie-diagnostic files once done.
+// function, the "cookieDiagnostic" handler above, and addon/safari-cookie-diagnostic.js once done.
 
 function promisify(fn) {
   // Safari and Firefox return promises; Chrome uses callbacks. Support both without a polyfill.

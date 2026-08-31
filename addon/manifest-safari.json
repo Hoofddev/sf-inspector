@@ -60,7 +60,8 @@
       ],
       "js": [
         "button.js",
-        "inspect-inline.js"
+        "inspect-inline.js",
+        "safari-cookie-diagnostic.js"
       ]
     },
     {

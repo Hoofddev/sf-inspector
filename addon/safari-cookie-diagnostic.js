@@ -1,67 +1,72 @@
-// Throwaway diagnostic. Safari reports more than one cookie store and returns nothing when the
-// store is not named explicitly (Apple Developer Forums threads 761323 and 768065). The published
-// workaround is to enumerate the stores and query each one by id. That fixes reads of ordinary
-// cookies, but every account says nothing about HttpOnly cookies, which Apple states are never
-// exposed to extensions -- and Salesforce marks "sid" HttpOnly.
+// Temporary diagnostic. Answers one question: can this Safari read the HttpOnly Salesforce "sid"
+// cookie? Apple states HttpOnly cookies are never exposed to extensions, which is why this port
+// authenticates through OAuth instead. The published workaround for Safari returning no cookies --
+// enumerating cookies.getAllCookieStores() and querying each store by id -- only addresses an empty
+// default store, and every account of it concerns ordinary cookies on Safari 18.
 //
-// This page settles that question on the machine in front of you instead of from forum posts about
-// an older Safari. If it ever reports the sid cookie as readable, the OAuth requirement (and the
-// Connected App the user has to register) can be dropped entirely.
+// If this ever reports sid as readable, the OAuth path and the Connected App users must register
+// can both be dropped.
 //
-// Delete this file, safari-cookie-diagnostic.html and the "cookieDiagnostic" handler in background.js
-// once the answer is recorded.
+// Runs as a content script on Salesforce pages so the result lands in the ordinary page console:
+// the cookies API itself lives in the background, but reaching a background page in Safari needs
+// the extension's per-install UUID and the tabs API, neither of which is conveniently available.
+//
+// Delete this file, its entry in manifest-safari.json, and the "cookieDiagnostic" handler in
+// background.js once the answer is recorded.
 
-const api = typeof browser === "undefined" ? chrome : browser;
-
-const hostInput = document.getElementById("host");
-const runButton = document.getElementById("run");
-const output = document.getElementById("output");
-const verdict = document.getElementById("verdict");
-
-function setVerdict(text, kind) {
-  verdict.textContent = text;
-  verdict.dataset.kind = kind;
-}
-
-runButton.addEventListener("click", async () => {
-  const host = hostInput.value.trim().replace(/^https?:\/\//, "").replace(/\/.*$/, "");
-  if (!host) {
-    setVerdict("Enter a Salesforce host first.", "warn");
+(() => {
+  // all_frames is true for this content script, but one report per page load is enough.
+  if (window.top !== window) {
     return;
   }
 
-  output.textContent = "Running…";
-  setVerdict("", "");
+  const api = typeof browser === "undefined" ? chrome : browser;
+  const TAG = "[SFIR Safari cookie diagnostic]";
 
-  const report = await new Promise(resolve =>
-    api.runtime.sendMessage({message: "cookieDiagnostic", host}, resolve));
-
-  if (!report) {
-    output.textContent = "No response from the background script.";
-    setVerdict("Inconclusive — the background script did not answer.", "warn");
-    return;
+  // The session cookie that matters lives on the API host, which differs from the Lightning host
+  // the user is usually looking at. Check both.
+  function candidateHosts() {
+    const here = location.hostname;
+    const apiHost = here.replace(/\.lightning\.force\.com$/, ".my.salesforce.com");
+    return [...new Set([here, apiHost])];
   }
 
-  output.textContent = JSON.stringify(report, null, 2);
-
-  if (report.error) {
-    setVerdict("Inconclusive — " + report.error, "warn");
-  } else if (report.sidFound) {
-    setVerdict("sid IS readable. OAuth may not be required after all — re-check the architecture.", "good");
-  } else if (report.anyCookieFound) {
-    setVerdict("Cookies are readable, but sid is not. HttpOnly is still withheld, so OAuth stays required.", "bad");
-  } else {
-    setVerdict("No cookies at all. Either not logged in to this host, or the cookies permission is not granted.", "warn");
+  function ask(host) {
+    return new Promise(resolve => {
+      let settled = false;
+      const done = result => {
+        if (!settled) {
+          settled = true;
+          resolve(result);
+        }
+      };
+      // A silent background script is itself a finding, so never hang waiting for it.
+      setTimeout(() => done({error: "no response from the background script within 5s"}), 5000);
+      try {
+        api.runtime.sendMessage({message: "cookieDiagnostic", host}, result => {
+          const err = api.runtime.lastError;
+          done(err ? {error: err.message} : result);
+        });
+      } catch (e) {
+        done({error: String(e)});
+      }
+    });
   }
-});
 
-// Prefill with whatever Salesforce host is currently open, so there is nothing to type in the
-// common case.
-api.tabs.query({}, tabs => {
-  const match = (tabs || [])
-    .map(t => { try { return new URL(t.url).hostname; } catch { return ""; } })
-    .find(h => /\.(my\.salesforce|lightning\.force|salesforce)\.com$/.test(h));
-  if (match) {
-    hostInput.value = match;
-  }
-});
+  (async () => {
+    for (const host of candidateHosts()) {
+      const report = await ask(host);
+      console.log(TAG, host, report);
+
+      if (!report || report.error) {
+        console.warn(TAG, host, "INCONCLUSIVE:", report?.error ?? "no report");
+      } else if (report.sidFound) {
+        console.log(TAG, host, "VERDICT: sid IS readable. OAuth may not be required -- re-check the architecture.");
+      } else if (report.anyCookieFound) {
+        console.log(TAG, host, "VERDICT: cookies are readable but sid is not. HttpOnly still withheld, OAuth stays required.");
+      } else {
+        console.warn(TAG, host, "VERDICT: no cookies at all. Either not signed in to this host, or website access is not granted to the extension.");
+      }
+    }
+  })();
+})();
