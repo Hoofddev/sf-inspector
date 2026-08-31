@@ -141,6 +141,16 @@ grep -E "warning: The following keys" -A6 "$LOG" || true
 rm -f "$LOG"
 
 APP="$DERIVED_DATA/Build/Products/$CONFIGURATION/$APP_NAME.app"
+
+# Xcode registers its build products with LaunchServices, so every build leaves another copy of the
+# app known to the system. Safari builds its extension list from that, which is why repeated builds
+# produce duplicate entries in Settings > Extensions. The build product is a temporary artifact and
+# has no business being registered; only the copy the user installs should be.
+LSREGISTER=/System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/LaunchServices.framework/Versions/A/Support/lsregister
+if [ -x "$LSREGISTER" ]; then
+  "$LSREGISTER" -u "$APP" 2>/dev/null || true
+fi
+
 echo
 echo "Built: $APP"
 echo
