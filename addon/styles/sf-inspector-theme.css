@@ -318,9 +318,10 @@ code,
 body.sfi-page {
   background-color: var(--slds-g-color-surface-1);
   background-image:
-    radial-gradient(58rem 42rem at 8% -12%,  light-dark(rgba(0, 113, 227, .13), rgba(10, 132, 255, .16)), transparent 62%),
-    radial-gradient(46rem 36rem at 98% 4%,   light-dark(rgba(124, 92, 255, .11), rgba(150, 120, 255, .14)), transparent 60%),
-    radial-gradient(52rem 40rem at 52% 108%, light-dark(rgba(0, 191, 190, .09),  rgba(0, 200, 200, .10)),  transparent 58%);
+    radial-gradient(56rem 40rem at 4% -14%,  light-dark(rgba(0, 113, 227, .30),  rgba(10, 132, 255, .34)),  transparent 64%),
+    radial-gradient(44rem 34rem at 100% 2%,  light-dark(rgba(124, 92, 255, .26), rgba(150, 120, 255, .30)), transparent 62%),
+    radial-gradient(50rem 38rem at 46% 112%, light-dark(rgba(0, 191, 190, .22),  rgba(0, 205, 205, .24)),   transparent 60%),
+    radial-gradient(34rem 30rem at 82% 68%,  light-dark(rgba(255, 92, 168, .14), rgba(255, 110, 180, .16)), transparent 64%);
   background-attachment: fixed;
 }
 
