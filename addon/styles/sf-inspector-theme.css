@@ -801,3 +801,106 @@ body.sfir-prod .slds-card {
     background-color: light-dark(#f6dfe4, #2b1e21) !important;
   }
 }
+
+/* ================================================================================================
+ * Revised material
+ *
+ * The earlier pass used contrast where this language uses luminance. Its ground was saturated and
+ * dark, its panels sat well below the ground in value, and every edge was drawn with a line. The
+ * result read as tinted boxes on a coloured page.
+ *
+ * The logic is the other way round: a pale, luminous ground; panels only a shade lighter than it;
+ * separation carried by light and a soft shadow rather than a border; large radii; and a lot of air
+ * inside. Colour is spent on status and on one accent, never on structure.
+ * ============================================================================================== */
+
+:root {
+  --sfi-glass-bg:     light-dark(rgba(255, 255, 255, .86), rgba(38, 38, 44, .74));
+  --sfi-glass-border: light-dark(rgba(255, 255, 255, .9), rgba(255, 255, 255, .07));
+  --sfi-glass-blur:   saturate(150%) blur(28px);
+
+  --slds-g-radius-border-1: 8px;
+  --slds-g-radius-border-2: 12px;
+  --slds-g-radius-border-3: 18px;
+  --slds-g-radius-border-4: 24px;
+
+  /* Wide, weightless shadows. A card should look like it is resting just off the page, not
+     stamped onto it. */
+  --slds-g-shadow-1: 0 1px 2px   light-dark(rgba(60, 50, 90, .04), rgba(0, 0, 0, .4));
+  --slds-g-shadow-2: 0 4px 16px  light-dark(rgba(60, 50, 90, .06), rgba(0, 0, 0, .45));
+  --slds-g-shadow-3: 0 10px 32px light-dark(rgba(60, 50, 90, .07), rgba(0, 0, 0, .5));
+  --slds-g-shadow-4: 0 20px 60px light-dark(rgba(60, 50, 90, .09), rgba(0, 0, 0, .6));
+
+  --slds-g-color-border-1: light-dark(rgba(60, 50, 90, .08), rgba(255, 255, 255, .08));
+  --slds-g-color-border-2: light-dark(rgba(60, 50, 90, .14), rgba(255, 255, 255, .14));
+}
+
+/* Pale and luminous rather than saturated: lavender, peach and mint, spread wide and kept light,
+   so panels can sit *above* it in value instead of below. */
+.sfi-page,
+body.sfi-page {
+  background-color: light-dark(#f4f2fb, #16161a);
+  background-image:
+    radial-gradient(70rem 52rem at -8% -20%, light-dark(rgba(168, 148, 255, .30), rgba(120, 100, 220, .22)), transparent 68%),
+    radial-gradient(60rem 46rem at 108% -8%, light-dark(rgba(255, 176, 156, .26), rgba(210, 130, 120, .18)), transparent 66%),
+    radial-gradient(66rem 50rem at 46% 122%, light-dark(rgba(140, 226, 214, .26), rgba(90, 180, 175, .18)), transparent 64%),
+    radial-gradient(44rem 38rem at 88% 62%, light-dark(rgba(176, 200, 255, .24), rgba(110, 140, 210, .16)), transparent 66%);
+  background-attachment: fixed;
+}
+
+/* Panels: nearly white, edges barely drawn, corners generous, and room to breathe. */
+body.sfi-page .slds-tabs_default,
+body.sfi-page .area,
+.sfi-panel,
+.slds-card,
+.slds-box {
+  background-color: var(--sfi-glass-bg);
+  border: 1px solid var(--sfi-glass-border);
+  border-radius: var(--slds-g-radius-border-4);
+  box-shadow:
+    var(--slds-g-shadow-3),
+    inset 0 1px 0 light-dark(rgba(255, 255, 255, .95), rgba(255, 255, 255, .05));
+}
+
+body.sfi-page .area {
+  padding: 1.35rem 1.5rem;
+  margin: 1.25rem 1.25rem 0;
+}
+
+body.sfi-page .slds-tabs_default__content {
+  padding: .5rem 1rem 1rem;
+}
+
+body.sfi-page .slds-tabs_default__content > div > .slds-grid {
+  padding-block: .95rem;
+}
+
+/* Row separation by light, not by line. */
+body.sfi-page .slds-tabs_default__content > div > .slds-grid,
+body.sfi-page .slds-border_bottom {
+  border-bottom: 1px solid light-dark(rgba(60, 50, 90, .07), rgba(255, 255, 255, .06)) !important;
+}
+
+/* Labels quiet and small, values carrying the weight -- the hierarchy these references lean on. */
+body.sfi-page .slds-tabs_default__content > div > .slds-grid > .slds-col:first-child {
+  color: var(--slds-g-color-on-surface-2);
+  font-size: .92rem;
+}
+
+/* Controls: pill-shaped, solid for the primary action, quiet for everything else. */
+.slds-button_neutral {
+  background-color: light-dark(rgba(255, 255, 255, .7), rgba(255, 255, 255, .07));
+  border-color: var(--slds-g-color-border-1);
+  box-shadow: none;
+}
+
+.slds-button_brand {
+  box-shadow: 0 2px 10px light-dark(rgba(0, 113, 227, .28), rgba(10, 132, 255, .3));
+}
+
+.slds-input,
+.slds-textarea,
+.slds-select {
+  background-color: light-dark(rgba(255, 255, 255, .78), rgba(255, 255, 255, .06));
+  border-color: var(--slds-g-color-border-1);
+}
