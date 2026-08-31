@@ -5,7 +5,7 @@ export let defaultApiVersion = "66.0";
 export let apiVersion = localStorage.getItem("apiVersion") == null ? defaultApiVersion : localStorage.getItem("apiVersion");
 
 export let sessionError;
-const clientId = "Salesforce Inspector Reloaded";
+const clientId = "SF Inspector";
 const qaInternalClientIdPrefix = "SfdcInternalQA/";
 
 // Resolved on each call so toggling the option applies without reloading open pages

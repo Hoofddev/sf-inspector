@@ -27,8 +27,8 @@ for arg in "$@"; do
   esac
 done
 
-APP_NAME="Inspector Reloaded"
-BUNDLE_ID="be.hoofdvogel.inspectorreloaded"
+APP_NAME="SF Inspector"
+BUNDLE_ID="be.hoofdvogel.sfinspector"
 PROJECT="safari/$APP_NAME/$APP_NAME.xcodeproj"
 RESOURCES="safari/$APP_NAME/$APP_NAME Extension/Resources"
 PAYLOAD="target/safari/dist"
@@ -47,7 +47,7 @@ fi
 # Derived data must live outside the repository: this checkout can sit in an iCloud-synced folder,
 # and the sync layer stamps com.apple.FinderInfo onto build output, which makes codesign fail with
 # "resource fork, Finder information, or similar detritus not allowed".
-DERIVED_DATA="${TMPDIR:-/tmp}/inspector-reloaded-safari"
+DERIVED_DATA="${TMPDIR:-/tmp}/sf-inspector-safari"
 
 echo "==> Building extension payload"
 node scripts/release-build.js safari

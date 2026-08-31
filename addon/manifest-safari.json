@@ -1,6 +1,6 @@
 {
-  "name": "Salesforce Inspector Reloaded",
-  "description": "Productivity tools for Salesforce administrators and developers to inspect data and metadata directly from the Salesforce UI.",
+  "name": "SF Inspector",
+  "description": "Inspect and edit Salesforce data and metadata directly from the Salesforce UI.",
   "version": "2.1.0",
   "version_name": "2.1",
   "icons": {

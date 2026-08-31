@@ -1,5 +1,23 @@
 <img src="https://raw.githubusercontent.com/tprouvot/Salesforce-Inspector-reloaded/main/addon/icon128.png" align="right">
 
+# SF Inspector
+
+Salesforce productivity tools for Safari.
+
+## Attribution
+
+This project is a derivative of
+[Salesforce Inspector Reloaded](https://github.com/tprouvot/Salesforce-Inspector-reloaded)
+by Thomas Prouvot, which is itself based on the original Salesforce Inspector by
+Soren Krabbe and Jesper Kristensen. It is used under the MIT licence; see LICENSE,
+which is retained unchanged and ships with the application.
+
+The Safari-specific work in this repository -- the background API proxy, the
+cookie-store handling, the OAuth callback and the macOS build -- is the addition
+made here. Everything else is theirs.
+
+---
+
 # Salesforce Inspector Reloaded
 
 ![GitHub release](https://img.shields.io/github/v/release/tprouvot/Salesforce-Inspector-reloaded?sort=semver)
