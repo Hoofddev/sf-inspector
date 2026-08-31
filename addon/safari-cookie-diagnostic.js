@@ -20,6 +20,12 @@
     return;
   }
 
+  // Opt in per page rather than running on every load: the report costs six network requests, and
+  // the extension is otherwise working normally. Add #sfir-diagnostic to the URL and reload.
+  if (!location.hash.includes("sfir-diagnostic")) {
+    return;
+  }
+
   const api = typeof browser === "undefined" ? chrome : browser;
   const TAG = "[SFIR Safari cookie diagnostic]";
 
