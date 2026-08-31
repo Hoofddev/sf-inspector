@@ -904,3 +904,90 @@ body.sfi-page .slds-tabs_default__content > div > .slds-grid > .slds-col:first-c
   background-color: light-dark(rgba(255, 255, 255, .78), rgba(255, 255, 255, .06));
   border-color: var(--slds-g-color-border-1);
 }
+
+/* ================================================================================================
+ * Options as cards
+ *
+ * Each tab is a flat list of eighteen or so unrelated settings with no grouping in the markup, so
+ * wrapping the lot in one panel made a wall of rows. Each setting becomes its own card instead,
+ * floating on the ground with the others -- which is the pattern the references use, and it lets a
+ * setting be scanned as a unit rather than as a line in a table.
+ *
+ * The tab strip stays a distinct object above them; the container behind it stops being a card,
+ * since a card inside a card is what made the previous pass feel boxed in.
+ * ============================================================================================== */
+
+body.sfi-page .slds-tabs_default {
+  background: none;
+  border: 0;
+  box-shadow: none;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  overflow: visible;
+}
+
+/* The tab strip: one floating bar, scrolling rather than clipping. */
+body.sfi-page .slds-tabs_default__nav {
+  background-color: var(--sfi-glass-bg);
+  -webkit-backdrop-filter: var(--sfi-glass-blur);
+  backdrop-filter: var(--sfi-glass-blur);
+  border: 1px solid var(--sfi-glass-border);
+  border-radius: var(--slds-g-radius-border-3);
+  box-shadow: var(--slds-g-shadow-2);
+  padding: .3rem .4rem;
+  margin-bottom: 1rem;
+}
+
+body.sfi-page .slds-tabs_default__link {
+  border-radius: var(--slds-g-radius-border-2);
+  padding-inline: .85rem;
+}
+
+body.sfi-page .slds-tabs_default__item.slds-is-active .slds-tabs_default__link {
+  background-color: light-dark(rgba(0, 113, 227, .10), rgba(10, 132, 255, .18));
+  box-shadow: none;
+}
+
+body.sfi-page .slds-tabs_default__content {
+  padding: 0;
+}
+
+/* Each setting, its own card. */
+body.sfi-page .slds-tabs_default__content > div > .slds-grid {
+  background-color: var(--sfi-glass-bg);
+  -webkit-backdrop-filter: var(--sfi-glass-blur);
+  backdrop-filter: var(--sfi-glass-blur);
+  border: 1px solid var(--sfi-glass-border) !important;
+  border-radius: var(--slds-g-radius-border-3);
+  box-shadow:
+    var(--slds-g-shadow-2),
+    inset 0 1px 0 light-dark(rgba(255, 255, 255, .95), rgba(255, 255, 255, .05));
+  padding: 1.05rem 1.35rem !important;
+  margin-bottom: .6rem;
+  transition: box-shadow .16s ease, transform .16s ease;
+}
+
+body.sfi-page .slds-tabs_default__content > div > .slds-grid:hover {
+  box-shadow:
+    var(--slds-g-shadow-3),
+    inset 0 1px 0 light-dark(rgba(255, 255, 255, .95), rgba(255, 255, 255, .05));
+  background-color: light-dark(rgba(255, 255, 255, .93), rgba(44, 44, 50, .8));
+}
+
+/* The section header above the list is a caption, not a card. */
+body.sfi-page .slds-tabs_default__content > div > .slds-border_bottom:first-child {
+  background: none;
+  border: 0 !important;
+  box-shadow: none;
+  padding-inline: .35rem !important;
+  margin-bottom: .35rem;
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  body.sfi-page .slds-tabs_default__nav,
+  body.sfi-page .slds-tabs_default__content > div > .slds-grid {
+    background-color: var(--slds-g-color-surface-container-1);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+}
