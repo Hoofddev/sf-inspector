@@ -187,12 +187,9 @@ export let sfConn = {
 
     let xhr;
     if (isSafari()) {
-      // Aborting is not carried across the message boundary yet, so the handler is neutralised
-      // rather than left pointing at a request this context no longer owns.
-      if (progressHandler) {
-        progressHandler.abort = () => {};
-      }
-      xhr = await safariApiRequest({method, url: fullUrl.toString(), headers: requestHeaders, body, responseType});
+      // safariApiRequest installs progressHandler.abort itself, since cancelling means telling the
+      // background to drop the request it is running on this page's behalf.
+      xhr = await safariApiRequest({method, url: fullUrl.toString(), headers: requestHeaders, body, responseType, progressHandler});
     } else {
       xhr = new XMLHttpRequest();
       xhr.open(method, fullUrl.toString(), true);

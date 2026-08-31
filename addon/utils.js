@@ -598,14 +598,35 @@ function decodeApiBody(bodyBase64, responseType) {
   }
 }
 
+let nextApiRequestId = 1;
+
 // Returns an object shaped like the parts of XMLHttpRequest that sfConn.rest() and sfConn.soap()
 // read after sending, so the calling code needs no further changes.
-export async function safariApiRequest({method, url, headers, body, responseType}) {
-  const result = await new Promise(resolve =>
+//
+// progressHandler is the same object XMLHttpRequest gets in the other browsers: rest() hands it to
+// its caller, which calls abort() to cancel (the Stop button in Data Export). The request itself
+// runs in the background, so aborting means asking the background to cancel it by id, and rejecting
+// here with the AbortError the caller expects.
+export async function safariApiRequest({method, url, headers, body, responseType, progressHandler}) {
+  const requestId = "req-" + nextApiRequestId++;
+
+  const result = await new Promise((resolve, reject) => {
+    if (progressHandler) {
+      progressHandler.abort = () => {
+        const err = new Error("The request was aborted.");
+        err.name = "AbortError";
+        // Rejecting first means the caller stops immediately; whether the background gets around to
+        // cancelling the fetch only affects whether the response is wasted.
+        reject(err);
+        chrome.runtime.sendMessage({message: "apiAbort", requestId});
+      };
+    }
     chrome.runtime.sendMessage({
       message: "apiFetch",
+      requestId,
       request: {method, url, headers, body, hasBody: body !== undefined}
-    }, resolve));
+    }, resolve);
+  });
 
   if (!result) {
     // rest() and soap() both treat status 0 as a network-level failure.

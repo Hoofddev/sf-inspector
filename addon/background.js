@@ -125,12 +125,18 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       }
     });
     return true; // Tell Chrome that we want to call sendResponse asynchronously.
+  } else if (request.message == "apiAbort") {
+    // The page cannot abort a fetch it did not issue, so it asks the background to do it. Sent by
+    // the abort handler that sfConn.rest() hands to its caller (the Stop button in Data Export).
+    inFlightRequests.get(request.requestId)?.abort();
+    inFlightRequests.delete(request.requestId);
+    return false;
   } else if (request.message == "apiFetch") {
     // Safari refuses the extension origin for cross-origin requests to Salesforce, so requests made
     // from an extension page (including the popup, which button.js injects as an iframe) fail with
     // "Load failed". The background context is not subject to that check, so it performs the request
     // on their behalf. See sfConn.rest() and sfConn.soap() in inspector.js for the calling side.
-    apiFetch(request.request).then(sendResponse, err => sendResponse({
+    apiFetch(request.requestId, request.request).then(sendResponse, err => sendResponse({
       status: 0,
       statusText: String(err),
       headers: {},
@@ -316,15 +322,23 @@ function bytesToBase64(bytes) {
   return btoa(binary);
 }
 
-async function apiFetch({method, url, headers, body, hasBody}) {
+// Live requests, so an abort message can reach the fetch that is already running.
+const inFlightRequests = new Map();
+
+async function apiFetch(requestId, {method, url, headers, body, hasBody}) {
   // The response is returned base64-encoded rather than decoded here: the caller knows whether it
   // wants JSON, XML or a Blob, and this keeps binary responses (Metadata Retrieve ships a zip)
   // intact across the message boundary.
+  const controller = new AbortController();
+  if (requestId) {
+    inFlightRequests.set(requestId, controller);
+  }
   try {
     const response = await fetch(url, {
       method,
       headers,
       body: hasBody ? body : undefined,
+      signal: controller.signal,
       // The session is carried in the Authorization header, so cookies are neither needed nor sent.
       credentials: "omit"
     });
@@ -340,7 +354,12 @@ async function apiFetch({method, url, headers, body, hasBody}) {
       bodyBase64: bytesToBase64(new Uint8Array(buffer))
     };
   } catch (e) {
-    // rest() already treats status 0 as "network error, offline or timeout".
+    // rest() already treats status 0 as "network error, offline or timeout". An abort lands here
+    // too, but the calling side has by then already rejected with an AbortError of its own.
     return {status: 0, statusText: String(e), headers: {}, bodyBase64: ""};
+  } finally {
+    if (requestId) {
+      inFlightRequests.delete(requestId);
+    }
   }
 }
