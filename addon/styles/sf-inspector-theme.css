@@ -56,6 +56,25 @@
   --slds-g-color-brand-base-50:      var(--sfi-accent);
   --slds-g-color-brand-base-60:      var(--sfi-accent-hover);
 
+  /* --- Semantic ---------------------------------------------------------------------------- */
+  /* Status colours, kept separate from the accent so severity never competes with brand. Used by
+     flow-scanner.css and dependencies-explorer.css, which previously hardcoded their own. */
+  --sfi-danger:          light-dark(#c9372c, #ff6f61);
+  --sfi-danger-surface:  light-dark(#fdeceb, #3a1a18);
+  --sfi-danger-on:       light-dark(#8b2019, #ffb3aa);
+
+  --sfi-warning:         light-dark(#a16207, #e0a33a);
+  --sfi-warning-surface: light-dark(#fdf4e3, #332a13);
+  --sfi-warning-on:      light-dark(#7c4a02, #f0c987);
+
+  --sfi-success:         light-dark(#1a7f4f, #4fc98c);
+  --sfi-success-surface: light-dark(#e7f5ee, #12301f);
+  --sfi-success-on:      light-dark(#115c39, #8fdcb5);
+
+  --sfi-info:            light-dark(#0e7490, #4bb8d4);
+  --sfi-info-surface:    light-dark(#e6f4f8, #102a33);
+  --sfi-info-on:         light-dark(#0b5468, #93d5e6);
+
   /* --- Shape ------------------------------------------------------------------------------ */
   /* Apple's radii are larger than SLDS's, and it is most of what separates the two visually. */
   --slds-g-radius-border-1: 6px;
