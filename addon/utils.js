@@ -11,8 +11,10 @@ export class Constants {
   static PromptTemplateFlow = "DescribeFlow";
   static PromptTemplateDebugLog = "AnalyzeDebugLog";
   static PromptTemplateFormula = "FormulaHelper";
-  // Consumer Key of default connected app
-  static DEFAULT_CLIENT_ID = "3MVG9HB6vm3GZZR9qrol39RJW_sZZjYV5CZXSWbkdi6dd74gTIUaEcanh7arx9BHhl35WhHW4AlNUY8HtG2hs";
+  // No connected app ships with this build. OAuth is only needed for orgs with API Access Control
+  // enabled; those users register their own external client app and enter its consumer key on the
+  // options page, which getClientId() reads per org.
+  static DEFAULT_CLIENT_ID = "";
   static ACCESS_TOKEN = "_access_token";
   static CODE_VERIFIER = "_code_verifier";
   static CLIENT_ID = "_clientId";

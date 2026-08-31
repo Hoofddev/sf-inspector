@@ -191,11 +191,9 @@ chrome.commands?.onCommand.addListener((command) => {
 });
 
 chrome.runtime.onInstalled.addListener(async (details) => {
-  if (details.reason === "install") {
-    chrome.tabs.create({
-      url: "https://tprouvot.github.io/Salesforce-Inspector-reloaded/welcome/"
-    });
-  } else if (details.reason === "update" && details.previousVersion?.startsWith("2.0")) {
+  // No page is opened on install: onboarding belongs in the containing macOS app, and App Review
+  // takes a dim view of extensions that open web pages by themselves.
+  if (details.reason === "update" && details.previousVersion?.startsWith("2.0")) {
     //TODO delete clearSobjectsListCache after 2.0.1 release, only for upgrade from 2.0.0 to 2.0.1
     await clearSobjectsListCache();
   }
@@ -216,8 +214,6 @@ async function clearSobjectsListCache() {
     console.error("Error clearing sobjectsList cache on update:", e);
   }
 }
-// Not implemented in Safari, where calling it throws.
-chrome.runtime.setUninstallURL?.("https://forms.gle/y7LbTNsFqEqSrtyc6");
 
 // --- Salesforce API proxy for Safari ------------------------------------------------------------
 

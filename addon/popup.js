@@ -433,8 +433,7 @@ class App extends React.PureComponent {
             text: "See What's New",
             props: {
               href:
-                "https://tprouvot.github.io/Salesforce-Inspector-reloaded/release-note/#version-"
-                + addonVersion.replace(".", ""),
+                "https://github.com/Hoofddev/sf-inspector/releases/tag/v" + addonVersion,
               target: "_blank",
               onClick: () => this.updateReleaseNotesViewed(addonVersion),
             },
@@ -803,8 +802,7 @@ class App extends React.PureComponent {
               "a",
               {
                 href:
-                "https://tprouvot.github.io/Salesforce-Inspector-reloaded/release-note/#version-"
-                + addonVersion.replace(".", ""),
+                "https://github.com/Hoofddev/sf-inspector/releases/tag/v" + addonVersion,
                 title: "Release note",
                 target: linkTarget,
               },
@@ -832,7 +830,7 @@ class App extends React.PureComponent {
             h(
               "a",
               {
-                href: "https://tprouvot.github.io/Salesforce-Inspector-reloaded/how-to/?h=short#customize-extensions-shortcuts",
+                href: "https://github.com/Hoofddev/sf-inspector#keyboard-shortcuts",
                 target: linkTarget,
               },
               h(
@@ -854,39 +852,12 @@ class App extends React.PureComponent {
             {
               className:
               "slds-col slds-size_1-of-12 slds-text-align_right slds-icon_container",
-              title: "Donate",
-            },
-            h(
-              "a",
-              {
-                href: "https://tprouvot.github.io/Salesforce-Inspector-reloaded/donate/",
-                target: linkTarget,
-              },
-              h(
-                "svg",
-                {
-                  className:
-                  "slds-button slds-icon_x-small slds-icon-text-default slds-m-top_xxx-small",
-                  viewBox: "0 0 52 52",
-                },
-                h("use", {
-                  xlinkHref: "symbols.svg#heart",
-                  style: {fill: "#9c9c9c"},
-                })
-              )
-            )
-          ),
-          h(
-            "div",
-            {
-              className:
-              "slds-col slds-size_1-of-12 slds-text-align_right slds-icon_container",
               title: "Documentation",
             },
             h(
               "a",
               {
-                href: "https://tprouvot.github.io/Salesforce-Inspector-reloaded/",
+                href: "https://github.com/Hoofddev/sf-inspector",
                 target: linkTarget,
               },
               h(

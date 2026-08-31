@@ -1,307 +1,111 @@
-<img src="https://raw.githubusercontent.com/tprouvot/Salesforce-Inspector-reloaded/main/addon/icon128.png" align="right">
-
 # SF Inspector
 
-Salesforce productivity tools for Safari.
+Salesforce productivity tools for Safari on macOS.
+
+Inspect and edit any record's fields inline, run SOQL exports, import data, browse and
+download metadata, explore the REST API, read debug logs and watch platform events —
+without leaving the Salesforce tab you are already in.
+
+> **Status:** working, not yet released. A signed build is being prepared for the Mac App
+> Store. Until then, see [Building from source](#building-from-source).
+
+## Why this exists
+
+Salesforce Inspector has been a Chrome extension for over a decade, and there has never
+been a Safari version. The reasons turned out to be specific and fixable:
+
+- **Safari refuses the extension origin** for cross-origin requests to Salesforce, so every
+  API call made from an extension page fails. Requests are routed through the background
+  context instead, which is not subject to that check.
+- **Cookie lookups need an explicit store.** Safari reports several cookie stores and
+  answers from an empty one unless told otherwise.
+- **HttpOnly is not the blocker it is assumed to be.** Safari 26 returns the Salesforce
+  session cookie even with `Require HttpOnly attribute` enabled, provided the store is
+  named. No connected app is required.
+
+Details are in [issue #725 upstream](https://github.com/tprouvot/Salesforce-Inspector-reloaded/issues/725).
+
+## What it does
+
+| | |
+|---|---|
+| **Show All Data** | Every field on a record, with API names and inline editing |
+| **Data Export** | SOQL queries with autocomplete, results to CSV, Excel or JSON |
+| **Data Import** | Create and update records from pasted or uploaded data |
+| **Download Metadata** | Browse, preview and retrieve metadata as a zip |
+| **REST Explore** | Call any REST endpoint against the current org |
+| **Logs Viewer** | Read and search Apex debug logs |
+| **Event Monitor** | Subscribe to platform events and change events |
+| **Field Creator** | Create fields in bulk |
+| **Org Limits, Flow Scanner, Dependencies Explorer, API Statistics** | |
+
+Plus setup shortcuts, user search and quick links from the popup on any Salesforce page.
+
+## Install
+
+The Mac App Store build is in preparation. It will be a one-time purchase: a signed,
+notarised app that installs in one click and updates itself.
+
+## Building from source
+
+Requires macOS with Xcode and a Salesforce org.
+
+```
+npm install
+npm run safari-app-build
+```
+
+The script builds the extension payload, generates and signs the macOS wrapper, and prints
+where the app landed and how to enable it in Safari. It signs with an Apple Development
+identity when your keychain holds one, and falls back to ad-hoc signing otherwise — note
+that Safari only loads an ad-hoc build while *Develop → Allow Unsigned Extensions* is on,
+and that setting resets every time Safari restarts.
+
+Pass `-- --regenerate` after adding or removing files under `addon/`.
+
+## Privacy
+
+SF Inspector talks directly between your browser and your Salesforce org. Nothing is sent
+anywhere else — no analytics, no telemetry, no servers of ours involved. Preferences and
+query history are kept in browser storage on your machine.
+
+To make an API call it needs your Salesforce session, which it reads from the session
+cookie the same way the browser does. That is why the extension asks for cookie access on
+Salesforce domains. All of that is in this repository; `addon/background.js` is where the
+session is read and where every API request is made.
+
+<a id="keyboard-shortcuts"></a>
+
+## Keyboard shortcuts
+
+Shortcuts are assigned in *Safari → Settings → Extensions → SF Inspector*. Safari's support
+for extension shortcuts is more limited than Chrome's, so not every command can be bound.
+
+<a id="field-creator"></a>
+
+## Field Creator
+
+Create multiple custom fields in one pass, including picklist values, formulas and
+field-level security. Select an object, add rows, and deploy.
 
 ## Attribution
 
-This project is a derivative of
+SF Inspector is a derivative of
 [Salesforce Inspector Reloaded](https://github.com/tprouvot/Salesforce-Inspector-reloaded)
-by Thomas Prouvot, which is itself based on the original Salesforce Inspector by
-Soren Krabbe and Jesper Kristensen. It is used under the MIT licence; see LICENSE,
-which is retained unchanged and ships with the application.
-
-The Safari-specific work in this repository -- the background API proxy, the
-cookie-store handling, the OAuth callback and the macOS build -- is the addition
-made here. Everything else is theirs.
-
----
-
-# Salesforce Inspector Reloaded
-
-![GitHub release](https://img.shields.io/github/v/release/tprouvot/Salesforce-Inspector-reloaded?sort=semver)
-[![Chrome Web Store Installs](https://img.shields.io/chrome-web-store/users/hpijlohoihegkfehhibggnkbjhoemldh)](https://chrome.google.com/webstore/detail/salesforce-inspector-relo/hpijlohoihegkfehhibggnkbjhoemldh)
-[![Chrome Web Store Rating](https://img.shields.io/chrome-web-store/rating/hpijlohoihegkfehhibggnkbjhoemldh)](https://chrome.google.com/webstore/detail/salesforce-inspector-relo/hpijlohoihegkfehhibggnkbjhoemldh)
-[![GitHub stars](https://img.shields.io/github/stars/tprouvot/Salesforce-Inspector-reloaded?cacheSeconds=3600)](https://github.com/tprouvot/Salesforce-Inspector-reloaded/stargazers/)
-[![GitHub contributors](https://img.shields.io/github/contributors/tprouvot/Salesforce-Inspector-reloaded.svg)](https://github.com/tprouvot/Salesforce-Inspector-reloaded/graphs/contributors/)
-[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](http://makeapullrequest.com)
-
-Chrome and Firefox extension to add a metadata layout on top of the standard Salesforce UI to improve the productivity and joy of Salesforce configuration, development, and integration work.
-
-We all know and love Salesforce Inspector: As the great Søren Krabbe did not maintain it anymore, I decided to take over so trailblazer community can keep asking for new features !
-
-- [New features compared to the original SF Inspector](#new-features-compared-to-original-sf-inspector)
-- [Security and Privacy](#security-and-privacy)
-- [Use Salesforce Inspector with a Connected App](#use-salesforce-inspector-with-a-connected-app)
-- [Installation](#installation)
-  - [Browser Stores](#browser-stores)
-    - [Chrome Web Store](https://chrome.google.com/webstore/detail/salesforce-inspector-relo/hpijlohoihegkfehhibggnkbjhoemldh)
-    - [Firefox Browser Add-ons](https://addons.mozilla.org/en-US/firefox/addon/salesforce-inspector-reloaded/)
-    - [Edge Add-ons](https://microsoftedge.microsoft.com/addons/detail/salesforce-inspector-relo/noclfopoifgfgnflgkakofglfeeambpd)
-  - [Beta Version](#beta-version)
-    - [Chrome Web Store](https://chromewebstore.google.com/detail/salesforce-inspector-relo/lopjgjcglnncikiocpacfdbkmpbfmkcf)
-- [Troubleshooting](#troubleshooting)
-- [Contributions](#contributions)
-- [Development](#development)
-  - [Chrome](#chrome)
-  - [Firefox](#firefox)
-  - [Safari](#safari)
-  - [Unit tests](#unit-tests)
-  - [Linting](#linting)
-- [Release](#release)
-  - [Chrome](#chrome)
-  - [Firefox](#firefox)
-- [Design Principles](#design-principles)
-- [About](#about)
-- [License](#license)
-
-## Documentation
-
-> User guide for using the extension.
-
-[![view - Documentation](https://img.shields.io/badge/view-Documentation-blue?style=for-the-badge)](https://tprouvot.github.io/Salesforce-Inspector-reloaded/ "Go to extension documentation")
-
-- Salesforce Developers Blog [Improve Your Productivity with Salesforce Inspector Reloaded](https://developer.salesforce.com/blogs/2024/07/improve-your-productivity-with-salesforce-inspector-reloaded)
-- SalesforceBen :
-  - [Salesforce Inspector Reloaded](https://www.salesforceben.com/salesforce-inspector-reloaded/)
-  - [Video](https://youtu.be/dvYp5mKxxzM?si=hBCIaGOyqAJlerea)
-  - [Explore REST API With Salesforce Inspector Reloaded](https://www.salesforceben.com/explore-rest-api-with-salesforce-inspector-reloaded/)
-  - [Inspector Reloaded Update: Salesforce Event Monitor, Field Creator, and Export Config](https://www.salesforceben.com/inspector-reloaded-update-salesforce-event-monitor-field-creator-and-export-config/)
-- ApexHours [article](https://www.apexhours.com/salesforce-inspector-reloaded/)
-- SalesforceWay [podcast](https://salesforceway.com/podcast/salesforce-inspector-reloaded/)
-
-## New features compared to original SF Inspector
-
-### New Pages & Features
-
-- **[REST Explorer](https://tprouvot.github.io/Salesforce-Inspector-reloaded/rest-explorer/)**: Interact with Salesforce REST APIs directly from the extension with request templates, query history, and auto-completion
-- **[Dependencies Explorer](https://tprouvot.github.io/Salesforce-Inspector-reloaded/dependencies-explorer/)**: Analyze Salesforce metadata dependencies to understand what depends on your metadata and what your metadata depends on
-- **[Field Creator](https://tprouvot.github.io/Salesforce-Inspector-reloaded/field-creator/)**: Create fields for standard objects, custom objects, platform events, and custom metadata types with bulk import support
-- **[Flow Scanner](https://tprouvot.github.io/Salesforce-Inspector-reloaded/flow-scanner/)**: Analyze Salesforce Flows for best practices, errors, and potential issues with comprehensive rule checking
-- **[Debug Logs Viewer](https://tprouvot.github.io/Salesforce-Inspector-reloaded/logs-viewer/)**: View, filter, analyze, and manage Salesforce debug logs with Agentforce-powered analysis and grep-like filtering
-- **[Event Monitor](https://tprouvot.github.io/Salesforce-Inspector-reloaded/event-monitor/)**: Subscribe to and display Salesforce Platform Events in real-time, including Change Events and custom channels
-- **[Metadata Retrieve](https://tprouvot.github.io/Salesforce-Inspector-reloaded/download-metadata/)**: Retrieve and deploy metadata from Salesforce with package.xml generation and deployment options
-- **[API Statistics](https://tprouvot.github.io/Salesforce-Inspector-reloaded/api-statistics/)**: Track and monitor all REST and SOAP API calls with performance metrics and error tracking
-- **[Options](https://tprouvot.github.io/Salesforce-Inspector-reloaded/how-to/)**: Configure extension settings including favicon color picker, export/import configuration, custom shortcuts, default popup tab, and hide buttons options
-
-### Enhanced Features
-
-- **Show All Data** (Inspect page):
-  - Agentforce Helper for formula fields to analyze and generate improvements
-  - Analyze field usage by showing percentage of records that have a value for each field
-  - Save fields selection to persist across sessions
-  - Keyboard shortcut to save edited record values
-  - Back to record button for easy navigation
-
-- **Popup**:
-  - New **Org tab** to display org and instance information
-  - New **Shortcuts tab** to accelerate setup navigation with search functionality
-  - **Reset Password** button in User tab
-  - **Unfreeze User** button in User tab
-  - **Copy Id** icon in User tab
-
-- **Data Export** - [Documentation](https://tprouvot.github.io/Salesforce-Inspector-reloaded/data-export/):
-  - Multiple query tabs support with drag & drop reordering and editable tab names
-  - Agentforce SOQL generation from natural language descriptions
-  - Auto-populate SOQL editor from Salesforce List View context
-  - Query performance metrics with batch statistics
-  - Filter result by column for easier data analysis
-
-- **Data Import** - [Documentation](https://tprouvot.github.io/Salesforce-Inspector-reloaded/data-import/):
-  - Configure SOAP headers for assignment rules, duplicate rules, and owner change options
-  - Automatically detect SObject based on Id field
-  - Grey out columns that were not imported
-  - Guess file format on paste (CSV, JSON, Excel)
-  - Undelete records support
-
-- **Org Limits**:
-  - Refresh button to update limits in real-time
-  - Persist filter in URL for easy bookmarking
-  - Restyled Org Limits UI with improved readability
-  - Fix gauge display and text when limits are exceeded
-
-### Other Improvements
-
-- Favicon and banner customization for each org
-- Allow users to update API Version [feature 58](https://github.com/tprouvot/Salesforce-Inspector-reloaded/issues/58)
-- Add new "Shortcuts" tab to accelerate setup navigation [feature 42](https://github.com/tprouvot/Salesforce-Inspector-reloaded/issues/42)
-- Add shortcuts links to (list of record types, current SObject RecordType and objet details, show all data from user tab) from popup [feature 34](https://github.com/tprouvot/Salesforce-Inspector-reloaded/issues/34)
-- Control access to Salesforce Inspector reloaded with profiles / permissions (Implement OAuth2 flow to generate access token for connected App) [how to](https://github.com/tprouvot/Salesforce-Inspector-reloaded/wiki/How-to#use-sf-inspector-with-a-connected-app)
-- Update manifest version from [v2](https://developer.chrome.com/docs/extensions/mv3/mv2-sunset/) to v3 (extensions using manifest v2 will be removed from the store)
-
-## Security and Privacy
-
-The Salesforce Inspector Reloaded browser extension/plugin communicates directly between the user's web browser and the Salesforce servers. No data is sent to other parties.
-
-We are saving some info in the browser localStorage to avoid redundant queries and save user extension's preferences. None of the saved elements are related to Salesforce SObject data (Account, Contact etc.)
-
-You can find the list of all the localStorage saved [here](https://github.com/search?q=repo:tprouvot/Salesforce-Inspector-reloaded+"localStorage"+path:addon&type=code) and inspect what is stored by following [this tutorial](https://developer.chrome.com/docs/devtools/storage/localstorage)
-
-The extension communicates via the official Salesforce webservice APIs on behalf of the currently logged in user. This means the extension will be capable of accessing nothing but the data and features the user has been granted access to in Salesforce.
-
-All Salesforce API calls from the Inspector re-uses the access token/session used by the browser to access Salesforce (or the generated on if API Access Control is enabled). To acquire this access token the Salesforce Inspector requires permission to read browser cookie information for Salesforce domains.
-
-To validate the accuracy of this description, inspect the source code, monitor the network traffic in your browser or take my word.
-
-## Use Salesforce Inspector with a Connected App
-
-Follow steps described in [how-to documentation](https://tprouvot.github.io/Salesforce-Inspector-reloaded/how-to/#use-sf-inspector-with-a-connected-app). Note: you must complete these steps to use the extension in orgs where "API Access Control" is enabled.
-
-## Installation
-
-### Browser Stores
-
-- [Chrome Web Store](https://chrome.google.com/webstore/detail/salesforce-inspector-relo/hpijlohoihegkfehhibggnkbjhoemldh)
-- [Firefox Browser Add-ons](https://addons.mozilla.org/en-US/firefox/addon/salesforce-inspector-reloaded/)
-- [Edge Add-ons](https://microsoftedge.microsoft.com/addons/detail/salesforce-inspector-relo/noclfopoifgfgnflgkakofglfeeambpd)
-
-### Beta Version
-
-Welcome to the beta testing phase! Your input is crucial for refining our extension. Here's why we need you:
-
-Why Beta Testing?
-
-- Diverse Testing: Identify issues across various setups.
-- Real-World Scenarios: Discover unforeseen issues in different user contexts.
-
-Report Bugs: If you discover a bug, please fill in an issue [here](https://github.com/tprouvot/Salesforce-Inspector-reloaded/issues/new?assignees=tprouvot&labels=bug,beta&projects=&template=bug_report.md&title=[BETA]). Detailed bug reports help us address issues quickly.
-
-To become a beta tester, [install the beta version](https://chromewebstore.google.com/detail/salesforce-inspector-relo/lopjgjcglnncikiocpacfdbkmpbfmkcf).
-Thank you for shaping our extension's future! Your feedback makes it better.
-
-### Local Installation
-
-1. Download or clone the repo.
-2. Checkout the releaseCandidate branch.
-3. Open `chrome://extensions/`.
-4. Enable `Developer mode`.
-5. Click `Load unpacked`.
-6. Select the **`addon`** subdirectory of this repository.
-
-## Troubleshooting
-
-- If Salesforce Inspector is not available after installation, the most likely issue is that your browser is not up to date. See [instructions for Google Chrome](https://productforums.google.com/forum/#!topic/chrome/YK1-o4KoSjc).
-- When you enable the My Domain feature in Salesforce, Salesforce Inspector may not work until you have restarted your browser (or until you have deleted the "sid" cookie for the old Salesforce domain by other means).
-
-## Contributions
-
-Contributions are welcome!
-
-**Before starting developments**, create a feature request and explain the goal of it and the uses cases that it addresses. Let's discuss the implementation first, then you can start the development.
-
-You can check for the [open issues](https://github.com/tprouvot/Salesforce-Inspector-reloaded/issues) and [check if any help is wanted](https://github.com/tprouvot/Salesforce-Inspector-reloaded/issues?q=state%3Aopen%20label%3A%22help%20wanted%22)
-
-**Project Structure**
-
-- `addon/`: Contains the extension source code.
-- `addon/inspector.js`: Handles Salesforce connection and API calls.
-- `addon/utils.js`: Common utility functions.
-- `addon/components/`: React components.
-
-**Component Development**
-
-- **SLDS Usage**: When creating new components, use Salesforce Design System (SLDS) classes and structure.
-  - Styles are defined in `addon/styles/slds/slds.css`.
-- **Location**: Save new components under the `addon/components/` folder to promote reusability (e.g., see existing components like `PageHeader.js`, `ConfirmModal.js`).
-
-**Code Reuse**
-
-- **Check Existing**: Before creating new functions, search the codebase (especially `addon/utils.js`) to see if existing logic can be reused to avoid duplication.
-
-**General Guidelines**
-
-- When modifying the UI, check both Chrome and Firefox compatibility if possible.
-- Use `browser` namespace for WebExtension APIs (polyfill provided or checked).
-
-### Submitting a Pull Request
-
-To submit a PR, please create a branch from `releaseCandidate` which is the work in progress next version.
-This branch will be merged into beta and then master when the new version is published on web store.
-
-1. **Update CHANGES.md**: Describe the improvement / bugfix you realized (latest contributions on top of the file).
-2. **Update Documentation**: In order to make sure everyone who reads documentation is aware of your improvement, update the 'how-to' page to document / expose this new functionality.
-3. **Linting**: To assure indentation, formatting and best practices coherence, please install ESLint extension.
-
-## Development
-
-1. Install Node.js with npm
-2. `npm install`
-
-### Chrome
-
-1. Open `chrome://extensions/`.
-2. Enable `Developer mode`.
-3. Click `Load unpacked`.
-4. Select the `addon` subdirectory of this repository.
-
-### Firefox
-
-1. Generate the Firefox add-on with `npm run firefox-release-build`. This copies `addon/manifest-firefox.json` to `target/firefox/dist/manifest.json` (see `scripts/release-build.js`).
-2. In Firefox, open `about:debugging`.
-3. Select `This Firefox` at the top left.
-4. Click `Load Temporary Add-on…`.
-5. Select the file `target/firefox/dist/manifest.json`.
-
-### Safari
-
-Safari never exposes the HttpOnly `sid` cookie to an extension, so on Safari the extension
-authenticates through OAuth only. That needs a Connected App whose callback URL is a page you host,
-because Safari gives every installation of an extension a different UUID and a
-`safari-web-extension://` URL therefore cannot be registered as a callback.
-
-1. Publish `docs/oauth/callback.html` over HTTPS and point `SAFARI_OAUTH_CALLBACK` in
-   `addon/utils.js` at it. Enabling GitHub Pages on your fork (branch `safari-port`, folder
-   `/docs`) is enough.
-2. Create a Connected App in your org with that same URL as its callback URL, PKCE enabled, and the
-   `api`, `refresh_token` and `web` scopes. Set its consumer key as `Constants.DEFAULT_CLIENT_ID`,
-   or enter it per org from the extension's options page.
-3. Build the macOS app with `npm run safari-app-build`. Pass `-- --regenerate` after adding or
-   removing files in `addon/`: the generated Xcode project references every resource explicitly and
-   fails on a reference it cannot resolve.
-4. Open the built app once. Then in Safari enable `Settings > Advanced > Show features for web
-   developers`, tick `Developer > Allow unsigned extensions` (this resets whenever Safari restarts)
-   and enable the extension under `Settings > Extensions`.
-
-Building requires Xcode. If `xcode-select` points at the Command Line Tools, the build script falls
-back to `/Applications/Xcode.app` by itself. Build output is written outside the repository, because
-an iCloud-synced checkout makes code signing fail.
-
-### Unit tests
-
-See [How to run tests](tests/HOW_TO_RUN_TESTS.md).
-
-### Linting
-
-1. `npm run eslint`
-
-## Design Principles
-
-(we don't live up to all of them. pull requests welcome)
-
-- Stay completely inactive until the user explicitly interacts with it. The tool has the potential to break Salesforce functionality when used, since we rely on monkey patching and internal APIs. We must ensure that you cannot break Salesforce just by having the tool installed or enabled. For example, we won't fix the setup search placeholder bug.
-- For manual ad-hoc tasks only. The tool is designed to help administrators and developers interact with Salesforce in the browser. It is after all a browser add-on. Enabling automation is a non-goal.
-- User experience is important. Features should be intuitive and discoverable, but efficiency is more important than discoverability. More advanced features should be hidden, and primary features should be central. Performance is key.
-- Automatically provide as much contextual information as possible, without overwhelming the user. Information that is presented automatically when needed is a lot more useful than information you need to explicitly request. For example, provide autocomplete for every input.
-- Provide easy access to the raw Salesforce API. Enhance the interaction in a way that does not break the core use case, if our enhancements fails. For example, ensure we can display the result of a data export even if we cannot parse the SOQL query.
-- It is fine to implement features that are already available in the core Salesforce UI, if we can make it easier, smarter or faster.
-- Ensure that it works for as many users as possible. (for system administrators, for standard users, with person accounts, with multi currency, with large data volumes, with professional edition, on a slow network etc.)
-- Be conservative about the number and complexity of Salesforce API requests we make, but don't sacrifice the other principles to do so.
-- Focus on system administrators, developers and integrators.
-
-## About
-
-By Thomas Prouvot and forked from [Søren Krabbe and Jesper Kristensen](https://github.com/sorenkrabbe/Chrome-Salesforce-inspector)
-
-## Third-Party Libraries
-
-This extension uses the following third-party libraries:
-
-- [Lightning Flow Scanner Core](https://github.com/Flow-Scanner/lightning-flow-scanner) - A lightweight engine for Flow metadata analysis in Node.js and browser environments (MIT License)
-- [PrismJS](https://prismjs.com/) - Lightweight, extensible syntax highlighter (MIT License)
-
-For full license details, see [THIRD_PARTY_NOTICES.md](./THIRD_PARTY_NOTICES.md)
-
-## License
-
-[MIT](./LICENSE)
+by **Thomas Prouvot**, which is itself based on the original Salesforce Inspector by
+**Søren Krabbe** and **Jesper Kristensen**. The overwhelming majority of the code in this
+repository is theirs, and the full commit history is preserved so that authorship stays
+visible.
+
+The work added here is the Safari port: routing API calls through the background context,
+cookie handling across Safari's multiple cookie stores, an OAuth callback that survives
+Safari's per-install extension identifiers, and the macOS build.
+
+If you use Chrome, Edge or Firefox, use
+[the original](https://github.com/tprouvot/Salesforce-Inspector-reloaded) — it is free, it
+is excellent, and this project exists only because it does not run on Safari.
+
+## Licence
+
+MIT. See [LICENSE](LICENSE), which is retained unchanged from the upstream project and
+ships with the application.
