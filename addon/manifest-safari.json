@@ -1,13 +1,22 @@
 {
   "name": "SF Inspector",
   "description": "Inspect and edit Salesforce data and metadata directly from the Salesforce UI.",
-  "version": "2.1.0",
-  "version_name": "2.1",
+  "version": "1.0.0",
+  "version_name": "1.0",
   "icons": {
+    "16": "icon16.png",
+    "32": "icon32.png",
+    "48": "icon48.png",
     "128": "icon128.png"
   },
   "action": {
-    "default_title": "Open popup"
+    "default_title": "SF Inspector",
+    "default_icon": {
+      "16": "icon16.png",
+      "19": "icon19.png",
+      "32": "icon32.png",
+      "38": "icon38.png"
+    }
   },
   "permissions": [
     "cookies",

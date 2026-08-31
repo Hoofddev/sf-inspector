@@ -16,7 +16,11 @@
  */
 
 :root {
-  color-scheme: light dark;
+  /* Light by default. The tokens below are all light-dark() pairs, so the dark half is written and
+     ready, but following the system appearance is off: the interface it themes was built for a
+     white page and several of its own surfaces do not follow along, which leaves parts of it
+     unreadable. Flip this to "light dark" once every page has been checked in both. */
+  color-scheme: light;
 
   /* --- Type ------------------------------------------------------------------------------- */
   --slds-g-font-family-base:

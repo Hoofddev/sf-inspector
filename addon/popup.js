@@ -421,24 +421,6 @@ class App extends React.PureComponent {
           )
         ),
 
-        !latestNotesViewed
-        && h(AlertBanner, {
-          type: "base",
-          bannerText: `Current Version: ${addonVersion}`,
-          iconName: "notification",
-          iconTitle: "Notification",
-          assistiveText: "Version Update Notification",
-          onClose: () => this.updateReleaseNotesViewed(addonVersion),
-          link: {
-            text: "See What's New",
-            props: {
-              href:
-                "https://github.com/Hoofddev/sf-inspector/releases/tag/v" + addonVersion,
-              target: "_blank",
-              onClick: () => this.updateReleaseNotesViewed(addonVersion),
-            },
-          },
-        }),
         h("div", {id: "toastBanner", className: "hide"},
           h(AlertBanner, {type: bannerUrlAction.type,
             bannerText: bannerUrlAction.text,
@@ -801,9 +783,8 @@ class App extends React.PureComponent {
             h(
               "a",
               {
-                href:
-                "https://github.com/Hoofddev/sf-inspector/releases/tag/v" + addonVersion,
-                title: "Release note",
+                href: "https://github.com/Hoofddev/sf-inspector/releases",
+                title: "Releases",
                 target: linkTarget,
               },
               "v" + addonVersion
