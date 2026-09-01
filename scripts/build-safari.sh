@@ -68,24 +68,23 @@ DERIVED_DATA="${TMPDIR:-/tmp}/sf-inspector-safari"
 echo "==> Building extension payload"
 node scripts/release-build.js safari
 
-# The generated project references every resource by name, so its file list has to match the payload
-# exactly. An added file is copied into Resources/ but never into the built bundle, and that fails
-# silently: the manifest ends up naming a script the extension does not ship. A removed file leaves
-# a dangling reference and fails the build outright.
+# The project no longer lists the payload file by file: its "Copy extension resources" phase copies
+# the whole Resources directory, so adding or removing a file in addon/ needs no change to it. That
+# is what makes the project something that can be owned and committed rather than regenerated --
+# regeneration throws away every setting on it, and signing, entitlements and versions all live
+# there now.
 #
-# Compare against the list recorded when the project was generated. Resources/ itself is no use for
-# this, because the rsync below rewrites it on every run and so always appears to match.
-PAYLOAD_LIST="safari/.payload-files"
-
-if [ "$REGENERATE" = "0" ] && [ -d "$PROJECT" ]; then
-  if ! diff -q "$PAYLOAD_LIST" <(cd "$PAYLOAD" && ls -A) >/dev/null 2>&1; then
-    echo "==> Payload no longer matches what the Xcode project was generated from; regenerating"
-    REGENERATE=1
-  fi
-fi
+# --regenerate is still available for the rare case where the project itself has to be rebuilt from
+# the converter, but it is deliberately not automatic any more.
 
 if [ "$REGENERATE" = "1" ] || [ ! -d "$PROJECT" ]; then
-  echo "==> Regenerating the Xcode project"
+  if [ -d "$PROJECT" ]; then
+    echo "==> Regenerating the Xcode project"
+    echo "    This discards everything set on it: signing, entitlements, versions, build phases."
+    echo "    Check git diff before committing the result."
+  else
+    echo "==> No Xcode project found; generating one"
+  fi
   rm -rf safari
   xcrun safari-web-extension-converter "$PAYLOAD" \
     --project-location safari \
@@ -99,8 +98,6 @@ if [ "$REGENERATE" = "1" ] || [ ! -d "$PROJECT" ]; then
   APP_ID_FROM_NAME="be.hoofdvogel.${APP_NAME// /-}"
   perl -pi -e "s/PRODUCT_BUNDLE_IDENTIFIER = \"\Q$APP_ID_FROM_NAME\E\";/PRODUCT_BUNDLE_IDENTIFIER = $BUNDLE_ID;/g" \
     "$PROJECT/project.pbxproj"
-
-  (cd "$PAYLOAD" && ls -A) > "$PAYLOAD_LIST"
 
   # Xcode's copy phase never deletes, so a resource dropped from the payload lingers in the built
   # bundle and would ship. Regeneration is exactly when the file list changed, so discard the
