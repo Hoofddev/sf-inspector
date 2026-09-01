@@ -1015,19 +1015,22 @@ body.sfi-page .sfi-group > .slds-grid:hover {
  * under it.
  * ============================================================================================== */
 
+/* Detached rather than full-bleed: it floats on the ground like the panels do, with air above it
+   and its own corners, instead of being a strip welded to the top of the window. */
 body.sfi-page .slds-builder-header {
   position: sticky;
-  inset-block-start: 0;
+  inset-block-start: 1rem;
   z-index: 100;
-  margin: 0;
-  border-radius: 0;
-  padding-inline: 1.5rem;
-  box-shadow: 0 1px 0 light-dark(rgba(60, 50, 90, .10), rgba(0, 0, 0, .5));
+  max-width: 1680px;
+  margin: 1rem auto 0;
+  padding-inline: 1.25rem;
+  border-radius: var(--slds-g-radius-border-3);
+  border: 1px solid var(--sfi-glass-border);
+  box-shadow: var(--slds-g-shadow-2);
 }
 
-/* Space between the chrome and the first panel, replacing the body padding that used to provide it. */
 body.sfi-page .slds-builder-header + * {
-  margin-block-start: 1.75rem;
+  margin-block-start: 1.25rem;
 }
 
 /* The popup's own bars -- title, tab strip, footer -- were opaque white blocks sitting on the
@@ -1193,6 +1196,56 @@ body.sfir-prod .slds-builder-header {
 
 @media (prefers-reduced-transparency: reduce) {
   body.sfi-page .slds-builder-header {
+    background-color: var(--slds-g-color-surface-container-1) !important;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+}
+
+/* ================================================================================================
+ * Nested containers
+ *
+ * options.js wraps the tabs in a .slds-card.main-container, and the glass rule above catches every
+ * .slds-card -- so a frosted card ended up holding frosted cards. It is a wrapper, not a surface,
+ * so it stops painting itself. That also removes the square bottom edge: the wrapper grows past the
+ * viewport, so its lower corners were never on screen to be rounded.
+ * ============================================================================================== */
+
+body.sfi-page .main-container,
+body.sfi-page .slds-card.main-container {
+  background: none !important;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+/* The tab strip was stuck to the top of that wrapper with a hard shadow. It becomes its own
+   floating bar with room around it. */
+body.sfi-page .sfir-options-tab-container {
+  background-color: var(--sfi-glass-bg) !important;
+  -webkit-backdrop-filter: var(--sfi-glass-blur);
+  backdrop-filter: var(--sfi-glass-blur);
+  border: 1px solid var(--sfi-glass-border);
+  border-radius: var(--slds-g-radius-border-3);
+  box-shadow: var(--slds-g-shadow-2) !important;
+  padding: .3rem .4rem;
+  margin-bottom: 1rem;
+  top: 1rem;
+}
+
+/* Fade the trailing edge so it is visible that the strip runs on past what fits. Without it a
+   clipped tab just looks like the last one. */
+body.sfi-page .sfir-options-tab-container {
+  -webkit-mask-image: linear-gradient(90deg, #000 calc(100% - 2.5rem), transparent 100%);
+  mask-image: linear-gradient(90deg, #000 calc(100% - 2.5rem), transparent 100%);
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  body.sfi-page .sfir-options-tab-container {
     background-color: var(--slds-g-color-surface-container-1) !important;
     -webkit-backdrop-filter: none;
     backdrop-filter: none;
