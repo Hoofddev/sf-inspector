@@ -4,32 +4,18 @@
 
 ---
 
-### For Chrome and Edge users
+### When you need one
 
-If you enabled "API client whitelisting" (a.k.a "API Access Control") in your org, SF Inspector may not work anymore.
+Most people never do. SF Inspector uses the Salesforce session you are already signed in with, and
+that is enough for everything it does.
 
-To secure the extension usage, you can use a OAuth 2.0 flow to get an access token, linked to a connected app installed in your org.
+The exception is an org with **API Access Control** (also called "API client whitelisting") switched
+on. There, Salesforce refuses API calls that do not come from an approved connected app, and the
+extension will fail until you register one and point it at the extension.
 
-1. Open the extension and scroll down to the "Generate Access Token" button.
-2. You should see the "OAUTH_APP_BLOCKED" error which is normal at this stage.
-3. Go to "Connected Apps OAuth Usage" in setup and search for "Salesforce Inspector reloaded".
-4. Click "Install" and then confirm installation.
-5. Now configure the profiles or permissions sets which will have the right to use the extension.
-6. Go back to "Connected Apps OAuth Usage" and click "Unblock" next to "Salesforce Inspector reloaded"
-7. Once again, open the extension and scroll down to the "Generate Access Token" button
-
-![2024-05-28_16-12-29 (1)](assets/images/guide/how-to-01.gif)
-
-This is it ! You can use the extension with the default connected app.
-
-From now when the token will be expired, this banner will show up and provide a link to re-generate the access token
-
-<img width="274" alt="image" src="assets/images/guide/how-to-02.png">
-
-> **Warning**
-> Don't forget to grant access to the users by selecting the related profile(s) or permission set(s).
-
-If you are a Firefox user, or if you want to have full control over the connected app settings, you can also use your own external client app by following these instructions:
+Unlike the Chrome and Edge builds of the original project, there is no connected app bundled with
+SF Inspector: you register your own and enter its consumer key on the options page. Nothing is
+shared with anyone else's app, and the key never leaves your machine.
 
 ### External Client App Creation
 
@@ -40,7 +26,12 @@ The creation of Connected Apps is soon to be deprecated (planned for Spring 26')
     * External Client App Name
     * Contact Email
     * Check `Enable OAuth` under the API (Enable OAuth Settings) accordion.
-    * Set the Callback URL to `[browser]-extension://[extension-id]/data-export.html`, replacing [browser] with `chrome` or `moz` and [extension-id] with the extension ID found in the URL of any configuration page of the extension (e.g., by clicking `See All Data`).
+    * Set the Callback URL to exactly `https://hoofddev.github.io/sf-inspector/oauth/callback.html`.
+      Safari gives every installation of an extension its own random identifier, so an
+      extension URL cannot be registered here -- Salesforce requires an exact match and
+      allows no wildcards. The callback is therefore a fixed page, which hands the
+      authorization code back to the extension. The PKCE verifier never leaves your
+      machine, so an intercepted code cannot be exchanged for a token on its own.
 3. Configure the OAuth Scopes:
     * Select `Manage user data via APIs (api)`.
     * Select `Manage user data via Web browsers (web)`.
@@ -369,14 +360,11 @@ From the option page, enable "Use favicon color on sandbox banner"
 
 <img width="1087" alt="image" src="https://github.com/user-attachments/assets/f90999c2-f93e-423a-bcb7-18a8aa717a17">
 
-## Customize extension's shortcuts
+## Keyboard shortcuts
 
-Navigate to your browser shortcut menu and choose dedicated shortcuts for the pages you want.
-
-* Chrome: [chrome://extensions/shortcut](chrome://extensions/shortcut)
-* Edge: [edge://extensions/shortcuts](edge://extensions/shortcuts)
-
-<img width="660" alt="Use Chrome Shortcuts" src="assets/images/guide/how-to-12.png">
+Safari does not offer a panel for reassigning an extension's shortcuts the way Chrome and Edge do,
+so SF Inspector's are fixed. The panel opens with <kbd>Control</kbd> + <kbd>Option</kbd> +
+<kbd>I</kbd>; the rest are listed below.
 
 ### Default shortcuts
 

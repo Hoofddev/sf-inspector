@@ -104,7 +104,6 @@ nav:
   - Support:
       - Troubleshooting: troubleshooting.md
       - Privacy Policy: privacy.md
-      - Developer Notes: dev-notes.md
 
 copyright: |
   &copy; 2026 <a href="https://github.com/Hoofddev" target="_blank" rel="noopener">Hoofddev</a> &middot; a fork of <a href="https://github.com/tprouvot/Salesforce-Inspector-reloaded" target="_blank" rel="noopener">Salesforce Inspector Reloaded</a> by Thomas Prouvot, MIT licensed

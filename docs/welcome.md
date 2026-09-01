@@ -1,30 +1,37 @@
 # Welcome
 
-Thank you for installing **Salesforce Inspector Reloaded**, a Chrome extension that helps you inspect, analyze, and optimize your Salesforce data and metadata.
+**SF Inspector** is a Safari extension for macOS that helps you inspect, analyse and optimise your
+Salesforce data and metadata.
 
-With this extension, you can:
+With it, you can:
 
-- View and edit field-level details, such as API name, type, label, and value, for any Salesforce record.
-- Access setup shortcut, search for metadata from Shortcut tab.
-- Export data to CSV, Excel or JSON format.
-- Import data to create or update records in Salesforce.
-- Run SOQL queries to query data and metadata from Salesforce.
-- Generate REST API requests from Explore API.
+- View and edit field-level details — API name, type, label and value — for any Salesforce record.
+- Jump to setup pages, and search metadata from the Shortcuts tab.
+- Export data to CSV, Excel or JSON.
+- Import data to create or update records.
+- Run SOQL queries against data and metadata.
+- Build REST API requests from Explore API.
+- Search every flow in the org from the Setup flow list.
 
-You can enable the extension by clicking on the **Salesforce Inspector Reloaded** icon in the toolbar, or by pressing `Ctrl+Shift+I` (Windows) / `Ctrl+Option+I` (Mac) on your keyboard or [customize the shortcut](https://hoofddev.github.io/sf-inspector/how-to/#customize-extensions-shortcuts).
+## Opening it
 
-![2024-05-06_14-16-10 (1)](assets/images/guide/welcome-01.gif)
+Once the extension is enabled, a small arrow appears at the right-hand edge of any Salesforce page.
+Click it to open the panel, or press <kbd>Control</kbd> + <kbd>Option</kbd> + <kbd>I</kbd>.
 
+![Opening the panel](assets/images/guide/welcome-01.gif)
 
-For more information, please read this [article](https://www.salesforceben.com/salesforce-inspector-reloaded/) or the [documentation page](https://hoofddev.github.io/sf-inspector/).
+## If nothing appears
 
-We hope you will enjoy using **Salesforce Inspector Reloaded** and find it useful for your Salesforce development and administration tasks. If you have any feedback, questions, or issues, please feel free to [open an issue](https://github.com/Hoofddev/sf-inspector/issues) on GitHub.
+Two things have to be switched on, and the second is the one that catches people out:
 
-Happy inspecting! 😊
+1. **The extension itself** — Safari ▸ Settings ▸ Extensions, and tick **SF Inspector**.
+2. **Access to your Salesforce sites** — in the same panel, set SF Inspector to **Always Allow** on
+   your Salesforce domains.
 
-## How to proceed if you already have 'Salesforce Inspector' legacy version?
+Without the second, the extension loads but cannot read anything, and behaves as though you were
+signed out. The SF Inspector app walks you through both when you open it.
 
-First, thank you for migrating. I hope you will enjoy the new features and UI of this one!
+## Getting help
 
-I suggest you disable the legacy version so that you'll be able to [migrate your saved queries](https://hoofddev.github.io/sf-inspector/how-to/#migrate-saved-queries-from-legacy-extension-to-salesforce-inspector-reloaded) from the previous one.
-Once migrated you can uninstall the legacy version, you should not need it anymore.
+If something is wrong or missing, [open an issue](https://github.com/Hoofddev/sf-inspector/issues)
+on GitHub. There is also a bug icon in the panel's footer that goes straight there.
