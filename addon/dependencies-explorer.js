@@ -2393,12 +2393,7 @@ class App extends React.Component {
         ...model.userInfoModel.getProps()
       }),
       h("div", {
-        className: "slds-m-top_xx-large",
-        style: {
-          display: "flex",
-          flexDirection: "column",
-          height: "calc(100vh - 4rem)"
-        }
+        className: "sfir-page-container"
       },
       h("div", {className: "area", id: "dependencies-area"},
         h("div", {className: "result-bar dep-result-bar"},

@@ -99,6 +99,13 @@
   --sfi-glass-lip:    inset 0 1px 0 light-dark(rgba(255, 255, 255, .95), rgba(255, 255, 255, .05));
 
   /* --- Layout ----------------------------------------------------------------------------- */
+  /* SLDS fixes the header to the top of the viewport, out of flow, so the space it occupies has
+     to be reserved by hand. Stated once here, because the header, the content offset and the
+     content height all have to agree; when they were written out separately they drifted apart
+     and the first card ended up under the bar. */
+  --sfi-header-height: 3.125rem;
+  --sfi-header-top: 1rem;
+  --sfi-header-clear: calc(var(--sfi-header-top) + var(--sfi-header-height) + var(--sfi-gap-chrome));
   --sfi-measure: 1600px;
   --sfi-gutter: 1.75rem;
   --sfi-gap: 1.25rem;
@@ -109,27 +116,40 @@
  * 2. Page ground
  * ================================================================================================ */
 
-body.sfi-page {
-  padding: 0 0 3rem;
+/* slds.css paints html with --slds-g-color-surface-2, so the body's background never reaches the
+   canvas. The body box does not start at the top of the page either: the first in-flow element
+   carries a top margin that collapses out through the body, leaving that much bare html above it.
+   That was the light grey band across the top of every page. The ground therefore goes on html,
+   which is painted edge to edge whatever the body does. */
+html:has(body.sfi-page) {
   background-color: light-dark(#f4f2fb, #16161a);
   /* Every centre sits inside the viewport. With one above the top edge, the first strip of the page
-     fell outside all four gradients and showed the bare base colour as a grey band. */
+     fell outside all four gradients and showed the bare base colour as a band of its own. */
   background-image:
     radial-gradient(74rem 56rem at 2% 4%,    light-dark(rgba(168, 148, 255, .34), rgba(120, 100, 220, .24)), transparent 70%),
     radial-gradient(64rem 50rem at 98% 2%,   light-dark(rgba(255, 176, 156, .30), rgba(210, 130, 120, .20)), transparent 68%),
     radial-gradient(66rem 50rem at 46% 114%, light-dark(rgba(140, 226, 214, .26), rgba(90, 180, 175, .18)),  transparent 64%),
     radial-gradient(46rem 40rem at 88% 58%,  light-dark(rgba(176, 200, 255, .24), rgba(110, 140, 210, .16)), transparent 66%);
   background-attachment: fixed;
+}
+
+body.sfi-page {
+  padding: 0;
+  background: none;
   -webkit-font-smoothing: antialiased;
   letter-spacing: -.004em;
 }
 
-/* One measure and one gutter for every top-level piece, so they share an edge. The header sits
-   outside this container and is inset by hand to land on the same line. */
+/* One measure and one gutter for every top-level piece, so they share an edge -- the header's
+   wrapper is given the same box in section 4, which is what lines the two up at every width. */
 body.sfi-page .sfir-page-container {
   max-width: var(--sfi-measure);
   margin-inline: auto;
   padding-inline: var(--sfi-gutter);
+  /* sfir.css sets these for a bar 4rem tall sitting flush against the top edge. The bar now floats
+     lower and clears itself, so both have to move with it. */
+  margin-block-start: var(--sfi-header-clear) !important;
+  height: calc(100vh - var(--sfi-header-clear) - var(--sfi-gap)) !important;
 }
 
 /* ==================================================================================================
@@ -207,14 +227,32 @@ body.sfi-page .autocomplete-results {
  *
  * Detached rather than full-bleed: it floats on the ground like the panels, with air above it and
  * corners of its own. A flat bar edge to edge read as a strip bolted onto something else.
+ *
+ * The measure goes on the wrapper, not on the bar. SLDS fixes the wrapper to the top of the
+ * viewport at full width, so a max-width on the bar inside it only bites once the window is wider
+ * than the measure -- below that the bar ran edge to edge while the cards stayed inset. Giving the
+ * wrapper the container's own box instead means the two edges line up at every width.
  * ================================================================================================ */
 
+body.sfi-page .slds-builder-header_container {
+  width: auto;
+  inset-inline: 0;
+  max-width: var(--sfi-measure);
+  margin-inline: auto;
+  padding: var(--sfi-header-top) var(--sfi-gutter) 0;
+  /* The wrapper is fixed and reaches past the bar, into the gutters beside it. Without this it
+     would intercept clicks meant for the page underneath. */
+  pointer-events: none;
+}
+
+body.sfi-page .slds-builder-header_container > * {
+  pointer-events: auto;
+}
+
 body.sfi-page .slds-builder-header {
-  position: sticky;
-  inset-block-start: 1rem;
-  z-index: 100;
-  max-width: calc(var(--sfi-measure) - (2 * var(--sfi-gutter)));
-  margin: 1rem auto var(--sfi-gap-chrome);
+  /* The wrapper is already fixed; the bar just fills it. */
+  position: relative;
+  height: var(--sfi-header-height);
   padding-inline: 1.25rem;
   background-color: light-dark(rgba(255, 255, 255, .70), rgba(30, 30, 36, .70)) !important;
   -webkit-backdrop-filter: var(--sfi-glass-blur);
@@ -626,12 +664,16 @@ body.sfi-page .area:last-child {
  * what a 280px frame needs differently is set here.
  * ================================================================================================ */
 
-body.sfi-popup {
-  /* The page rule reserves 3rem below the fold and pins its gradients to the viewport. In a frame
-     this small that produced a scrollbar over empty space and a mesh that did not move with the
-     content -- part of why the footer never reached the bottom. */
-  padding: 0;
+/* The ground is painted on html (section 2). In a frame this small, pinning it to the viewport
+   left a mesh that did not move with the content. */
+html:has(body.sfi-popup) {
   background-attachment: scroll;
+}
+
+/* The popup has no builder header, so none of its clearance applies here. */
+body.sfi-popup .sfir-page-container {
+  margin-block-start: 0 !important;
+  height: auto !important;
 }
 
 /* Title bar, tab strip and footer were opaque white blocks on the tinted ground, so the panel

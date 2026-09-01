@@ -275,12 +275,7 @@ class App extends React.Component {
         userName: model.userName
       }),
       h("div", {
-        className: "slds-m-top_xx-large",
-        style: {
-          display: "flex",
-          flexDirection: "column",
-          height: "calc(100vh - 4rem)"
-        }
+        className: "sfir-page-container"
       },
       h("div", {className: "slds-card slds-m-around_medium", id: "result-area"},
         h("div", {className: "slds-card__header"},
