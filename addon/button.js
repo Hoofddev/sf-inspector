@@ -172,7 +172,7 @@ function initButton(sfHost, inInspector) {
 
     let popupSrc = chrome.runtime.getURL("popup.html?host=" + sfHost);
     let popupEl = document.createElement("iframe");
-    popupEl.title = "Salesforce Inspector Reloaded";
+    popupEl.title = "SF Inspector";
 
     function getOrientation(source) {
       return getKeyFromStorage(source, "popupArrowOrientation", "vertical");
