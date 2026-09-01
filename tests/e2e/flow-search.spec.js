@@ -220,15 +220,26 @@ test.describe("Flow search", () => {
     await expect(visibleLabels(page)).toHaveCount(3);
   });
 
-  test("loads the rows Setup has not fetched yet before filtering", async ({page, context}) => {
+  test("loads the whole list on arrival, without waiting to be asked", async ({page, context}) => {
     await open(page, context, lazyPage);
     await expect(box(page)).toBeVisible({timeout: 10000});
 
-    // Only the first page is present, so this row does not exist in the DOM yet.
+    // Nothing is typed here at all. The list starts at 5 of 12 and has to reach 12 on its own,
+    // so that a search does not have to wait for the scroll it used to trigger.
+    await expect(status(page)).toContainText("12 flows", {timeout: 20000});
+    await expect(page.locator("table tr")).toHaveCount(13);
+  });
+
+  test("filters rows Setup had not fetched when the page opened", async ({page, context}) => {
+    await open(page, context, lazyPage);
+    await expect(box(page)).toBeVisible({timeout: 10000});
+
+    // This row is not in the DOM when the page loads; it only exists once the list has been driven
+    // to the bottom, so finding it proves the search covers more than the first page.
     await expect(page.locator("table tr")).toHaveCount(6);
 
     await box(page).fill("Last Flow Of All");
-    await expect(visibleLabels(page)).toHaveText(["Last Flow Of All"], {timeout: 15000});
+    await expect(visibleLabels(page)).toHaveText(["Last Flow Of All"], {timeout: 20000});
     await expect(status(page)).toContainText("1 of 12");
   });
 

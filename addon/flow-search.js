@@ -10,9 +10,10 @@
  * own rendering. Filtering in place keeps all of it, and is what the list is for.
  *
  * That only works if the rows are actually there, and Setup loads them a page at a time as you
- * scroll. So the first search scrolls the list to the bottom until the row count stops growing.
- * Salesforce notices too: its own summary goes from "250+ items" to an exact count once everything
- * has been fetched.
+ * scroll. So arriving on the page starts scrolling the list to the bottom until the row count stops
+ * growing, rather than waiting for someone to type: the wait then happens while the page is being
+ * read, instead of after a search has been asked for. Salesforce notices too -- its own summary goes
+ * from "250+ items" to an exact count once everything has been fetched.
  *
  * Everything here fails closed. If the list cannot be found, or looks different from what this
  * expects, nothing is inserted and Setup is left exactly as it was -- an extension that quietly
@@ -34,6 +35,11 @@
   let filterTerm = "";
   let loading = false;
   let loadedEverything = false;
+  let loadStarted = null;
+
+  // Long enough for Setup to finish rendering its first page before the scroll starts. Driving the
+  // scroller while the list is still building confuses its own lazy loading.
+  const LOAD_START_DELAY_MS = 600;
 
   /* ---------------------------------------------------------------- finding things in the page */
 
@@ -282,23 +288,53 @@
     return shown + " of " + total + loaded + " flows";
   }
 
-  async function runSearch() {
-    const list = findFlowList();
-    if (!list) {
+  /**
+   * Loads the whole list, once, starting as soon as the box is on the page.
+   *
+   * This used to wait for the first keystroke, which put the whole scroll in front of the reader at
+   * the moment they were trying to search: they typed, and then waited. Starting on arrival spends
+   * that time while the page is being read instead, so by the time anyone types the list is usually
+   * already whole. Typing before it finishes still works -- the filter runs against what has
+   * arrived, and re-runs as more does, so matches appear as they load.
+   */
+  function startLoading(list) {
+    if (loadStarted) {
+      return loadStarted;
+    }
+
+    loading = true;
+    setStatus("Loading every flow…");
+
+    loadStarted = wait(LOAD_START_DELAY_MS)
+      .then(() => loadEveryRow(list, current => setStatus("Loading every flow… " + current)))
+      .then(({count, complete}) => {
+        loadedEverything = complete;
+        loading = false;
+        // Whatever was typed while the list was loading takes effect here.
+        const counts = applyFilter();
+        setStatus(complete ? describe(counts, true) : "Stopped after " + count + " flows");
+      })
+      .catch(() => {
+        loading = false;
+        setStatus("");
+      });
+
+    return loadStarted;
+  }
+
+  function runSearch() {
+    if (!findFlowList()) {
       return;
     }
 
-    // Everything has to be present before the first filter, or the search silently misses whatever
-    // Setup has not fetched yet, which is most of a long list.
-    if (!loadedEverything && !loading && filterTerm.trim()) {
-      loading = true;
-      setStatus("Loading every flow…");
-      const {count, complete} = await loadEveryRow(list, current => setStatus("Loading every flow… " + current));
-      loadedEverything = complete;
-      loading = false;
-      if (!complete) {
-        setStatus("Stopped after " + count + " flows");
-      }
+    // Nothing is hidden while the list is still loading. Hiding rows collapses the list, and a
+    // collapsed list has nothing left to scroll, so filtering mid-load stops the very scroll that
+    // is fetching the rest -- the search would then quietly cover only the rows that had arrived
+    // before the first keystroke. The status says what is happening, and the filter is applied the
+    // moment loading finishes. Since loading starts on arrival, this is usually already over by
+    // the time anyone types.
+    if (loading) {
+      return;
     }
 
     setStatus(describe(applyFilter(), loadedEverything));
@@ -342,9 +378,7 @@
     field.addEventListener("input", () => {
       clearTimeout(timer);
       filterTerm = field.value;
-      timer = setTimeout(() => {
-        runSearch().catch(() => setStatus("Could not filter the list"));
-      }, DEBOUNCE_MS);
+      timer = setTimeout(runSearch, DEBOUNCE_MS);
     });
 
     // Escape clears, which is what the platform's own clear button would otherwise have done.
@@ -408,6 +442,7 @@
     const box = build();
     anchor.parentNode.insertBefore(box, anchor);
     place(box, findHeaderCell(), list);
+    startLoading(list);
   }
 
   // Setup is a single-page app: the list arrives after navigation and is replaced wholesale when
@@ -416,7 +451,7 @@
   let reapply = null;
   const observer = new MutationObserver(() => {
     attach();
-    if (filterTerm.trim() && !loading) {
+    if (filterTerm.trim() && !loading && loadStarted) {
       clearTimeout(reapply);
       reapply = setTimeout(() => setStatus(describe(applyFilter(), loadedEverything)), 80);
     }
