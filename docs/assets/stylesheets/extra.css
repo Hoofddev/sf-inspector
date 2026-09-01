@@ -88,9 +88,16 @@
  * ================================================================================================ */
 
 /* Painted on html rather than body, and fixed, so the mesh stays put while the page scrolls --
-   the same arrangement the extension's pages use. */
+   the same arrangement the extension's pages use.
+ *
+ * The colours are written out here rather than read from the scheme's variables, and the dark
+ * ground is selected by reaching down to body with :has(). Material puts data-md-color-scheme on
+ * body, and custom properties inherit downward only, so html never sees the scheme's tokens: a
+ * var() here resolves against :root and stays light whatever the reader chose. That shipped once --
+ * a light ground behind a dark panel -- and a selector of "[data-md-color-scheme] html" cannot fix
+ * it either, because html is never a descendant of anything. */
 html {
-  background-color: var(--md-default-bg-color);
+  background-color: #f4f2fb;
   background-image:
     radial-gradient(74rem 56rem at 2% 4%,    rgba(168, 148, 255, .30), transparent 70%),
     radial-gradient(64rem 50rem at 98% 2%,   rgba(255, 176, 156, .24), transparent 68%),
@@ -99,8 +106,8 @@ html {
   background-attachment: fixed;
 }
 
-[data-md-color-scheme="slate"] html,
-html:has([data-md-color-scheme="slate"]) {
+html:has(body[data-md-color-scheme="slate"]) {
+  background-color: #16161a;
   background-image:
     radial-gradient(74rem 56rem at 2% 4%,    rgba(120, 100, 220, .24), transparent 70%),
     radial-gradient(64rem 50rem at 98% 2%,   rgba(210, 130, 120, .18), transparent 68%),
@@ -181,9 +188,24 @@ body,
   background: none;
 }
 
-.md-nav__title {
-  background: none;
-  box-shadow: none;
+/* Material keeps a sticky nav title legible by painting the page's own background behind it, plus
+   a spread shadow of the same colour to hide whatever scrolls underneath. On a flat background that
+   is invisible; on a gradient it stamps a rectangle of one flat colour across the mesh, which is
+   what it did here.
+ *
+ * These are Material's own three selectors, matched exactly. A first attempt used .md-nav__title
+ * and .md-nav__link--active, which lose on specificity to .md-nav--secondary .md-nav__title and to
+ * the four-class chain behind the lifted active link, so nothing changed.
+ *
+ * Scoped to the width at which the sidebars appear. Below it, the same title is the drawer's
+   header, sliding over the page content -- there it genuinely needs to be opaque. */
+@media screen and (min-width: 76.25em) {
+  .md-nav--primary .md-nav__title,
+  .md-nav--secondary .md-nav__title,
+  .md-nav--lifted > .md-nav__list > .md-nav__item--active > .md-nav__link {
+    background-color: transparent;
+    box-shadow: none;
+  }
 }
 
 /* ==================================================================================================
