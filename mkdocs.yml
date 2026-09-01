@@ -1,7 +1,7 @@
-site_name: Salesforce Inspector reloaded
+site_name: SF Inspector
 site_url: https://hoofddev.github.io/sf-inspector/
 repo_url: https://github.com/Hoofddev/sf-inspector
-site_author: Thomas Prouvot
+site_author: Hoofddev
 
 theme:
   name: material
