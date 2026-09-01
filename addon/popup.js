@@ -766,122 +766,122 @@ class App extends React.PureComponent {
               )
               : null
           )
+        )
+      ),
+      h(
+        "div",
+        {
+          className:
+          "slds-grid slds-grid_vertical-align-center slds-theme_shade slds-p-horizontal_medium slds-p-vertical_xx-small slds-border_top",
+        },
+        h(
+          "div",
+          {
+            className:
+            "slds-col slds-size_4-of-12 footer-small-text slds-m-top_xx-small",
+            id: "footer"
+          },
+          h(
+            "a",
+            {
+              href: "https://github.com/Hoofddev/sf-inspector/releases",
+              title: "Releases",
+              target: linkTarget,
+            },
+            "v" + addonVersion
+          ),
+          h("span", {}, " / "),
+          h("input", {
+            id: "idApiInput",
+            className: "api-input",
+            type: "number",
+            title: "Update api version",
+            onChange: this.onChangeApi,
+            value: apiVersionInput.split(".0")[0],
+          })
         ),
         h(
           "div",
           {
             className:
-            "slds-grid slds-grid_vertical-align-center slds-theme_shade slds-p-horizontal_medium slds-p-vertical_xx-small slds-border_top",
+            "slds-col slds-size_1-of-12 slds-text-align_right slds-icon_container",
+            title: `Shortcut :${
+              this.isMac() ? "[ctrl+option+i]" : "[ctrl+alt+i]"
+            }`,
           },
           h(
-            "div",
+            "a",
             {
-              className:
-              "slds-col slds-size_4-of-12 footer-small-text slds-m-top_xx-small",
-              id: "footer"
+              href: "https://github.com/Hoofddev/sf-inspector#keyboard-shortcuts",
+              target: linkTarget,
             },
             h(
-              "a",
+              "svg",
               {
-                href: "https://github.com/Hoofddev/sf-inspector/releases",
-                title: "Releases",
-                target: linkTarget,
+                className:
+                "slds-button slds-icon_x-small slds-icon-text-default slds-m-top_xxx-small",
+                viewBox: "0 0 52 52",
               },
-              "v" + addonVersion
-            ),
-            h("span", {}, " / "),
-            h("input", {
-              id: "idApiInput",
-              className: "api-input",
-              type: "number",
-              title: "Update api version",
-              onChange: this.onChangeApi,
-              value: apiVersionInput.split(".0")[0],
-            })
-          ),
-          h(
-            "div",
-            {
-              className:
-              "slds-col slds-size_1-of-12 slds-text-align_right slds-icon_container",
-              title: `Shortcut :${
-                this.isMac() ? "[ctrl+option+i]" : "[ctrl+alt+i]"
-              }`,
-            },
-            h(
-              "a",
-              {
-                href: "https://github.com/Hoofddev/sf-inspector#keyboard-shortcuts",
-                target: linkTarget,
-              },
-              h(
-                "svg",
-                {
-                  className:
-                  "slds-button slds-icon_x-small slds-icon-text-default slds-m-top_xxx-small",
-                  viewBox: "0 0 52 52",
-                },
-                h("use", {
-                  xlinkHref: "symbols.svg#type",
-                  style: {fill: "#9c9c9c"},
-                })
-              )
+              h("use", {
+                xlinkHref: "symbols.svg#type",
+                style: {fill: "#9c9c9c"},
+              })
             )
-          ),
+          )
+        ),
+        h(
+          "div",
+          {
+            className:
+            "slds-col slds-size_1-of-12 slds-text-align_right slds-icon_container",
+            title: "Documentation",
+          },
           h(
-            "div",
+            "a",
             {
-              className:
-              "slds-col slds-size_1-of-12 slds-text-align_right slds-icon_container",
-              title: "Documentation",
+              href: "https://github.com/Hoofddev/sf-inspector",
+              target: linkTarget,
             },
             h(
-              "a",
+              "svg",
               {
-                href: "https://github.com/Hoofddev/sf-inspector",
-                target: linkTarget,
+                className:
+                "slds-button slds-icon_x-small slds-icon-text-default slds-m-top_xxx-small",
+                viewBox: "0 0 52 52",
               },
-              h(
-                "svg",
-                {
-                  className:
-                  "slds-button slds-icon_x-small slds-icon-text-default slds-m-top_xxx-small",
-                  viewBox: "0 0 52 52",
-                },
-                h("use", {
-                  xlinkHref: "symbols.svg#info_alt",
-                  style: {fill: "#9c9c9c"},
-                })
-              )
+              h("use", {
+                xlinkHref: "symbols.svg#info_alt",
+                style: {fill: "#9c9c9c"},
+              })
             )
-          ),
+          )
+        ),
+        h(
+          "div",
+          {
+            id: "optionsBtn",
+            className:
+            "slds-col slds-size_1-of-12 slds-text-align_right slds-icon_container slds-m-right_small",
+            title: "Options",
+          },
           h(
-            "div",
+            "a",
             {
-              id: "optionsBtn",
-              className:
-              "slds-col slds-size_1-of-12 slds-text-align_right slds-icon_container slds-m-right_small",
-              title: "Options",
+              ref: "optionsBtn",
+              href: "options.html?" + hostArg,
+              target: linkTarget,
             },
             h(
-              "a",
+              "svg",
               {
-                ref: "optionsBtn",
-                href: "options.html?" + hostArg,
-                target: linkTarget,
+                className:
+                "slds-button slds-icon_x-small slds-icon-text-default slds-m-top_xxx-small",
+                viewBox: "0 0 52 52",
               },
-              h(
-                "svg",
-                {
-                  className:
-                  "slds-button slds-icon_x-small slds-icon-text-default slds-m-top_xxx-small",
-                  viewBox: "0 0 52 52",
-                },
-                h("use", {
-                  xlinkHref: "symbols.svg#settings",
-                  style: {fill: "#9c9c9c"},
-                })
-              )
+              h("use", {
+                xlinkHref: "symbols.svg#settings",
+                style: {fill: "#9c9c9c"},
+              })
             )
           )
         )
