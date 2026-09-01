@@ -24,11 +24,12 @@
   const HIDDEN_ATTRIBUTE = "data-sfi-filtered";
   const DEBOUNCE_MS = 120;
 
-  // Bounds on the load-everything scroll. A few hundred flows finish in a second or two; these stop
-  // a very large org from scrolling for ever, at the cost of filtering only what was loaded by
-  // then -- which the status line says out loud rather than quietly returning less.
-  const MAX_SCROLL_ROUNDS = 60;
-  const SCROLL_SETTLE_MS = 150;
+  // Bounds on the load-everything scroll. Each round scrolls to the bottom and then waits for the
+  // count to grow, because the next page comes from the server: a first version waited 150ms and
+  // concluded after two of those that the list had ended, which stopped it a page or two in.
+  const MAX_SCROLL_ROUNDS = 80;
+  const GROWTH_TIMEOUT_MS = 2500;
+  const GROWTH_POLL_MS = 120;
 
   let filterTerm = "";
   let loading = false;
@@ -119,48 +120,97 @@
 
   const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
 
+  function countRows() {
+    const list = findFlowList();
+    return list ? findRows(list).length : 0;
+  }
+
   /**
-   * Scrolls the list to the bottom until the row count stops growing.
+   * Scrolls the list to the bottom until it stops producing rows.
    *
-   * Setup fetches the next page of rows as the scroller nears its end, so there is no way to filter
-   * the whole list without first asking for all of it. Two rounds without a new row is treated as
-   * the end: one is not enough, because a fetch already in flight can leave the count unchanged for
-   * a moment.
+   * Setup fetches the next page from the server as the scroller nears its end, so each round has to
+   * wait for that round trip rather than for a fixed moment: a first version waited 150ms twice and
+   * decided the list had ended, which left it filtering the first hundred rows of a longer list. A
+   * round now waits up to two and a half seconds for the count to grow, and only a round that
+   * produces nothing in that time ends the loop.
+   *
+   * The scroller is put back where it was afterwards, so searching does not leave the page parked
+   * at the bottom of a list the reader had not scrolled.
    */
   async function loadEveryRow(list, onProgress) {
     const scroller = findScroller(list);
-    let previous = findRows(list).length;
-    let idleRounds = 0;
+    const startedAt = scroller.scrollTop;
+    let previous = countRows();
 
-    for (let round = 0; round < MAX_SCROLL_ROUNDS; round++) {
-      scroller.scrollTop = scroller.scrollHeight;
-      await wait(SCROLL_SETTLE_MS);
+    try {
+      for (let round = 0; round < MAX_SCROLL_ROUNDS; round++) {
+        scroller.scrollTop = scroller.scrollHeight;
 
-      const current = findRows(findFlowList() || list).length;
-      onProgress(current);
-
-      if (current === previous) {
-        idleRounds += 1;
-        if (idleRounds >= 2) {
-          return {count: current, complete: true};
+        const grewTo = await waitForGrowth(previous, onProgress);
+        if (grewTo === previous) {
+          return {count: previous, complete: true};
         }
-      } else {
-        idleRounds = 0;
+        previous = grewTo;
       }
-      previous = current;
+      return {count: previous, complete: false};
+    } finally {
+      scroller.scrollTop = startedAt;
     }
-    return {count: previous, complete: false};
+  }
+
+  /** Polls until the row count exceeds `from`, or the wait runs out. */
+  async function waitForGrowth(from, onProgress) {
+    for (let waited = 0; waited < GROWTH_TIMEOUT_MS; waited += GROWTH_POLL_MS) {
+      await wait(GROWTH_POLL_MS);
+      const current = countRows();
+      if (current > from) {
+        onProgress(current);
+        return current;
+      }
+    }
+    return from;
   }
 
   /* ------------------------------------------------------------------------------ the filtering */
 
-  /** The text a row is matched against: its flow label and API name, which are its first cells. */
-  function rowText(row) {
-    return Array.from(row.querySelectorAll("td, [role='gridcell']"))
-      .slice(0, 2)
-      .map(cell => cell.textContent || "")
-      .join(" ")
-      .toLowerCase();
+  /**
+   * Collapses runs of whitespace to single spaces and lower-cases.
+   *
+   * Matching raw textContent fails as soon as a search is more than one word: the label's cell is
+   * built out of nested markup, so what looks like "Verify Identity" can carry a line break or a
+   * non-breaking space between the words, and "verify identity" then matches nothing. \s covers
+   * both, and the search term gets the same treatment so the two are compared on equal terms.
+   */
+  function normalise(text) {
+    return (text || "").replace(/\s+/g, " ").trim().toLowerCase();
+  }
+
+  /**
+   * Which cells hold the flow's name, found from the column headers rather than by position.
+   *
+   * The first column is an item number, so the label and API name are not the first two cells --
+   * an earlier version assumed they were and matched the row number and the label, missing the API
+   * name entirely. Falls back to the first two cells if the headers cannot be read, which is no
+   * worse than that version was.
+   */
+  function nameColumns() {
+    const header = findHeaderCell();
+    const headerRow = header ? header.closest("tr, [role='row']") : null;
+    if (!headerRow) {
+      return [0, 1];
+    }
+    const headings = Array.from(headerRow.querySelectorAll("th, [role='columnheader']"));
+    const found = headings
+      .map((cell, index) => ({index, text: normalise(cell.textContent)}))
+      .filter(({text}) => /flow label|flow api name/.test(text))
+      .map(({index}) => index);
+    return found.length ? found : [0, 1];
+  }
+
+  /** The text a row is matched against: its flow label and API name. */
+  function rowText(row, columns) {
+    const cells = Array.from(row.querySelectorAll("td, [role='gridcell']"));
+    return normalise(columns.map(index => cells[index] && cells[index].textContent).join(" "));
   }
 
   function applyFilter() {
@@ -170,11 +220,12 @@
     }
 
     const rows = findRows(list);
-    const term = filterTerm.trim().toLowerCase();
+    const columns = nameColumns();
+    const term = normalise(filterTerm);
     let shown = 0;
 
     for (const row of rows) {
-      if (!term || rowText(row).includes(term)) {
+      if (!term || rowText(row, columns).includes(term)) {
         shown += 1;
         show(row);
       } else {

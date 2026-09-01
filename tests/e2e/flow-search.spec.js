@@ -26,7 +26,13 @@ test.describe("Flow search", () => {
     <button type="button">Show Flow Label Column Actions</button>
   </th>`;
 
-  const row = (label, api) => `<tr><td><a href="#">${label}</a></td><td>${api}</td><td>Screen Flow</td></tr>`;
+  // The label is split across nested markup with a line break between the words, as Setup's own
+  // cells are. Matching raw textContent against a two-word search finds nothing here.
+  const row = (label, api, n = 1) => `<tr>
+    <td>${n}</td>
+    <td><a href="#"><span>${label.split(" ")[0]}</span>
+      <span>${label.split(" ").slice(1).join(" ")}</span></a></td>
+    <td>${api}</td><td>Screen Flow</td></tr>`;
 
   const listPage = rows => `<!DOCTYPE html>
     <html><head><title>Flows | Salesforce</title></head>
@@ -36,7 +42,7 @@ test.describe("Flow search", () => {
           <div class="summary">50+ items &bull; Sorted by Flow Label</div>
           <div class="scroller" style="max-height:150px;overflow-y:auto">
             <table>
-              <tr><th>Process Type</th>${headerCell}<th>Active</th></tr>
+              <tr><th>Item Number</th>${headerCell}<th>Flow API Name</th><th>Active</th></tr>
               ${rows}
             </table>
           </div>
@@ -45,9 +51,9 @@ test.describe("Flow search", () => {
     </body></html>`;
 
   const threeFlows = listPage([
-    row("Verify Customer Identity", "idv"),
-    row("CLAUDE - TEST 2", "CLAUDE_TEST"),
-    row("Update Signed Contact Field", "Update_Signed_Contact_Field")
+    row("Verify Identity", "Verify_Cust", 1),
+    row("CLAUDE - TEST 2", "CLAUDE_TEST", 2),
+    row("Update Signed Contact Field", "Update_Signed_Contact_Field", 3)
   ].join(""));
 
   const pageWithoutAList = `<!DOCTYPE html>
@@ -72,8 +78,8 @@ test.describe("Flow search", () => {
       <script>
         const root = document.getElementById("host").attachShadow({mode: "open"});
         root.innerHTML = \`<table>
-          <tr><th>Process Type</th>${headerCell}</tr>
-          ${row("Verify Customer Identity", "idv")}
+          <tr><th>Item Number</th>${headerCell}<th>Flow API Name</th></tr>
+          ${row("Verify Identity", "Verify_Cust")}
         </table>\`;
       </script>
     </body></html>`;
@@ -87,7 +93,7 @@ test.describe("Flow search", () => {
     <body class="sfdcBody">
       <div class="scroller" id="scroller" style="height:120px;overflow-y:auto">
         <table id="list">
-          <tr><th>Process Type</th>${headerCell}<th>Active</th></tr>
+          <tr><th>Item Number</th>${headerCell}<th>Flow API Name</th><th>Active</th></tr>
         </table>
       </div>
       <script>
@@ -99,13 +105,19 @@ test.describe("Flow search", () => {
           for (let i = 0; i < 5 && loaded < TOTAL; i++, loaded++) {
             const tr = document.createElement("tr");
             const name = loaded === TOTAL - 1 ? "Last Flow Of All" : "Flow number " + loaded;
-            tr.innerHTML = "<td><a href='#'>" + name + "</a></td><td>api_" + loaded + "</td><td>Screen Flow</td>";
+            tr.innerHTML = "<td>" + loaded + "</td><td><a href='#'>" + name + "</a></td>"
+              + "<td>api_" + loaded + "</td><td>Screen Flow</td>";
             table.append(tr);
           }
         }
         addPage();
+        let fetching = false;
         scroller.addEventListener("scroll", () => {
-          if (scroller.scrollTop + scroller.clientHeight >= scroller.scrollHeight - 4) { addPage(); }
+          if (fetching || scroller.scrollTop + scroller.clientHeight < scroller.scrollHeight - 4) { return; }
+          // Answering after 600ms is what a page of rows from the server costs. A load loop that
+          // waits only a couple of hundred milliseconds concludes the list has ended right here.
+          fetching = true;
+          setTimeout(() => { addPage(); fetching = false; }, 600);
         });
       </script>
     </body></html>`;
@@ -129,7 +141,7 @@ test.describe("Flow search", () => {
 
   const box = page => page.locator("#sfi-flow-search .sfi-flow-search__input");
   const status = page => page.locator("#sfi-flow-search .sfi-flow-search__status");
-  const visibleLabels = page => page.locator("table tr:not([data-sfi-filtered]) td:first-child a");
+  const visibleLabels = page => page.locator("table tr:not([data-sfi-filtered]) td:nth-child(2) a");
 
   test("adds a search box above the column headers, spanning the list", async ({page, context}) => {
     await open(page, context, threeFlows);
@@ -158,6 +170,17 @@ test.describe("Flow search", () => {
     // The row is Setup's own, still in Setup's own table -- not a copy in a dropdown.
     await expect(status(page)).toContainText("1 of 3");
     await expect(page.locator("table tr")).toHaveCount(4);
+  });
+
+  test("matches a search of more than one word", async ({page, context}) => {
+    await open(page, context, threeFlows);
+    await expect(box(page)).toBeVisible({timeout: 10000});
+
+    // The whole label, which is the obvious thing to type and the thing that used to fail: the
+    // words are in separate elements, so the cell's raw text has a line break between them.
+    await box(page).fill("Verify Identity");
+    await expect(visibleLabels(page)).toHaveText(["Verify Identity"]);
+    await expect(status(page)).toContainText("1 of 3");
   });
 
   test("matches the API name as well as the label", async ({page, context}) => {
