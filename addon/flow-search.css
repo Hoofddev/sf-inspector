@@ -15,10 +15,16 @@
  * one exception is the filtered rows, which are hidden by an inline style rather than a class, so
  * that clearing the search restores whatever display value Setup had given them.
  */
+/* Pinned, so it stays reachable while the list scrolls under it -- the same behaviour as the column
+   headers, which it sits directly above. The background has to be opaque: rows pass beneath it. */
 .sfi-flow-search {
+  position: sticky;
+  top: 0;
+  z-index: 6;
   width: 100%;
   box-sizing: border-box;
   padding: .5rem .75rem;
+  background-color: #fff;
   font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Salesforce Sans", system-ui, sans-serif;
 }
 

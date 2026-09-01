@@ -192,31 +192,47 @@
   }
 
   /**
-   * Which cells hold the flow's name, found from the column headers rather than by position.
+   * Every cell of a row, header cells included.
    *
-   * The first column is an item number, so the label and API name are not the first two cells --
-   * an earlier version assumed they were and matched the row number and the label, missing the API
-   * name entirely. Falls back to the first two cells if the headers cannot be read, which is no
-   * worse than that version was.
+   * One selector for both the header row and the body rows, because the columns are mapped by
+   * position and the two have to be counted the same way. Setup renders the flow label as a th --
+   * it is the row's header -- while the rest of the row is td, so a body selector of "td" alone
+   * skipped the label and shifted every column by one. The search was then reading the API name
+   * where it thought it had the label, which is why one word of a flow's name matched (through its
+   * API name) and the whole name never did.
    */
+  const CELL_SELECTOR = "th, td, [role='columnheader'], [role='gridcell'], [role='rowheader']";
+
+  function cellsOf(row) {
+    return Array.from(row.querySelectorAll(CELL_SELECTOR));
+  }
+
+  /** Which cells hold the flow's name, found from the column headers rather than by position. */
   function nameColumns() {
     const header = findHeaderCell();
     const headerRow = header ? header.closest("tr, [role='row']") : null;
     if (!headerRow) {
-      return [0, 1];
+      return null;
     }
-    const headings = Array.from(headerRow.querySelectorAll("th, [role='columnheader']"));
-    const found = headings
+    const found = cellsOf(headerRow)
       .map((cell, index) => ({index, text: normalise(cell.textContent)}))
       .filter(({text}) => /flow label|flow api name/.test(text))
       .map(({index}) => index);
-    return found.length ? found : [0, 1];
+    return found.length ? found : null;
   }
 
   /** The text a row is matched against: its flow label and API name. */
   function rowText(row, columns) {
-    const cells = Array.from(row.querySelectorAll("td, [role='gridcell']"));
-    return normalise(columns.map(index => cells[index] && cells[index].textContent).join(" "));
+    const cells = cellsOf(row);
+    const named = columns
+      ? normalise(columns.map(index => cells[index] && cells[index].textContent).join(" "))
+      : "";
+
+    // If the mapping produced nothing, match the whole row instead. Mapping by position depends on
+    // the header and the body agreeing about how many cells a row has, and they have disagreed
+    // once already; a wider match finds too much, but silently matching an empty string finds
+    // nothing at all and looks like the search is broken.
+    return named || normalise(cells.map(cell => cell.textContent).join(" "));
   }
 
   function applyFilter() {
@@ -424,6 +440,25 @@
     }
   }
 
+  /**
+   * Pushes Setup's own pinned column headers down by the height of the box.
+   *
+   * Both are pinned to the top of the same scroller, so without this they would pin to the same
+   * place and the box would sit on top of the headers. Setup's header keeps its own behaviour --
+   * only the offset it pins at changes, and only while the box is on the page.
+   *
+   * Does nothing if Setup is not pinning its headers, in which case there is nothing to stack.
+   */
+  function stackHeaderBelowBox(box) {
+    const header = findHeaderCell();
+    const headerRow = header ? header.closest("tr, [role='row']") : null;
+    for (const element of [headerRow, header]) {
+      if (element && getComputedStyle(element).position === "sticky") {
+        element.style.top = box.offsetHeight + "px";
+      }
+    }
+  }
+
   function attach() {
     if (!FLOW_LIST_PATH.test(location.pathname) || document.getElementById(CONTAINER_ID)) {
       return;
@@ -442,6 +477,7 @@
     const box = build();
     anchor.parentNode.insertBefore(box, anchor);
     place(box, findHeaderCell(), list);
+    stackHeaderBelowBox(box);
     startLoading(list);
   }
 
@@ -451,6 +487,10 @@
   let reapply = null;
   const observer = new MutationObserver(() => {
     attach();
+    const box = document.getElementById(CONTAINER_ID);
+    if (box) {
+      stackHeaderBelowBox(box);
+    }
     if (filterTerm.trim() && !loading && loadStarted) {
       clearTimeout(reapply);
       reapply = setTimeout(() => setStatus(describe(applyFilter(), loadedEverything)), 80);

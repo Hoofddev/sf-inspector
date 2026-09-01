@@ -26,23 +26,27 @@ test.describe("Flow search", () => {
     <button type="button">Show Flow Label Column Actions</button>
   </th>`;
 
-  // The label is split across nested markup with a line break between the words, as Setup's own
-  // cells are. Matching raw textContent against a two-word search finds nothing here.
-  const row = (label, api, n = 1) => `<tr>
-    <td>${n}</td>
-    <td><a href="#"><span>${label.split(" ")[0]}</span>
-      <span>${label.split(" ").slice(1).join(" ")}</span></a></td>
-    <td>${api}</td><td>Screen Flow</td></tr>`;
+  // A row as Setup renders one, which is what this fixture exists to reproduce and what an earlier
+  // version of it did not: the item number cell is an empty td, the flow label is a **th** -- it is
+  // the row's header -- and everything after it is td. A body selector of "td" alone therefore
+  // skips the label and shifts every column by one. The label is also split across nested markup
+  // with a line break inside it.
+  const row = (label, api) => `<tr>
+    <td></td>
+    <th scope="row"><a href="#"><span>${label.split(" ")[0]}</span>
+      <span>${label.split(" ").slice(1).join(" ")}</span></a></th>
+    <td>${api}</td><td></td><td>Screen Flow</td></tr>`;
 
   const listPage = rows => `<!DOCTYPE html>
-    <html><head><title>Flows | Salesforce</title></head>
+    <html><head><title>Flows | Salesforce</title>
+      <style>.head th { position: sticky; top: 0; background: #fafaf9 }</style></head>
     <body class="sfdcBody">
       <div id="setup-content">
         <div class="card">
           <div class="summary">50+ items &bull; Sorted by Flow Label</div>
           <div class="scroller" style="max-height:150px;overflow-y:auto">
             <table>
-              <tr><th>Item Number</th>${headerCell}<th>Flow API Name</th><th>Active</th></tr>
+              <tr class="head"><th>Item Number</th>${headerCell}<th>Flow API Name</th><th>Flow Description</th><th>Process Type</th></tr>
               ${rows}
             </table>
           </div>
@@ -51,9 +55,9 @@ test.describe("Flow search", () => {
     </body></html>`;
 
   const threeFlows = listPage([
-    row("Verify Identity", "Verify_Cust", 1),
-    row("CLAUDE - TEST 2", "CLAUDE_TEST", 2),
-    row("Update Signed Contact Field", "Update_Signed_Contact_Field", 3)
+    row("Verify Identity", "Verify_Cust"),
+    row("CLAUDE - TEST 2", "CLAUDE_TEST"),
+    row("Update Signed Contact Field", "Update_Signed_Contact_Field")
   ].join(""));
 
   const pageWithoutAList = `<!DOCTYPE html>
@@ -78,7 +82,7 @@ test.describe("Flow search", () => {
       <script>
         const root = document.getElementById("host").attachShadow({mode: "open"});
         root.innerHTML = \`<table>
-          <tr><th>Item Number</th>${headerCell}<th>Flow API Name</th></tr>
+          <tr><th>Item Number</th>${headerCell}<th>Flow API Name</th><th>Flow Description</th><th>Process Type</th></tr>
           ${row("Verify Identity", "Verify_Cust")}
         </table>\`;
       </script>
@@ -93,7 +97,7 @@ test.describe("Flow search", () => {
     <body class="sfdcBody">
       <div class="scroller" id="scroller" style="height:120px;overflow-y:auto">
         <table id="list">
-          <tr><th>Item Number</th>${headerCell}<th>Flow API Name</th><th>Active</th></tr>
+          <tr><th>Item Number</th>${headerCell}<th>Flow API Name</th><th>Flow Description</th><th>Process Type</th></tr>
         </table>
       </div>
       <script>
@@ -105,8 +109,8 @@ test.describe("Flow search", () => {
           for (let i = 0; i < 5 && loaded < TOTAL; i++, loaded++) {
             const tr = document.createElement("tr");
             const name = loaded === TOTAL - 1 ? "Last Flow Of All" : "Flow number " + loaded;
-            tr.innerHTML = "<td>" + loaded + "</td><td><a href='#'>" + name + "</a></td>"
-              + "<td>api_" + loaded + "</td><td>Screen Flow</td>";
+            tr.innerHTML = "<td></td><th scope='row'><a href='#'>" + name + "</a></th>"
+              + "<td>api_" + loaded + "</td><td></td><td>Screen Flow</td>";
             table.append(tr);
           }
         }
@@ -141,7 +145,7 @@ test.describe("Flow search", () => {
 
   const box = page => page.locator("#sfi-flow-search .sfi-flow-search__input");
   const status = page => page.locator("#sfi-flow-search .sfi-flow-search__status");
-  const visibleLabels = page => page.locator("table tr:not([data-sfi-filtered]) td:nth-child(2) a");
+  const visibleLabels = page => page.locator("table tr:not([data-sfi-filtered]) th[scope=row] a");
 
   test("adds a search box above the column headers, spanning the list", async ({page, context}) => {
     await open(page, context, threeFlows);
@@ -158,6 +162,26 @@ test.describe("Flow search", () => {
     });
     expect(placement.above).toBe(true);
     expect(placement.ratio).toBeGreaterThan(0.9);
+  });
+
+  test("pins itself, and moves Setup's pinned headers down to sit under it", async ({page, context}) => {
+    await open(page, context, threeFlows);
+    await expect(box(page)).toBeVisible({timeout: 10000});
+
+    const pinning = await page.evaluate(() => {
+      const search = document.getElementById("sfi-flow-search");
+      const header = [...document.querySelectorAll("th")]
+        .find(cell => /flow\s*label/i.test(cell.textContent || ""));
+      return {
+        boxPinned: getComputedStyle(search).position,
+        headerOffset: parseFloat(getComputedStyle(header).top),
+        boxHeight: search.offsetHeight
+      };
+    });
+
+    expect(pinning.boxPinned).toBe("sticky");
+    // Setup's header pins below the box rather than underneath it.
+    expect(pinning.headerOffset).toBeCloseTo(pinning.boxHeight, 0);
   });
 
   test("filters the list in place, keeping Setup's own rows", async ({page, context}) => {
