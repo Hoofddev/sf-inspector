@@ -513,22 +513,7 @@ body.sfi-page .slds-tabs_default__content > div > .slds-grid:hover {
   background-color: light-dark(rgba(17, 21, 28, .035), rgba(255, 255, 255, .045));
 }
 
-/* The builder header is meant to be dark. Give it its own dark frost instead of the light one,
-   which turned white text onto a pale ground. */
-.slds-builder-header {
-  background-color: light-dark(rgba(20, 26, 40, .82), rgba(12, 14, 20, .82)) !important;
-  -webkit-backdrop-filter: var(--sfi-glass-blur);
-  backdrop-filter: var(--sfi-glass-blur);
-  border-bottom: 1px solid light-dark(rgba(255, 255, 255, .12), rgba(255, 255, 255, .08));
-  color: #fff;
-}
 
-.slds-builder-header a,
-.slds-builder-header button,
-.slds-builder-header .slds-text-heading_small,
-.slds-builder-header__item-label {
-  color: #fff;
-}
 
 @media (prefers-reduced-transparency: reduce) {
   body.sfi-page .slds-tabs_default {
@@ -1149,4 +1134,67 @@ body.sfi-page .slds-builder-header + * {
 #insext.insext-active .insext-popup > iframe {
   flex: 1 1 auto;
   min-height: 0;
+}
+
+/* ================================================================================================
+ * Page header
+ *
+ * A flat dark bar over a pale luminous page reads as a strip bolted on top of something else. In
+ * this language the top bar belongs to the page: the same frost as the panels, the ground showing
+ * through it, and the separation carried by a hairline rather than by a block of colour.
+ * ============================================================================================== */
+
+body.sfi-page .slds-builder-header {
+  background-color: light-dark(rgba(255, 255, 255, .70), rgba(30, 30, 36, .70)) !important;
+  -webkit-backdrop-filter: var(--sfi-glass-blur);
+  backdrop-filter: var(--sfi-glass-blur);
+  border: 0;
+  border-bottom: 1px solid light-dark(rgba(60, 50, 90, .09), rgba(255, 255, 255, .07));
+  box-shadow: none;
+  color: var(--slds-g-color-on-surface-1);
+}
+
+body.sfi-page .slds-builder-header a,
+body.sfi-page .slds-builder-header button,
+body.sfi-page .slds-builder-header .slds-text-heading_small,
+body.sfi-page .slds-builder-header__item-label,
+body.sfi-page .slds-builder-header__item {
+  color: var(--slds-g-color-on-surface-1);
+}
+
+/* The page title carries the bar, so it gets the weight and tracking of a title rather than of a
+   label sitting in a strip. */
+body.sfi-page .slds-builder-header .slds-text-heading_small,
+body.sfi-page .slds-builder-header__item-label {
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: -.016em;
+}
+
+/* Icons inherit rather than staying white on a light bar. */
+body.sfi-page .slds-builder-header svg {
+  fill: currentColor;
+}
+
+/* The org name is a chip: a quiet pill rather than a white block. */
+body.sfi-page .slds-builder-header .slds-builder-header__item-action,
+body.sfi-page .slds-builder-header .sfir-org-name {
+  background-color: light-dark(rgba(60, 50, 90, .06), rgba(255, 255, 255, .08));
+  border-radius: 999px;
+  padding: .25rem .7rem;
+  font-weight: 500;
+}
+
+/* Production stays unmistakable: the bar warms up and keeps its edge. */
+body.sfir-prod .slds-builder-header {
+  background-color: light-dark(rgba(255, 244, 246, .78), rgba(48, 26, 30, .78)) !important;
+  border-bottom-color: light-dark(rgba(214, 48, 90, .35), rgba(255, 90, 130, .3));
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  body.sfi-page .slds-builder-header {
+    background-color: var(--slds-g-color-surface-container-1) !important;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
 }
