@@ -1253,3 +1253,47 @@ body.sfi-page .sfir-options-tab-container {
 #insext.insext-active .insext-popup {
   height: 450px;
 }
+
+/* ================================================================================================
+ * One measure
+ *
+ * The header, the page container and the panels inside it each carried their own width and
+ * padding, so nothing lined up: the header sat on a different left edge from the cards under it and
+ * the gutters changed from element to element. One measure and one gutter, applied to every
+ * top-level piece, so they share an edge.
+ * ============================================================================================== */
+
+:root {
+  --sfi-measure: 1600px;
+  --sfi-gutter: 1.75rem;
+}
+
+body.sfi-page .sfir-page-container {
+  max-width: var(--sfi-measure);
+  margin-inline: auto;
+  padding-inline: var(--sfi-gutter);
+}
+
+/* The header is not inside the container, so it is inset by hand to land on the same edge. */
+body.sfi-page .slds-builder-header {
+  max-width: calc(var(--sfi-measure) - (2 * var(--sfi-gutter)));
+  margin-inline: auto;
+}
+
+/* Panels take their gutter from the container and only space themselves vertically. */
+body.sfi-page .area {
+  margin: 0 0 1.25rem;
+}
+
+/* The result panel grows to fill the window even when there is nothing in it, which used to be
+   invisible and now reads as a large empty box. It sizes to its content instead, with enough room
+   to be recognisable as the place results will land. */
+body.sfi-page .area:last-child {
+  margin-bottom: 0;
+}
+
+body.sfi-page #result-area,
+body.sfi-page .result-area {
+  flex-grow: 0;
+  min-height: 12rem;
+}
