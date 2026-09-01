@@ -468,18 +468,17 @@ test.describe("Popup", () => {
       // Wait for footer to load
       await page.frameLocator(".insext-popup").locator("#footer").waitFor({timeout: 1000});
 
-      // Verify footer link exists (release-note is in footer)
-      await expect(page.frameLocator(".insext-popup").locator("#footer a[href*='release-note']")).toBeVisible();
+      // Verify footer link exists (the version link points at the releases page)
+      await expect(page.frameLocator(".insext-popup").locator("#footer a[href*='releases']")).toBeVisible();
 
-      const donateContainer = page.frameLocator(".insext-popup").locator("div[title='Donate']");
-      await expect(donateContainer).toBeVisible({timeout: 1000});
-      const donateLink = donateContainer.locator("a[href*='donate']");
-      await expect(donateLink).toBeAttached({timeout: 1000});
+      // There is deliberately no donate link to assert on: it was removed in "Remove upstream
+      // links, and make the README this project's own", because App Review guideline 3.2.1 does
+      // not allow donation links in a paid app.
 
       // Documentation locate by parent div title attribute
       const docContainer = page.frameLocator(".insext-popup").locator("div[title='Documentation']");
       await expect(docContainer).toBeVisible({timeout: 1000});
-      const docLink = docContainer.locator("a[href*='Salesforce-Inspector-reloaded']");
+      const docLink = docContainer.locator("a[href*='Hoofddev/sf-inspector']");
       await expect(docLink).toBeAttached({timeout: 1000});
     });
   });
@@ -775,7 +774,7 @@ test.describe("Popup", () => {
       for (const referenceId of ALL_METADATA_REFERENCE_IDS) {
         expect(capture.referenceIds).toContain(referenceId);
       }
-      await expect(page.frameLocator(".insext-popup").locator("text=Sf Inspector")).toBeVisible({timeout: 3000});
+      await expect(page.frameLocator(".insext-popup").locator(".dropdown-item").filter({hasText: "Sf Inspector"}).first()).toBeVisible({timeout: 3000});
     });
 
     test("Search Shortcut with '!flow' prefix returns flows only", async ({page, extensionId}) => {
@@ -835,7 +834,7 @@ test.describe("Popup", () => {
       capture.stop();
 
       expect(capture.referenceIds).toEqual(["permissionSetsSelect"]);
-      await expect(page.frameLocator(".insext-popup").locator("text=Sf Inspector")).toBeVisible({timeout: 3000});
+      await expect(page.frameLocator(".insext-popup").locator(".dropdown-item").filter({hasText: "Sf Inspector"}).first()).toBeVisible({timeout: 3000});
     });
   });
 
