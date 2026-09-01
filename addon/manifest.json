@@ -56,11 +56,13 @@
       "all_frames": true,
       "css": [
         "button.css",
-        "inspect-inline.css"
+        "inspect-inline.css",
+        "flow-search.css"
       ],
       "js": [
         "button.js",
-        "inspect-inline.js"
+        "inspect-inline.js",
+        "flow-search.js"
       ]
     }
   ],
