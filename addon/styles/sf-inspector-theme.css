@@ -28,7 +28,11 @@
   /* Follows the system appearance. Every token below is a light-dark() pair, and each page has been
      swept in both schemes for text that fails contrast against what it actually sits on -- the
      check this was waiting on. Declaring dark support also tells the browser the pages handle dark
-     themselves, so a force-dark layer has no reason to invert them. */
+     themselves, so a force-dark layer has no reason to invert them.
+
+     theme-init.js overrides this from the footer's appearance switch, by setting the root
+     attribute below before first paint. `only` is deliberate: it stops the browser substituting
+     the other scheme's form controls when a page is pinned against the desktop setting. */
   color-scheme: light dark;
 
   /* --- Type ------------------------------------------------------------------------------- */
@@ -119,6 +123,17 @@
   --sfi-gutter: 1.75rem;
   --sfi-gap: 1.25rem;
   --sfi-gap-chrome: 2.25rem;
+}
+
+/* A stored appearance, pinned against the desktop. light-dark() resolves against the computed
+   color-scheme, so these two rules are the whole mechanism: every token follows without a second
+   set of values to keep in step. No attribute means no preference, which follows the desktop. */
+:root[data-sfi-theme="light"] {
+  color-scheme: only light;
+}
+
+:root[data-sfi-theme="dark"] {
+  color-scheme: only dark;
 }
 
 /* ==================================================================================================
@@ -570,13 +585,16 @@ body.sfi-page .slds-button.slds-button_destructive:focus:not(:disabled),
   color: #fff;
 }
 
-/* The pre-SLDS button family that several pages still use: a bare `button`, `.button`, and
+/* .sfir-icon-button opts out below: a bare button that is only an icon is not a control surface,
+   and giving it the fill, border and blur of one turns a footer glyph into a pill.
+ *
+ * The pre-SLDS button family that several pages still use: a bare `button`, `.button`, and
    `.highlighted` for the primary one. Each page's own stylesheet paints these `white` and then
    writes the label in --slds-g-color-surface-container-1 -- a *surface* token standing in for a
    text colour, which happens to be white in the light scheme and #232326 in the dark one. That put
    a white button in the middle of a dark page with near-black text on its blue primary. They are
    restated here, on tokens, so they follow the scheme like everything else. */
-body.sfi-page button:not(.slds-button):not(.slds-button_icon),
+body.sfi-page button:not(.slds-button):not(.slds-button_icon):not(.sfir-icon-button),
 body.sfi-page .button:not(.slds-button) {
   background-color: light-dark(rgba(255, 255, 255, .58), rgba(255, 255, 255, .09));
   -webkit-backdrop-filter: var(--sfi-glass-blur);
@@ -585,7 +603,7 @@ body.sfi-page .button:not(.slds-button) {
   color: light-dark(var(--sfi-accent), var(--slds-g-color-on-surface-1));
 }
 
-body.sfi-page button:not(.slds-button):not(.slds-button_icon):hover:not(:disabled),
+body.sfi-page button:not(.slds-button):not(.slds-button_icon):not(.sfir-icon-button):hover:not(:disabled),
 body.sfi-page .button:not(.slds-button):hover:not(:disabled) {
   background-color: light-dark(rgba(255, 255, 255, .78), rgba(255, 255, 255, .15));
   color: light-dark(var(--sfi-accent), var(--slds-g-color-on-surface-1));

@@ -620,3 +620,34 @@ a.icon-url {
 a:hover:has(.sfir-copy-userid-icon:hover) {
   text-decoration: none;
 }
+
+/* Appearance switch in the footer. Sized and coloured to sit with the icon links beside it, but a
+   real button rather than an anchor: it changes a setting, it does not go anywhere. */
+.sfir-theme-toggle {
+  background: none;
+  border: 0;
+  padding: 0;
+  margin: 0;
+  cursor: pointer;
+  line-height: 0;
+  color: var(--slds-g-color-on-surface-3);
+}
+
+.sfir-theme-toggle:hover,
+.sfir-theme-toggle:focus-visible {
+  color: var(--slds-g-color-on-surface-1);
+}
+
+.sfir-theme-toggle__icon {
+  width: 15px;
+  height: 15px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.7;
+  stroke-linecap: round;
+}
+
+.sfir-theme-toggle__icon .sfir-theme-toggle__fill {
+  fill: currentColor;
+  stroke: none;
+}

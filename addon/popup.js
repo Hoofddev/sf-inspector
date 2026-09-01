@@ -883,8 +883,88 @@ class App extends React.PureComponent {
                 })
               )
             )
-          )
+          ),
+          h(ThemeToggle, {})
         )
+      )
+    );
+  }
+}
+
+/**
+ * Appearance switch for the footer. Cycles light -> dark -> follow the desktop.
+ *
+ * The work is done by theme-init.js, which owns the stored value and the root attribute so that
+ * every page applies it before first paint; this is only the control. State is held here rather
+ * than in the popup's model because nothing else depends on it.
+ */
+class ThemeToggle extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {theme: window.sfiTheme ? window.sfiTheme.get() : "system"};
+    this.onClick = this.onClick.bind(this);
+    this.onStorage = this.onStorage.bind(this);
+  }
+
+  componentDidMount() {
+    // The setting is shared across every page, so it can change without this button being the one
+    // that changed it. theme-init.js re-applies the attribute on its own; this keeps the glyph
+    // showing the same thing the page is actually doing.
+    addEventListener("storage", this.onStorage);
+  }
+
+  componentWillUnmount() {
+    removeEventListener("storage", this.onStorage);
+  }
+
+  onStorage(e) {
+    if (e.key === "sfiTheme" || e.key === null) {
+      this.setState({theme: window.sfiTheme ? window.sfiTheme.get() : "system"});
+    }
+  }
+
+  onClick(e) {
+    e.preventDefault();
+    if (window.sfiTheme) {
+      this.setState({theme: window.sfiTheme.next()});
+    }
+  }
+
+  render() {
+    const {theme} = this.state;
+    const label = {
+      light: "Appearance: light (click for dark)",
+      dark: "Appearance: dark (click to follow the desktop)",
+      system: "Appearance: following the desktop (click for light)"
+    }[theme];
+
+    let glyph;
+    if (theme === "dark") {
+      glyph = [h("path", {key: "moon", className: "sfir-theme-toggle__fill", d: "M20.3 14.6A8.6 8.6 0 0 1 9.4 3.7a8.5 8.5 0 1 0 10.9 10.9Z"})];
+    } else if (theme === "light") {
+      glyph = [
+        h("circle", {key: "core", cx: "12", cy: "12", r: "4.2"}),
+        h("path", {key: "rays", d: "M12 2.2v2.3M12 19.5v2.3M4.9 4.9l1.6 1.6M17.5 17.5l1.6 1.6M2.2 12h2.3M19.5 12h2.3M4.9 19.1l1.6-1.6M17.5 6.5l1.6-1.6"})
+      ];
+    } else {
+      // Half filled: the desktop decides which half you get.
+      glyph = [
+        h("circle", {key: "ring", cx: "12", cy: "12", r: "8.2"}),
+        h("path", {key: "half", className: "sfir-theme-toggle__fill", d: "M12 3.8a8.2 8.2 0 0 0 0 16.4Z"})
+      ];
+    }
+
+    return h(
+      "div",
+      {
+        id: "themeBtn",
+        className: "slds-col slds-size_1-of-12 slds-text-align_right slds-icon_container",
+        title: label
+      },
+      h(
+        "button",
+        {className: "sfir-theme-toggle sfir-icon-button", onClick: this.onClick, title: label, "aria-label": label},
+        h("svg", {className: "sfir-theme-toggle__icon", viewBox: "0 0 24 24", "aria-hidden": "true"}, glyph)
       )
     );
   }
