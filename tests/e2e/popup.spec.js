@@ -480,6 +480,11 @@ test.describe("Popup", () => {
       await expect(docContainer).toBeVisible({timeout: 1000});
       const docLink = docContainer.locator("a[href*='Hoofddev/sf-inspector']");
       await expect(docLink).toBeAttached({timeout: 1000});
+
+      // Reporting an issue is the support route for a paid app, so the footer has to offer it.
+      const issueContainer = page.frameLocator(".insext-popup").locator("div[title='Report an issue']");
+      await expect(issueContainer).toBeVisible({timeout: 1000});
+      await expect(issueContainer.locator("a[href$='/issues']")).toBeAttached({timeout: 1000});
     });
   });
 

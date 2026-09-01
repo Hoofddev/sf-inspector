@@ -858,6 +858,34 @@ class App extends React.PureComponent {
           h(
             "div",
             {
+              id: "reportIssueBtn",
+              className:
+              "slds-col slds-size_1-of-12 slds-text-align_right slds-icon_container",
+              title: "Report an issue",
+            },
+            h(
+              "a",
+              {
+                href: "https://github.com/Hoofddev/sf-inspector/issues",
+                target: linkTarget,
+              },
+              h(
+                "svg",
+                {
+                  className:
+                  "slds-button slds-icon_x-small slds-icon-text-default slds-m-top_xxx-small",
+                  viewBox: "0 0 52 52",
+                },
+                h("use", {
+                  xlinkHref: "symbols.svg#bug",
+                  style: {fill: "#9c9c9c"},
+                })
+              )
+            )
+          ),
+          h(
+            "div",
+            {
               id: "optionsBtn",
               className:
               "slds-col slds-size_1-of-12 slds-text-align_right slds-icon_container slds-m-right_small",
