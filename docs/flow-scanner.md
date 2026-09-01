@@ -20,7 +20,7 @@ The Flow Scanner in Salesforce Inspector Reloaded is powered by the [Lightning F
 
 ## How to Launch the Flow Scanner
 
-1. **Open Salesforce Inspector Reloaded** in your browser (Chrome or Firefox).
+1. **Open SF Inspector** from any Salesforce page in Safari.
 2. Navigate to a Salesforce Flow in your org.
 3. Look for the **Flow Scanner** button or option (usually available in the Inspector's UI when viewing a Flow):
 ![image](https://github.com/user-attachments/assets/222f22b0-235a-4f23-b346-6e9d6f8b275b)

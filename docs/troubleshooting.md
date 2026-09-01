@@ -35,7 +35,7 @@ Delete the generated token from the Option page
 
 <img width="938" alt="Delete Token" src="https://github.com/user-attachments/assets/f38ece82-a0db-44ab-98d7-bd856a2f2445" />
 
-Or try to run this code in chrome dev console, after inspecting the extension' popup code:
+Or run this in Safari's Web Inspector console, with the extension's panel inspected (Develop ▸ Web Inspector, then pick the SF Inspector panel):
 
 ```js
 let tokens = Object.keys(localStorage).filter((localKey) =>
