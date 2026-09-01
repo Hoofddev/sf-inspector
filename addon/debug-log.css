@@ -146,3 +146,10 @@ mark.sfir-highlight.current {
 .sfir-log-actions-group {
   white-space: nowrap;
 }
+/* The filter row used slds-size_xx-large, a flat 960px. On the page measure that runs past the
+   column's right edge below roughly 1000px and scrolls the page sideways. It keeps the same width
+   it had, but as a ceiling rather than a fixed size. */
+.sfir-log-filters {
+  width: 100%;
+  max-width: 960px;
+}

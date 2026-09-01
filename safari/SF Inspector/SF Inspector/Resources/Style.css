@@ -1,0 +1,209 @@
+/**
+ * The container app's first-run screen.
+ *
+ * This is the first thing anyone sees after buying, and its whole job is to get two settings turned
+ * on. So it reads as a checklist rather than a marketing page: what to do, what state it is in, and
+ * nothing else competing for attention.
+ *
+ * It follows the desktop appearance and borrows the extension's accent, but not its glass -- there
+ * is no page behind this window for glass to sit on, and a translucent panel over the desktop
+ * wallpaper would look like a mistake rather than a material.
+ */
+
+* {
+    -webkit-user-select: none;
+    -webkit-user-drag: none;
+    cursor: default;
+}
+
+:root {
+    color-scheme: light dark;
+
+    --accent: light-dark(#0071e3, #0a84ff);
+    --accent-text: light-dark(#0063c7, #6cb6ff);
+    --ink: light-dark(#11151c, #f2f2f7);
+    --ink-quiet: light-dark(#666d7a, #98989f);
+    --rule: light-dark(rgba(60, 50, 90, .12), rgba(255, 255, 255, .12));
+    --done: light-dark(#1a7f4f, #4fc98c);
+}
+
+html,
+body {
+    height: 100%;
+    margin: 0;
+}
+
+body {
+    box-sizing: border-box;
+    padding: 28px 32px 22px;
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+    color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
+    font-size: 13px;
+    line-height: 1.45;
+}
+
+/* ---------------------------------------------------------------------------------- masthead */
+
+.masthead {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.masthead__icon {
+    flex: none;
+    width: 72px;
+    height: 72px;
+}
+
+.masthead__title {
+    margin: 0;
+    font-size: 22px;
+    font-weight: 600;
+    letter-spacing: -.02em;
+}
+
+.masthead__subtitle {
+    margin: 2px 0 0;
+    color: var(--ink-quiet);
+}
+
+/* ------------------------------------------------------------------------------------- steps */
+
+.steps {
+    flex: 1 1 auto;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+.step {
+    display: flex;
+    gap: 12px;
+}
+
+/* A hollow ring while the step is outstanding, filled with a tick once it is done. Drawn rather
+   than lettered, so the two states differ in shape and not only in colour.
+ *
+ * The tick is two borders on a rotated box rather than an SVG: the page runs under a
+ * default-src 'self' policy, which blocks data: URIs, so an inline image would silently not load
+ * and leave a bare green disc. */
+.step__marker {
+    flex: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    width: 18px;
+    height: 18px;
+    margin-top: 1px;
+    border: 1.5px solid var(--rule);
+    border-radius: 50%;
+}
+
+.step--done .step__marker {
+    border-color: var(--done);
+    background-color: var(--done);
+}
+
+.step--done .step__marker::after {
+    content: "";
+    width: 4px;
+    height: 8px;
+    margin-bottom: 2px;
+    border: solid #fff;
+    border-width: 0 1.7px 1.7px 0;
+    transform: rotate(45deg);
+}
+
+.step__body {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.step__title {
+    margin: 0 0 3px;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.step__detail {
+    margin: 0;
+    color: var(--ink-quiet);
+}
+
+/* Which sentence applies depends on the extension's state, so only one of the pair is ever shown.
+   Both live in the markup so the text is readable where it is written. */
+.step__detail--done,
+.step--done .step__detail--pending {
+    display: none;
+}
+
+.step--done .step__detail--done {
+    display: block;
+}
+
+.step--done .button--primary {
+    display: none;
+}
+
+/* The second step cannot be checked from here -- nothing reports which sites the reader has allowed
+   -- so it is never marked done. It is dimmed until the first is, to say which one is next. */
+.step--waiting {
+    opacity: .45;
+}
+
+/* ----------------------------------------------------------------------------------- controls */
+
+.button {
+    margin-top: 10px;
+    padding: 4px 13px;
+    border: 0;
+    border-radius: 7px;
+    font: inherit;
+    font-weight: 500;
+    cursor: default;
+}
+
+.button--primary {
+    background-color: var(--accent);
+    color: #fff;
+}
+
+.button--primary:active {
+    background-color: light-dark(#0062c4, #3d9bff);
+}
+
+.button--quiet {
+    margin: 0;
+    padding: 2px 0;
+    background: none;
+    color: var(--accent-text);
+}
+
+.button--quiet:hover {
+    text-decoration: underline;
+}
+
+/* ------------------------------------------------------------------------------------ footer */
+
+.footer {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    padding-top: 14px;
+    border-top: 1px solid var(--rule);
+}
+
+.footer__note {
+    margin: 0;
+    color: var(--ink-quiet);
+    font-size: 12px;
+}

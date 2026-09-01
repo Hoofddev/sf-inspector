@@ -126,7 +126,7 @@
 .description-toggle-btn {
   background: none;
   border: none;
-  color: var(--sfi-accent);
+  color: var(--sfi-accent-text);
   font-size: 0.95rem;
   font-weight: 500;
   cursor: pointer;
@@ -176,7 +176,7 @@
 
 .flow-status-badge.active {
   background: var(--sfi-success-surface);
-  color: var(--sfi-success-on);
+  color: var(--sfi-success);
   border-color: var(--sfi-success-surface);
 }
 
@@ -220,7 +220,7 @@ button,
   text-decoration: none;
   background-color: white;
   padding: 0 16px;
-  color: var(--sfi-accent);
+  color: var(--sfi-accent-text);
   cursor: pointer;
   outline: none;
   position: relative;
@@ -264,7 +264,7 @@ button:not(.slds-button):hover,
 .button:not(.slds-button):hover {
   background-color: var(--slds-g-color-surface-container-2);
   border-color: var(--sfi-accent);
-  color: var(--sfi-accent);
+  color: var(--sfi-accent-text);
 }
 
 button:disabled,
@@ -405,7 +405,7 @@ button:disabled,
 .summary-action-btn:hover {
   background-color: var(--slds-g-color-surface-container-2);
   border-color: var(--sfi-accent);
-  color: var(--sfi-accent);
+  color: var(--sfi-accent-text);
 }
 
 .summary-action-btn .export-icon {
@@ -1314,9 +1314,12 @@ svg.icon:hover {
   }
 }
 
+/* This was --slds-g-color-surface-container-1, a surface token standing in for a text colour. It
+   read as near-white, which the old dark header bar carried; on the light bar the attribution was
+   white on white and only the link inside it stayed legible. */
 .flow-scanner-note-header {
   margin-right: 12px;
-  color: var(--slds-g-color-surface-container-1);
+  color: var(--slds-g-color-on-surface-3);
   font-size: 0.875rem;
   line-height: 1.4;
   display: flex;
@@ -1326,7 +1329,7 @@ svg.icon:hover {
 
 .flow-scanner-note-header a {
   margin-left: 4px;
-  color: var(--sfi-accent);
+  color: var(--sfi-accent-text);
   text-decoration: none;
   font-weight: 500;
 }
@@ -1359,7 +1362,7 @@ svg.icon:hover {
 }
 
 .tooltip-container:hover .info-icon {
-  color: var(--sfi-accent);
+  color: var(--sfi-accent-text);
 }
 
 .tooltip-content {

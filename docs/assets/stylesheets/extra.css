@@ -1,0 +1,116 @@
+/**
+ * The documentation, in the same voice as the product.
+ *
+ * The extension, the popup and the app's first-run screen already share one palette and one type
+ * stack. The docs were Material's defaults -- Roboto, and a stock blue -- so a reader moving between
+ * them and the app crossed a visible seam. This harmonises the two rather than rebuilding the
+ * theme: colour, type and links follow the product, and Material keeps its own layout, which it is
+ * good at and which fighting would only make brittle.
+ *
+ * Material is driven by custom properties, so this sets those rather than out-specifying its rules.
+ * Anything it does not expose that way is left alone deliberately.
+ */
+
+:root,
+[data-md-color-scheme="default"] {
+  /* The same accent the extension and the app use. */
+  --md-primary-fg-color:        #0071e3;
+  --md-primary-fg-color--light: #3d9bff;
+  --md-primary-fg-color--dark:  #0062c4;
+  --md-accent-fg-color:         #0063c7;
+
+  /* Links get the text accent rather than the surface one: the surface blue is a shade too light
+     to read as body text on white, which is the same reason the extension has two. */
+  --md-typeset-a-color:         #0063c7;
+
+  --md-default-fg-color:        #11151c;
+  --md-default-fg-color--light: #3c4350;
+  --md-default-fg-color--lighter: #666d7a;
+  --md-default-bg-color:        #ffffff;
+
+  --md-code-bg-color:           #f5f6f8;
+  --md-code-fg-color:           #11151c;
+}
+
+[data-md-color-scheme="slate"] {
+  --md-primary-fg-color:        #0a84ff;
+  --md-primary-fg-color--light: #6cb6ff;
+  --md-primary-fg-color--dark:  #0062c4;
+  --md-accent-fg-color:         #6cb6ff;
+  --md-typeset-a-color:         #6cb6ff;
+
+  /* Matches the ground the extension's own pages are painted on, so the two do not read as two
+     different dark modes. */
+  --md-default-bg-color:        #16161a;
+  --md-default-fg-color:        #f2f2f7;
+  --md-default-fg-color--light: #c7c7cc;
+  --md-default-fg-color--lighter: #98989f;
+
+  --md-code-bg-color:           #1f1f23;
+  --md-code-fg-color:           #f2f2f7;
+}
+
+/* Material's own font setting is switched off in mkdocs.yml, which also stops it fetching Roboto
+   from Google on every page load. The system stack is what the app and the extension use. */
+body,
+input,
+.md-typeset {
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, "Helvetica Neue", sans-serif;
+}
+
+code,
+kbd,
+pre,
+.md-typeset code {
+  font-family: ui-monospace, "SF Mono", SFMono-Regular, Menlo, monospace;
+}
+
+/* Headings are set tighter than Material's default, which is tuned for Roboto and reads loose in
+   SF at the same sizes. */
+.md-typeset h1,
+.md-typeset h2,
+.md-typeset h3 {
+  font-weight: 600;
+  letter-spacing: -.018em;
+}
+
+/* The header is a solid accent bar by default, which is a lot of blue above every page. Neutral,
+   with the accent kept for the things that are actually interactive. */
+.md-header {
+  background-color: var(--md-default-bg-color);
+  color: var(--md-default-fg-color);
+  box-shadow: 0 0 .2rem rgba(0, 0, 0, .05), 0 .2rem .4rem rgba(0, 0, 0, .06);
+}
+
+.md-tabs {
+  background-color: var(--md-default-bg-color);
+  color: var(--md-default-fg-color);
+}
+
+/* The search field sits in the header, so it has to stop being white-on-blue with it. */
+.md-search__form {
+  background-color: rgba(128, 128, 140, .12);
+}
+
+.md-search__form:hover {
+  background-color: rgba(128, 128, 140, .18);
+}
+
+.md-search__input::placeholder,
+.md-search__icon {
+  color: var(--md-default-fg-color--lighter);
+}
+
+/* Corners consistent with the extension's, which rounds a little more than Material does. */
+.md-typeset pre > code,
+.md-typeset .admonition,
+.md-typeset details,
+.md-typeset img {
+  border-radius: .5rem;
+}
+
+/* Screenshots in the guide carry their own edges, so they get a hairline rather than sitting flat
+   against the page. */
+.md-typeset img {
+  border: 1px solid rgba(128, 128, 140, .22);
+}

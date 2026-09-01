@@ -103,7 +103,7 @@ h1 {
 }
 
 .dep-card-details .dep-card-type {
-    color: var(--sfi-accent);
+    color: var(--sfi-accent-text);
     font-weight: 500;
 }
 
@@ -113,7 +113,7 @@ h1 {
 }
 
 .dep-card-details .dep-card-referenced-type {
-    color: var(--sfi-accent);
+    color: var(--sfi-accent-text);
     font-weight: 500;
 }
 
@@ -142,7 +142,7 @@ h1 {
 }
 
 .dep-card-link a {
-    color: var(--sfi-accent);
+    color: var(--sfi-accent-text);
     text-decoration: none;
     font-size: 11px;
     font-weight: bold;
@@ -364,7 +364,7 @@ h1 {
 }
 
 .dep-dropdown-selected {
-    color: var(--sfi-accent);
+    color: var(--sfi-accent-text);
     background: color-mix(in srgb, var(--sfi-accent) 8%, var(--slds-g-color-surface-container-1));
     font-weight: 600;
 }
@@ -504,7 +504,7 @@ h1 {
 }
 
 .dep-dropdown-item.selected {
-    color: var(--sfi-accent);
+    color: var(--sfi-accent-text);
     background: color-mix(in srgb, var(--sfi-accent) 8%, var(--slds-g-color-surface-container-1));
     font-weight: 600;
 }
@@ -632,7 +632,7 @@ h1 {
 
 .dep-view-toggle:hover {
     background-color: var(--slds-g-color-surface-container-2);
-    color: var(--sfi-accent);
+    color: var(--sfi-accent-text);
 }
 
 .dep-view-toggle.active:hover {
@@ -809,7 +809,7 @@ h1 {
 }
 
 .dep-dropdown-trigger:hover .dep-dropdown-arrow {
-    color: var(--sfi-accent) !important;
+    color: var(--sfi-accent-text) !important;
 }
 
 .dep-dropdown-text {
@@ -872,7 +872,7 @@ h1 {
     display: flex;
     align-items: center;
     gap: 4px;
-    color: var(--sfi-accent);
+    color: var(--sfi-accent-text);
     font-size: 12px;
     cursor: pointer;
     margin-left: 8px;
@@ -1333,7 +1333,7 @@ h1 {
 }
 
 .dep-tree-referenced-type {
-    color: var(--sfi-accent);
+    color: var(--sfi-accent-text);
     font-weight: 500;
 }
 

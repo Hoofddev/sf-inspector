@@ -7,14 +7,14 @@
 You've just installed Salesforce Inspector Reloaded and ... the popup is blank 😥
 Make sure that third party cookies are enabled in your browser:
 
-![image](https://github.com/tprouvot/Salesforce-Inspector-reloaded/assets/35368290/503852db-37fd-48fb-9a83-f3008a1be9f1)
+![image](assets/images/guide/troubleshooting-01.png)
 
 ### Salesforce Inspector Reloaded is not working anymore
 
 One of the cause can be a domain update (Hyperforce migration, MyDomain change ...).
 What you need to do is to delete the sid cookie (and website associated cookies if sid did not worked).
 
-![image](https://github.com/tprouvot/Salesforce-Inspector-reloaded/assets/35368290/637656f6-fcb0-4419-b2da-98853049c473)
+![image](assets/images/guide/troubleshooting-02.png)
 
 ### Unauthorized or Network error
 
@@ -61,7 +61,7 @@ When installing the default connected app when `API Access Control` is enabled, 
 If you use the standard Salesforce Inspector Reloaded's Connected App and click `Generate New Token` the `LoginAs Incognito` feature might stop working correctly. Instead of automatically logging you in, you'll be sent to a regular login screen.
 
 This issue occurs because the default Salesforce Inspector Reloaded Connected App doesn't use the required scope for this feature.
-As a workaround, you can create a custom `External Client App` (since the creation of Connected Apps is soon to be deprecated) as described in this [article](https://tprouvot.github.io/Salesforce-Inspector-reloaded/how-to/#external-client-app-creation).
+As a workaround, you can create a custom `External Client App` (since the creation of Connected Apps is soon to be deprecated) as described in this [article](https://hoofddev.github.io/sf-inspector/how-to/#external-client-app-creation).
 
 ### Deployment error: No package.xml found
 

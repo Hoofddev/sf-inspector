@@ -73,7 +73,7 @@
   border-color: var(--sfi-warning);
 }
 .severity-info {
-  color: var(--sfi-accent);
+  color: var(--sfi-accent-text);
   background: color-mix(in srgb, var(--sfi-accent) 8%, var(--slds-g-color-surface-container-1));
   border-color: var(--sfi-accent);
 }

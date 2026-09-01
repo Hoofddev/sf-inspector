@@ -18,13 +18,13 @@ To secure the extension usage, you can use a OAuth 2.0 flow to get an access tok
 6. Go back to "Connected Apps OAuth Usage" and click "Unblock" next to "Salesforce Inspector reloaded"
 7. Once again, open the extension and scroll down to the "Generate Access Token" button
 
-![2024-05-28_16-12-29 (1)](https://github.com/tprouvot/Salesforce-Inspector-reloaded/assets/35368290/1cb41271-ea61-4e25-9c68-2a50764c4cec)
+![2024-05-28_16-12-29 (1)](assets/images/guide/how-to-01.gif)
 
 This is it ! You can use the extension with the default connected app.
 
 From now when the token will be expired, this banner will show up and provide a link to re-generate the access token
 
-<img width="274" alt="image" src="https://github.com/tprouvot/Salesforce-Inspector-reloaded/assets/35368290/856c3635-008b-4b91-8160-019d1d701ba9">
+<img width="274" alt="image" src="assets/images/guide/how-to-02.png">
 
 > **Warning**
 > Don't forget to grant access to the users by selecting the related profile(s) or permission set(s).
@@ -56,15 +56,15 @@ The creation of Connected Apps is soon to be deprecated (planned for Spring 26')
    * Select (enable) `Require Proof Key for Code Exchange (PKCE) extension for Supported Authorization Flows`.
 6. Get Consumer Key and save it in the Options page
 
-    <img alt="Option button" width="276" alt="image" src="https://github.com/tprouvot/Salesforce-Inspector-reloaded/assets/35368290/14cc8aac-5ffc-4747-9da1-ba892231ace1">
+    <img alt="Option button" width="276" alt="image" src="assets/images/guide/how-to-03.png">
 
 7. Enter the consumer key
 
-    <img alt="Client Id" width="849" src="https://github.com/tprouvot/Salesforce-Inspector-reloaded/assets/35368290/b1edfea1-5a56-4f42-8945-e452a7ab5cf5">
+    <img alt="Client Id" width="849" src="assets/images/guide/how-to-04.png">
 
 8. Refresh page and generate new token
 
-    <img width="275" alt="Generate Token" src="https://github.com/tprouvot/Salesforce-Inspector-reloaded/assets/35368290/931df75d-42ac-4667-ab3f-35f6b6b65a66">
+    <img width="275" alt="Generate Token" src="assets/images/guide/how-to-05.png">
 
 ## Migrate saved queries from legacy extension to Salesforce Inspector Reloaded
 
@@ -111,7 +111,7 @@ Add a new property `csvSeparator` containing the needed separator for CSV files
 
 If you want to _always_ open extension's links in a new tab, you can enable> **Warning**
 
-<img width="925" alt="Open link in a new tab" src="https://github.com/tprouvot/Salesforce-Inspector-reloaded/assets/35368290/7cd6c1fa-af55-4149-a2fb-73611c6f02f9">
+<img width="925" alt="Open link in a new tab" src="assets/images/guide/how-to-06.png">
 
 > **Warning**
    > Enabling this option will prevent you to use `Lightning navigation` which allows faster navigation.
@@ -281,7 +281,7 @@ Create one shortcut for each, give them descriptive labels (e.g. `Switch to Ligh
 
 Since Winter 24, there is a beta functionality to view a summary of the PermissionSet / PermissionSetGroups
 
-<img width="718" alt="image" src="https://github.com/tprouvot/Salesforce-Inspector-reloaded/assets/35368290/36448cd1-260e-49bd-9dfd-c61910f813f4">
+<img width="718" alt="image" src="assets/images/guide/how-to-07.png">
 
 You can enable this view for the Shortcut search by enabling the option as shown below.
 
@@ -295,7 +295,7 @@ Then when you click on a PermissionSet / PermissionSetGroups search result, you'
 
 From the popup, click on "Options" button and select the API tab.
 
-<img width="846" alt="image" src="https://github.com/tprouvot/Salesforce-Inspector-reloaded/assets/35368290/fba23a19-0b11-4275-b4d9-52e9e6ac1bd9">
+<img width="846" alt="image" src="assets/images/guide/how-to-08.png">
 
 If you want to prevent auto assignment rules, set the `createUpdateRestCalloutHeaders` property to `{"Sforce-Auto-Assign" : false}`
 
@@ -306,7 +306,7 @@ Since the plugin's api version is only updated when all productions have been up
 > [!IMPORTANT]
 > When you manually update the API version, it won't be overridden by extension future updates.
 
-![2023-11-10_09-50-55 (1)](https://github.com/tprouvot/Salesforce-Inspector-reloaded/assets/35368290/6ae51a29-9887-41a6-8148-d9e12c2dc10d)
+![2023-11-10_09-50-55 (1)](assets/images/guide/how-to-09.gif)
 
 ## Delete All Apex Logs
 
@@ -322,11 +322,11 @@ From User tab, click the "Enable Log" button.
 
 By default, this will enable logs with level "SFDC_DevConsole" for 15 minutes.
 
-<img width="279" alt="Enable Log button" src="https://github.com/tprouvot/Salesforce-Inspector-reloaded/assets/35368290/e87d2ed6-5c21-4e03-8fb1-16e3bc6121f3">
+<img width="279" alt="Enable Log button" src="assets/images/guide/how-to-10.png">
 
 You can update the debug level (configuration is per organization) and duration (for all organizations) on the Options page.
 
-<img width="788" alt="DebugLog Options" src="https://github.com/tprouvot/Salesforce-Inspector-reloaded/assets/35368290/f7aa5680-742a-4581-ad29-770089d2b55e">
+<img width="788" alt="DebugLog Options" src="assets/images/guide/how-to-11.png">
 
 > **Warning**
 > Increasing the default duration may lead to a high volume of logs generated.
@@ -376,7 +376,7 @@ Navigate to your browser shortcut menu and choose dedicated shortcuts for the pa
 * Chrome: [chrome://extensions/shortcut](chrome://extensions/shortcut)
 * Edge: [edge://extensions/shortcuts](edge://extensions/shortcuts)
 
-<img width="660" alt="Use Chrome Shortcuts" src="https://github.com/tprouvot/Salesforce-Inspector-reloaded/assets/35368290/382aea2d-5278-4dfe-89e6-6dcec4c724c9">
+<img width="660" alt="Use Chrome Shortcuts" src="assets/images/guide/how-to-12.png">
 
 ### Default shortcuts
 

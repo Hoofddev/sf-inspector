@@ -7,7 +7,7 @@ When on the export page, put the cursor between `SELECT` and `FROM` and press `C
 If you want to insert only custom fields, enter `__c` between `SELECT` and `FROM`, for date fields enter `date`.
 The search is made on the field label and name.
 
-![2024-04-16_08-53-32 (1)](https://github.com/tprouvot/Salesforce-Inspector-reloaded/assets/35368290/ef7ba7a0-c9c4-4573-9aaa-b72e64430f64)
+![2024-04-16_08-53-32 (1)](assets/images/guide/data-export-01.gif)
 
 ## Multiple Query Tabs
 
@@ -50,7 +50,7 @@ Example:
 
 `SELECT Id FROM// SELECT Id FROM WHERE//SELECT Id FROM WHERE IN//SELECT Id FROM WHERE LIKE//SELECT Id FROM ORDER BY//SELECT ID FROM MYTEST__c//SELECT ID WHERE`
 
-<img width="895" alt="image" src="https://github.com/tprouvot/Salesforce-Inspector-reloaded/assets/35368290/16490965-ec4f-42d7-a534-8f24febe1ee3">
+<img width="895" alt="image" src="assets/images/guide/data-export-02.png">
 
 ## Customize Select all fields in a query shortcut
 
@@ -62,7 +62,7 @@ If the default `Ctrl + space` shortcut is already used by another extension or a
 
 You can exclude formula fields to be included in the autocomplete by disable the toogle
 
-<img width="898" alt="Exclude formula fields from autocomplete" src="https://github.com/tprouvot/Salesforce-Inspector-reloaded/assets/35368290/aa9db6c4-099d-49ea-a343-7c64e472450d">
+<img width="898" alt="Exclude formula fields from autocomplete" src="assets/images/guide/data-export-03.png">
 
 ## Convert times from data export to local time
 
@@ -81,14 +81,14 @@ are displayed.
 
 After running a query in the "Data Export" page, you can hide columns in the query results. These columns represent the name of the objects included in your query. They are useful to automatically map the fields to the correct object in the "Data Import" page. The columns are hidden in the exported files (CSV or Excel) as well. You can set a default value, using the 'Hide Object Name Columns by default on Data Export' option ("Options" -> "Data Export" tab).
 
-![2024-05-16_17-54-24 (1)](https://github.com/guillaumeSF/Salesforce-Inspector-reloaded/assets/166603639/45fda19b-b426-4b11-91cb-4f0fbc5c47d7)
+![2024-05-16_17-54-24 (1)](assets/images/guide/data-export-04.gif)
 
 ## Download Event Log Files
 
 To make your life easier and avoid third party tools or login to ELF website, we implemented the download option from the data export page.
 When quering EventLogFile, add the "LogFile" field in the query and click on the value to download corresponding log.
 
-![2023-11-15_14-32-44 (1)](https://github.com/Annubis45/Salesforce-Inspector-reloaded/assets/35368290/ba1fcbed-8428-495e-b03b-7816320d95df)
+![2023-11-15_14-32-44 (1)](assets/images/guide/data-export-05.gif)
 
 ## Hide some buttons in Data Export
 

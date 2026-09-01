@@ -1,6 +1,6 @@
 site_name: Salesforce Inspector reloaded
-site_url: https://tprouvot.github.io/Salesforce-Inspector-reloaded/
-repo_url: https://github.com/tprouvot/Salesforce-Inspector-reloaded
+site_url: https://hoofddev.github.io/sf-inspector/
+repo_url: https://github.com/Hoofddev/sf-inspector
 site_author: Thomas Prouvot
 
 theme:
@@ -18,26 +18,32 @@ theme:
     - content.code.annotation
     - content.code.copy
   language: en
+  # Roboto is not fetched from Google on every page load, and the system stack in
+  # assets/stylesheets/extra.css applies instead -- the same one the extension and the app use.
+  font: false
   palette:
-    - scheme: default
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
       toggle:
         icon: material/toggle-switch-off-outline
         name: Switch to dark mode
-      primary: blue
-      accent: indigo
-    - scheme: slate
+      primary: custom
+      accent: custom
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
       toggle:
         icon: material/toggle-switch
         name: Switch to light mode
-      primary: blue
-      accent: indigo
+      primary: custom
+      accent: custom
 
 extra:
   social:
     - icon: fontawesome/brands/github-alt
-      link: https://github.com/tprouvot
-    - icon: fontawesome/brands/linkedin
-      link: https://www.linkedin.com/in/thomasprouvot/
+      link: https://github.com/Hoofddev
+
+extra_css:
+  - assets/stylesheets/extra.css
 
 extra_javascript:
   - https://unpkg.com/mermaid@10.6.1/dist/mermaid.min.js
@@ -98,8 +104,7 @@ nav:
   - Support:
       - Troubleshooting: troubleshooting.md
       - Privacy Policy: privacy.md
-      - Donate: donate.md
       - Developer Notes: dev-notes.md
 
 copyright: |
-  &copy; 2025 <a href="https://github.com/tprouvot" target="_blank" rel="noopener">Thomas Prouvot</a>
+  &copy; 2026 <a href="https://github.com/Hoofddev" target="_blank" rel="noopener">Hoofddev</a> &middot; a fork of <a href="https://github.com/tprouvot/Salesforce-Inspector-reloaded" target="_blank" rel="noopener">Salesforce Inspector Reloaded</a> by Thomas Prouvot, MIT licensed

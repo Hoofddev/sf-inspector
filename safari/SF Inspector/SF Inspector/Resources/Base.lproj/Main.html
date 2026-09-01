@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'">
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+
+    <link rel="stylesheet" href="../Style.css">
+    <script src="../Script.js" defer></script>
+</head>
+<body>
+    <header class="masthead">
+        <img class="masthead__icon" src="../Icon.png" width="72" height="72" alt="">
+        <div>
+            <h1 class="masthead__title">SF Inspector</h1>
+            <p class="masthead__subtitle">Salesforce tools for Safari</p>
+        </div>
+    </header>
+
+    <!--
+      Two steps, because there are two, and the second is the one people miss: an extension that is
+      enabled but has not been granted access to the org's domains loads, does nothing, and looks
+      broken. Both are shown from the start so the second is not a surprise.
+    -->
+    <ol class="steps">
+        <li class="step" id="step-enable">
+            <span class="step__marker" aria-hidden="true"></span>
+            <div class="step__body">
+                <h2 class="step__title">Turn the extension on</h2>
+                <p class="step__detail step__detail--pending">
+                    Safari keeps new extensions switched off until you say otherwise.
+                </p>
+                <p class="step__detail step__detail--done">
+                    The extension is on. You can turn it off again in Safari’s settings whenever you like.
+                </p>
+                <button class="button button--primary" id="open-settings">Open Safari Settings…</button>
+            </div>
+        </li>
+
+        <li class="step" id="step-access">
+            <span class="step__marker" aria-hidden="true"></span>
+            <div class="step__body">
+                <h2 class="step__title">Allow it on your Salesforce sites</h2>
+                <p class="step__detail">
+                    In the same panel, set SF Inspector to <strong>Always Allow</strong> on your
+                    Salesforce domains. Without this it loads but cannot read anything, and behaves
+                    as though you were signed out.
+                </p>
+            </div>
+        </li>
+    </ol>
+
+    <footer class="footer">
+        <p class="footer__note" id="status">Checking…</p>
+        <button class="button button--quiet" id="open-docs">Documentation</button>
+    </footer>
+</body>
+</html>

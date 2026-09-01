@@ -318,7 +318,7 @@ button,
   text-decoration: none;
   background-color: white;
   padding: 0 16px;
-  color: var(--sfi-accent);
+  color: var(--sfi-accent-text);
   cursor: pointer;
   outline: none;
   position: relative;
@@ -362,7 +362,7 @@ button.toggle .button-icon {
 }
 
 ul > li > a > span {
-  color: var(--sfi-accent);
+  color: var(--sfi-accent-text);
 }
 
 svg.button-icon {
@@ -542,7 +542,7 @@ svg.button-icon {
 }
 .help-text a,
 .help-text a:visited {
-  color: var(--sfi-accent);
+  color: var(--sfi-accent-text);
 }
 
 .unified-search-input {

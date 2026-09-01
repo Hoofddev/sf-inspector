@@ -4,7 +4,7 @@
 
 You can configure the [SOAP headers](https://developer.salesforce.com/docs/atlas.en-us.api.meta/api/soap_headers.htm) when importing records to specify Assignment Rule, Duplicate Rule or OwnerChangeOptions.
 Because custom headers can be hard to configure, you could iterate through suggestions by pressing down key.
-If you want to include new suggestions, feel free to open a new [feature request](https://github.com/tprouvot/Salesforce-Inspector-reloaded/issues/new?assignees=tprouvot&labels=enhancement&projects=&template=feature_request.md).
+If you want to include new suggestions, feel free to open a new [feature request](https://github.com/Hoofddev/sf-inspector/issues/new).
 
 If true, the account team is kept with the account when the account owner is changed. If false, the account team is deleted:
 ``` json

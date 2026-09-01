@@ -1,0 +1,103 @@
+/**
+ * Flow search on the Setup flow list.
+ *
+ * This renders inside Salesforce's own page, not in an extension page, so none of the theme's
+ * tokens are available and nothing here can rely on them. Values are written out, and kept close to
+ * SLDS's own so the box reads as part of Setup rather than as something bolted on.
+ *
+ * Deliberately no prefers-color-scheme block. It matched the desktop rather than the page, so on a
+ * dark Mac the box turned black inside a light Setup page -- the appearance that matters here is
+ * the one the host page is using, and Setup is light. If Salesforce ever ships a dark Setup, this
+ * has to follow that, not the desktop.
+ *
+ * Every rule is scoped under .sfi-flow-search. Setup's markup is generated and its class names are
+ * not a contract, but the reverse matters more: nothing here may leak into the page around it. The
+ * one exception is the filtered rows, which are hidden by an inline style rather than a class, so
+ * that clearing the search restores whatever display value Setup had given them.
+ */
+/* Pinned, so it stays reachable while the list scrolls under it -- the same behaviour as the column
+   headers, which it sits directly above. The background has to be opaque: rows pass beneath it. */
+.sfi-flow-search {
+  position: sticky;
+  top: 0;
+  z-index: 6;
+  width: 100%;
+  box-sizing: border-box;
+  padding: .5rem .75rem;
+  background-color: #fff;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Salesforce Sans", system-ui, sans-serif;
+}
+
+/* The extension's own look, quietly: its accent, its rounding, and a tinted ground so the row reads
+   as one added thing rather than as a Setup control that behaves unlike the rest of Setup. */
+.sfi-flow-search__bar {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  box-sizing: border-box;
+  width: 100%;
+  padding: 0 .75rem;
+  border: 1px solid rgba(0, 113, 227, .28);
+  border-radius: .625rem;
+  background-color: rgba(0, 113, 227, .04);
+  transition: border-color .15s ease, box-shadow .15s ease, background-color .15s ease;
+}
+
+.sfi-flow-search__bar:focus-within {
+  border-color: #0071e3;
+  background-color: #fff;
+  box-shadow: 0 0 0 3px rgba(0, 113, 227, .16);
+}
+
+.sfi-flow-search__icon {
+  flex: none;
+  width: 1rem;
+  height: 1rem;
+  fill: #0071e3;
+}
+
+.sfi-flow-search__input {
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 2.25rem;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: #181818;
+  font: inherit;
+  font-size: .8125rem;
+}
+
+.sfi-flow-search__input:focus {
+  outline: 0;
+}
+
+.sfi-flow-search__input::placeholder {
+  color: #747474;
+}
+
+/* The platform's own clear button is cancelled: Escape already clears, and it sat oddly against
+   the count and the badge. */
+.sfi-flow-search__input::-webkit-search-cancel-button {
+  appearance: none;
+}
+
+/* How many rows matched, and whether the whole list had been loaded when they were counted. */
+.sfi-flow-search__status {
+  flex: none;
+  color: #747474;
+  font-size: .75rem;
+  white-space: nowrap;
+}
+
+.sfi-flow-search__badge {
+  flex: none;
+  padding: .1rem .45rem;
+  border-radius: 999px;
+  background-color: rgba(0, 113, 227, .1);
+  color: #0071e3;
+  font-size: .6875rem;
+  font-weight: 600;
+  letter-spacing: -.01em;
+  white-space: nowrap;
+}
