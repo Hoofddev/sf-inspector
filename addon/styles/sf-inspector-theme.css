@@ -986,9 +986,18 @@ body.sfi-page .slds-badge.slds-theme_error   { background-color: var(--sfi-dange
  * ================================================================================================ */
 
 /* The ground is painted on html (section 2). In a frame this small, pinning it to the viewport
-   left a mesh that did not move with the content. */
+   left a mesh that did not move with the content.
+ *
+ * The ground itself is also restated. Section 2's four gradients are 60-odd rem across, sized for a
+ * full window; in a 280px frame their purple and peach centres cover the entire panel at once, so
+ * the popup read as a lilac card rather than as glass over the page behind it. Two gradients,
+ * scaled to the frame and much fainter, and a base without the lilac cast. */
 html:has(body.sfi-popup) {
   background-attachment: scroll;
+  background-color: light-dark(#f7f8fa, #16161a);
+  background-image:
+    radial-gradient(22rem 18rem at 12% -8%, light-dark(rgba(150, 170, 255, .13), rgba(120, 100, 220, .24)), transparent 72%),
+    radial-gradient(20rem 16rem at 96% 106%, light-dark(rgba(140, 210, 205, .11), rgba(90, 180, 175, .18)), transparent 70%);
 }
 
 /* The popup has no builder header, so none of its clearance applies here. */
