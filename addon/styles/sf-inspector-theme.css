@@ -1132,3 +1132,21 @@ body.sfi-page .slds-builder-header + * {
     backdrop-filter: none;
   }
 }
+
+/* The footer sits at the end of the content instead of at the foot of the panel, because the frame
+   inside has no height of its own unless the dynamic-height option is on -- button.js clears it
+   otherwise. With nothing to resolve against, the flex column inside cannot fill, so its last child
+   lands wherever the content stops.
+ *
+ * Making the panel a column and letting the frame grow into it gives that height back. The rule is
+ * on the active state only, so the display:none that hides the panel is left alone. flex-basis
+ * stays auto, so an inline height set by the dynamic-height option still wins. */
+#insext.insext-active .insext-popup {
+  display: flex;
+  flex-direction: column;
+}
+
+#insext.insext-active .insext-popup > iframe {
+  flex: 1 1 auto;
+  min-height: 0;
+}
