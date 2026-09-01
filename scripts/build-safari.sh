@@ -130,6 +130,18 @@ else
   SIGNING_ARGS=(CODE_SIGN_IDENTITY="-" CODE_SIGN_STYLE=Manual DEVELOPMENT_TEAM="")
 fi
 
+# The extension's product is discarded so the target is always rebuilt, and therefore always
+# re-signed.
+#
+# Its resources are copied by a build phase rather than listed in the project, which is what lets
+# addon/ change without touching the project -- but it also means Xcode cannot see when the payload
+# changed. On an incremental build it concluded the target was up to date, skipped it, and left the
+# previous signature in place while the phase rewrote the files underneath it. codesign then
+# reported "a sealed resource is missing or invalid" for every file that had changed. Rebuilding
+# just the appex costs a few seconds; the app target and its Swift compilation stay cached.
+APPEX="$DERIVED_DATA/Build/Products/$CONFIGURATION/$APP_NAME Extension.appex"
+rm -rf "$APPEX"
+
 echo "==> Building $CONFIGURATION"
 LOG="$(mktemp -t safari-build)"
 set +e
