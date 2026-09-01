@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		5F2A0000000000000000A002 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 5F2A0000000000000000A001 /* PrivacyInfo.xcprivacy */; };
 		97FE9D6A3046F1CA0005806D /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 97FE9D693046F1CA0005806D /* AppDelegate.swift */; };
 		97FE9D6E3046F1CA0005806D /* Main.html in Resources */ = {isa = PBXBuildFile; fileRef = 97FE9D6C3046F1CA0005806D /* Main.html */; };
 		97FE9D703046F1CA0005806D /* Icon.png in Resources */ = {isa = PBXBuildFile; fileRef = 97FE9D6F3046F1CA0005806D /* Icon.png */; };
@@ -126,6 +127,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		5F2A0000000000000000A001 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = PrivacyInfo.xcprivacy; path = "SF Inspector/PrivacyInfo.xcprivacy"; sourceTree = SOURCE_ROOT; };
 		97FE9D663046F1CA0005806D /* SF Inspector.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "SF Inspector.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		97FE9D693046F1CA0005806D /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		97FE9D6D3046F1CA0005806D /* Base */ = {isa = PBXFileReference; lastKnownFileType = text.html; name = Base; path = Base.lproj/Main.html; sourceTree = "<group>"; };
@@ -483,7 +485,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "# Ships everything in Resources, rather than the file-by-file list the converter wrote.\n#\n# That list is why the project used to be regenerated whenever a file was added to addon/: a new\n# file was copied into the source tree by scripts/build-safari.sh and then silently left out of\n# the built bundle, because nothing referenced it. Regenerating threw away every setting on the\n# project with it -- signing, entitlements, versions -- which is untenable for something that has\n# to ship. Copying the directory means the project no longer has an opinion about its contents.\nset -euo pipefail\nrsync -a --delete \"${SRCROOT}/SF Inspector Extension/Resources/\" \"${BUILT_PRODUCTS_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/\"\n";
+			shellScript = "# Ships everything in Resources, rather than the file-by-file list the converter wrote.\n#\n# That list is why the project used to be regenerated whenever a file was added to addon/: a new\n# file was copied into the source tree by scripts/build-safari.sh and then silently left out of\n# the built bundle, because nothing referenced it. Regenerating threw away every setting on the\n# project with it -- signing, entitlements, versions -- which is untenable for something that has\n# to ship. Copying the directory means the project no longer has an opinion about its contents.\nset -euo pipefail\nrsync -a --delete \"${SRCROOT}/SF Inspector Extension/Resources/\" \"${BUILT_PRODUCTS_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/\"\n# The privacy manifest sits beside Resources rather than inside it, because that directory is\n# rsynced from the built payload and --delete would remove anything not in addon/.\ncp \"${SRCROOT}/SF Inspector Extension/PrivacyInfo.xcprivacy\" \"${BUILT_PRODUCTS_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/\"\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -492,6 +494,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				5F2A0000000000000000A002 /* PrivacyInfo.xcprivacy in Resources */,
 				97FE9D703046F1CA0005806D /* Icon.png in Resources */,
 				97FE9D793046F1CA0005806D /* Main.storyboard in Resources */,
 				97FE9D743046F1CA0005806D /* Script.js in Resources */,
@@ -615,7 +618,7 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
-				MACOSX_DEPLOYMENT_TARGET = 26.5;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -675,7 +678,7 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
-				MACOSX_DEPLOYMENT_TARGET = 26.5;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				SDKROOT = macosx;
@@ -700,12 +703,13 @@
 					"@executable_path/../Frameworks",
 					"@executable_path/../../../../Frameworks",
 				);
-				MACOSX_DEPLOYMENT_TARGET = 10.14;
-				MARKETING_VERSION = 1.0;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MARKETING_VERSION = 2.1.0;
 				OTHER_LDFLAGS = (
 					"-framework",
 					SafariServices,
 				);
+				CODE_SIGN_ENTITLEMENTS = "SF Inspector Extension/SF Inspector Extension.entitlements";
 				PRODUCT_BUNDLE_IDENTIFIER = be.hoofdvogel.sfinspector.Extension;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -734,12 +738,13 @@
 					"@executable_path/../Frameworks",
 					"@executable_path/../../../../Frameworks",
 				);
-				MACOSX_DEPLOYMENT_TARGET = 10.14;
-				MARKETING_VERSION = 1.0;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MARKETING_VERSION = 2.1.0;
 				OTHER_LDFLAGS = (
 					"-framework",
 					SafariServices,
 				);
+				CODE_SIGN_ENTITLEMENTS = "SF Inspector Extension/SF Inspector Extension.entitlements";
 				PRODUCT_BUNDLE_IDENTIFIER = be.hoofdvogel.sfinspector.Extension;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -773,13 +778,14 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 2.1.0;
 				OTHER_LDFLAGS = (
 					"-framework",
 					SafariServices,
 					"-framework",
 					WebKit,
 				);
+				CODE_SIGN_ENTITLEMENTS = "SF Inspector/SF Inspector.entitlements";
 				PRODUCT_BUNDLE_IDENTIFIER = be.hoofdvogel.sfinspector;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				REGISTER_APP_GROUPS = YES;
@@ -814,13 +820,14 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 2.1.0;
 				OTHER_LDFLAGS = (
 					"-framework",
 					SafariServices,
 					"-framework",
 					WebKit,
 				);
+				CODE_SIGN_ENTITLEMENTS = "SF Inspector/SF Inspector.entitlements";
 				PRODUCT_BUNDLE_IDENTIFIER = be.hoofdvogel.sfinspector;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				REGISTER_APP_GROUPS = YES;

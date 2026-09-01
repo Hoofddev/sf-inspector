@@ -68,6 +68,13 @@ DERIVED_DATA="${TMPDIR:-/tmp}/sf-inspector-safari"
 echo "==> Building extension payload"
 node scripts/release-build.js safari
 
+# The app and the extension are one product and have to say the same version. addon/manifest.json
+# is where that version is maintained, so it is read from there rather than kept in the Xcode
+# project as a second copy to forget. The build number stays in the project: the App Store requires
+# it to increase with every upload, which is a decision, not something to derive.
+MARKETING_VERSION="$(node -p "require('./addon/manifest.json').version")"
+echo "==> Version $MARKETING_VERSION (from addon/manifest.json)"
+
 # The project no longer lists the payload file by file: its "Copy extension resources" phase copies
 # the whole Resources directory, so adding or removing a file in addon/ needs no change to it. That
 # is what makes the project something that can be owned and committed rather than regenerated --
@@ -149,6 +156,7 @@ xcodebuild -project "$PROJECT" \
   -scheme "$APP_NAME" \
   -configuration "$CONFIGURATION" \
   -derivedDataPath "$DERIVED_DATA" \
+  MARKETING_VERSION="$MARKETING_VERSION" \
   "${SIGNING_ARGS[@]}" >"$LOG" 2>&1
 STATUS=$?
 set -e
