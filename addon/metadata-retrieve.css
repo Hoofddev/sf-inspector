@@ -80,7 +80,7 @@ label {
   margin-bottom: 20px;
 }
 .result-bar a:visited {
-  color: var(--sfi-accent);
+  color: var(--sfi-accent-text);
 }
 h2 {
   font-size: 14px;

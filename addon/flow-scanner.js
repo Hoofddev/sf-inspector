@@ -2327,7 +2327,7 @@ class App extends React.Component {
           )
         ]
       }),
-      h("div", {className: "slds-m-top_xx-large"},
+      h("div", {className: "slds-m-top_xx-large sfi-page-column"},
         h("div", {className: "main-content-wrapper"},
           this.renderFlowInfo(),
           this.state.error ? this.renderError() : this.renderScanResults()

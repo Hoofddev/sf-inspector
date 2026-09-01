@@ -25,11 +25,11 @@
  * ================================================================================================ */
 
 :root {
-  /* Light by default. Every token below is a light-dark() pair, so the dark half is written and
-     ready, but following the system appearance stays off: the interface underneath was built for a
-     white page and several of its own surfaces do not follow the tokens, which leaves parts of it
-     unreadable. Switch this to "light dark" once every page has been checked in both. */
-  color-scheme: light;
+  /* Follows the system appearance. Every token below is a light-dark() pair, and each page has been
+     swept in both schemes for text that fails contrast against what it actually sits on -- the
+     check this was waiting on. Declaring dark support also tells the browser the pages handle dark
+     themselves, so a force-dark layer has no reason to invert them. */
+  color-scheme: light dark;
 
   /* --- Type ------------------------------------------------------------------------------- */
   --slds-g-font-family-base:
@@ -49,7 +49,13 @@
 
   --slds-g-color-on-surface-1: light-dark(#11151c, #f2f2f7);
   --slds-g-color-on-surface-2: light-dark(#3c4350, #c7c7cc);
-  --slds-g-color-on-surface-3: light-dark(#69707d, #98989f);
+  --slds-g-color-on-surface-3: light-dark(#666d7a, #98989f);
+
+  /* Anything drawn on an accent fill -- button labels, checkbox ticks, selected radios -- is white
+     in both schemes. SLDS maps this to a surface token, which flips dark and puts near-black marks
+     on the blue. */
+  --slds-g-color-on-accent-1: #fff;
+  --slds-g-color-on-accent-2: #fff;
 
   --slds-g-color-border-1:      light-dark(rgba(60, 50, 90, .08), rgba(255, 255, 255, .08));
   --slds-g-color-border-2:      light-dark(rgba(60, 50, 90, .14), rgba(255, 255, 255, .14));
@@ -58,6 +64,9 @@
   /* --- Accent ----------------------------------------------------------------------------- */
   --sfi-accent:       light-dark(#0071e3, #0a84ff);
   --sfi-accent-hover: light-dark(#0062c4, #3d9bff);
+  /* The same accent as a label rather than a fill. #0a84ff is a fine surface on the dark ground but
+     only reaches 4.3:1 as text on it, so anything written in the accent uses this instead. */
+  --sfi-accent-text:  light-dark(#0063c7, #6cb6ff);
 
   --slds-g-color-accent-1:           var(--sfi-accent);
   --slds-g-color-accent-2:           var(--sfi-accent-hover);
@@ -70,11 +79,11 @@
 
   /* --- Status ----------------------------------------------------------------------------- */
   /* Kept apart from the accent so severity never competes with brand. */
-  --sfi-danger:          light-dark(#c9372c, #ff6f61);
+  --sfi-danger:          light-dark(#b3271d, #ff6f61);
   --sfi-danger-surface:  light-dark(#fdeceb, #3a1a18);
-  --sfi-warning:         light-dark(#a16207, #e0a33a);
+  --sfi-warning:         light-dark(#8a5406, #e0a33a);
   --sfi-warning-surface: light-dark(#fdf4e3, #332a13);
-  --sfi-success:         light-dark(#1a7f4f, #4fc98c);
+  --sfi-success:         light-dark(#166b43, #4fc98c);
   --sfi-success-surface: light-dark(#e7f5ee, #12301f);
   --sfi-info:            light-dark(#0e7490, #4bb8d4);
   --sfi-info-surface:    light-dark(#e6f4f8, #102a33);
@@ -150,6 +159,29 @@ body.sfi-page .sfir-page-container {
      lower and clears itself, so both have to move with it. */
   margin-block-start: var(--sfi-header-clear) !important;
   height: calc(100vh - var(--sfi-header-clear) - var(--sfi-gap)) !important;
+}
+
+/* The pages hang their top-level surfaces off SLDS margin utilities -- slds-m-around_medium,
+   slds-m-horizontal_medium -- which inset each card a further 1rem inside the container. The
+   header bar sits on the container's own edge, so the cards ended up a rem narrower than the bar
+   on both sides. The gutter is the container's job; the utilities keep their vertical rhythm. */
+body.sfi-page .sfir-page-container > * {
+  margin-inline: 0 !important;
+}
+
+/* Two pages -- debug-log and flow-scanner -- hang their content off a bare margin utility instead
+   of .sfir-page-container, so they missed both the shared measure and the space the fixed header
+   occupies: the first row ran under the bar and sat on a gutter of its own. This is the container's
+   box without its viewport height, which those two pages do not want. */
+body.sfi-page .sfi-page-column {
+  max-width: var(--sfi-measure);
+  margin-inline: auto !important;
+  padding-inline: var(--sfi-gutter);
+  margin-block-start: var(--sfi-header-clear) !important;
+}
+
+body.sfi-page .sfi-page-column > * {
+  margin-inline: 0 !important;
 }
 
 /* ==================================================================================================
@@ -319,7 +351,7 @@ body.sfi-page .slds-builder-header .sfir-org-name {
 }
 
 .slds-tabs_default__item.slds-is-active .slds-tabs_default__link {
-  color: var(--sfi-accent);
+  color: var(--sfi-accent-text);
   box-shadow: inset 0 -2px 0 var(--sfi-accent);
 }
 
@@ -369,6 +401,24 @@ body.sfi-page .sfir-options-tab-container .slds-tabs_default__nav {
 body.sfi-page .sfir-options-tab-container .slds-tabs_default__item.slds-is-active .slds-tabs_default__link {
   background-color: light-dark(rgba(0, 113, 227, .10), rgba(10, 132, 255, .18));
   border-radius: var(--slds-g-radius-border-2);
+  box-shadow: none;
+  /* The pill is itself an accent wash, so the label needs the text accent rather than the surface
+     one -- the two sat 3.5:1 apart in the dark scheme. */
+  color: var(--sfi-accent-text);
+}
+
+/* SLDS underlines the active and hovered tab with a coloured rule, drawn as ::after on the item
+   rather than on the link -- which is why nulling the link's box-shadow above never removed it. The
+   filled tab already says which one is active, and the rule sat below the fill instead of under the
+   label, reading as a stray line ruled across the bar. */
+body.sfi-page .slds-tabs_default__item::after,
+body.sfi-page .slds-tabs_default__item:hover::after,
+body.sfi-page .slds-tabs_default__item.slds-is-active::after {
+  display: none;
+}
+
+/* The same rule again as an inset shadow, for the tab strips that are not the settings one. */
+body.sfi-page .slds-tabs_default__item.slds-is-active .slds-tabs_default__link {
   box-shadow: none;
 }
 
@@ -427,27 +477,37 @@ body.sfi-page .sfi-group > .slds-grid > .slds-col:first-child {
   transform: scale(.975);
 }
 
+/* Buttons are glass rather than paint: a translucent fill over a blur, a bright hairline border and
+   a lit top edge, so they pick up the ground behind them the way the panels and the header do. The
+   fill has to stay opaque enough to carry white or accent text at small sizes, which is what keeps
+   these well above the panels' own transparency. */
 .slds-button_neutral {
-  background-color: light-dark(rgba(255, 255, 255, .70), rgba(255, 255, 255, .07));
-  border-color: var(--slds-g-color-border-1);
-  box-shadow: none;
+  background-color: light-dark(rgba(255, 255, 255, .58), rgba(255, 255, 255, .09));
+  -webkit-backdrop-filter: var(--sfi-glass-blur);
+  backdrop-filter: var(--sfi-glass-blur);
+  border-color: light-dark(rgba(255, 255, 255, .85), rgba(255, 255, 255, .12));
+  box-shadow: var(--slds-g-shadow-1), var(--sfi-glass-lip);
 }
 
 .slds-button_neutral:hover:not(:disabled) {
-  background-color: var(--slds-g-color-surface-container-3);
+  background-color: light-dark(rgba(255, 255, 255, .78), rgba(255, 255, 255, .15));
 }
 
 .slds-button_brand {
-  background-color: var(--sfi-accent);
-  border-color: transparent;
+  background-color: light-dark(rgba(0, 92, 184, .92), rgba(10, 118, 226, .88));
+  -webkit-backdrop-filter: var(--sfi-glass-blur);
+  backdrop-filter: var(--sfi-glass-blur);
+  border-color: light-dark(rgba(255, 255, 255, .38), rgba(255, 255, 255, .16));
   color: #fff;
-  box-shadow: 0 2px 10px light-dark(rgba(0, 113, 227, .28), rgba(10, 132, 255, .30));
+  box-shadow:
+    0 4px 14px light-dark(rgba(0, 113, 227, .22), rgba(10, 132, 255, .26)),
+    inset 0 1px 0 rgba(255, 255, 255, .34);
 }
 
 .slds-button_brand:hover:not(:disabled),
 .slds-button_brand:focus:not(:disabled) {
-  background-color: var(--sfi-accent-hover);
-  border-color: transparent;
+  background-color: light-dark(rgba(0, 78, 156, .95), rgba(38, 136, 240, .94));
+  border-color: light-dark(rgba(255, 255, 255, .48), rgba(255, 255, 255, .22));
   color: #fff;
 }
 
@@ -456,6 +516,100 @@ body.sfi-page .sfi-group > .slds-grid > .slds-col:first-child {
 .slds-button-group .slds-button,
 .slds-button-group-list .slds-button {
   border-radius: 0;
+}
+
+/* The segments share one sheet of glass. Each carries its own blur, so the seams between them are
+   drawn as a light hairline on the leading edge rather than as a gap -- a gap would break the run
+   into separate pills and lose the segmented-control reading. */
+.slds-button-group > .slds-button + .slds-button,
+.slds-button-group-list > * + * .slds-button {
+  border-inline-start-color: light-dark(rgba(255, 255, 255, .55), rgba(255, 255, 255, .16));
+}
+
+/* A neutral button's label is the accent in light, where it sits on near-white. On the dark ground
+   the same blue only reaches 4.2:1 against the button's own glass, so there it is the plain text
+   colour instead -- which is also what makes button text read as white in dark. */
+.slds-button_neutral,
+.slds-button_neutral:hover:not(:disabled),
+.slds-button_neutral:focus:not(:disabled) {
+  color: light-dark(var(--sfi-accent-text), var(--slds-g-color-on-surface-1));
+}
+
+/* Disabled buttons. SLDS greys these with fixed values rather than tokens -- #5c5c5c on a dark card
+   is 2.3:1, and a disabled brand button put #939393 on that same grey. Disabled has to read as
+   unavailable, but it still has to be legible. */
+.slds-button:disabled,
+.slds-button[disabled],
+.slds-button_neutral:disabled,
+.slds-button_brand:disabled,
+.slds-button_destructive:disabled,
+.slds-button:disabled:hover,
+.slds-button_brand:disabled:hover,
+.slds-button_destructive:disabled:hover {
+  background-color: light-dark(rgba(60, 50, 90, .05), rgba(255, 255, 255, .05)) !important;
+  border-color: var(--slds-g-color-border-1) !important;
+  color: var(--slds-g-color-on-surface-2) !important;
+  box-shadow: none !important;
+  opacity: 1;
+}
+
+/* Destructive is a fill, so its label follows the on-accent rule; the fill itself has to darken in
+   the dark scheme for white to clear 4.5:1 against it. */
+body.sfi-page .slds-button.slds-button_destructive:not(:disabled),
+.slds-button_destructive:not(:disabled) {
+  background-color: light-dark(#ba0517, #a3121f);
+  border-color: transparent;
+  color: #fff;
+}
+
+body.sfi-page .slds-button.slds-button_destructive:hover:not(:disabled),
+body.sfi-page .slds-button.slds-button_destructive:focus:not(:disabled),
+.slds-button_destructive:hover:not(:disabled),
+.slds-button_destructive:focus:not(:disabled) {
+  background-color: light-dark(#8e030f, #c4222f);
+  color: #fff;
+}
+
+/* The pre-SLDS button family that several pages still use: a bare `button`, `.button`, and
+   `.highlighted` for the primary one. Each page's own stylesheet paints these `white` and then
+   writes the label in --slds-g-color-surface-container-1 -- a *surface* token standing in for a
+   text colour, which happens to be white in the light scheme and #232326 in the dark one. That put
+   a white button in the middle of a dark page with near-black text on its blue primary. They are
+   restated here, on tokens, so they follow the scheme like everything else. */
+body.sfi-page button:not(.slds-button):not(.slds-button_icon),
+body.sfi-page .button:not(.slds-button) {
+  background-color: light-dark(rgba(255, 255, 255, .58), rgba(255, 255, 255, .09));
+  -webkit-backdrop-filter: var(--sfi-glass-blur);
+  backdrop-filter: var(--sfi-glass-blur);
+  border-color: light-dark(rgba(255, 255, 255, .85), rgba(255, 255, 255, .12));
+  color: light-dark(var(--sfi-accent), var(--slds-g-color-on-surface-1));
+}
+
+body.sfi-page button:not(.slds-button):not(.slds-button_icon):hover:not(:disabled),
+body.sfi-page .button:not(.slds-button):hover:not(:disabled) {
+  background-color: light-dark(rgba(255, 255, 255, .78), rgba(255, 255, 255, .15));
+  color: light-dark(var(--sfi-accent), var(--slds-g-color-on-surface-1));
+}
+
+body.sfi-page .highlighted:not(:disabled),
+body.sfi-page button.highlighted:not(:disabled) {
+  background-color: light-dark(rgba(0, 92, 184, .92), rgba(10, 118, 226, .88));
+  border-color: light-dark(rgba(255, 255, 255, .38), rgba(255, 255, 255, .16));
+  color: #fff;
+}
+
+body.sfi-page .highlighted:hover:not(:disabled) {
+  background-color: light-dark(rgba(0, 78, 156, .95), rgba(38, 136, 240, .94));
+  color: #fff;
+}
+
+body.sfi-page button:disabled,
+body.sfi-page .button:disabled,
+body.sfi-page .highlighted:disabled,
+body.sfi-page .highlighted:disabled:hover {
+  background-color: light-dark(rgba(60, 50, 90, .05), rgba(255, 255, 255, .05)) !important;
+  border-color: var(--slds-g-color-border-1) !important;
+  color: var(--slds-g-color-on-surface-2) !important;
 }
 
 .slds-button-group > .slds-button:first-child,
@@ -472,6 +626,45 @@ body.sfi-page .sfi-group > .slds-grid > .slds-col:first-child {
 
 .slds-button-group > .slds-button:only-child {
   border-radius: var(--slds-g-radius-border-2);
+}
+
+/* Toggles, same glass. SLDS drives the whole control through custom properties, so the track, the
+   knob and the checked state are set by overriding those rather than by out-specifying its
+   selectors. The track is a tinted well -- an inset shadow rather than a raised one -- so the knob
+   reads as sitting in it. */
+body.sfi-page .slds-checkbox_toggle .slds-checkbox_faux {
+  --slds-c-checkbox-toggle-color-background: light-dark(rgba(120, 120, 128, .24), rgba(120, 120, 128, .40));
+  --slds-c-checkbox-toggle-color-border: light-dark(rgba(255, 255, 255, .70), rgba(255, 255, 255, .10));
+  --slds-c-checkbox-toggle-switch-color-background: light-dark(#fff, #f2f2f7);
+  -webkit-backdrop-filter: var(--sfi-glass-blur);
+  backdrop-filter: var(--sfi-glass-blur);
+  box-shadow:
+    inset 0 1px 3px light-dark(rgba(60, 50, 90, .16), rgba(0, 0, 0, .34)),
+    var(--sfi-glass-lip);
+  transition: background-color .2s cubic-bezier(.75, 0, .08, 1), box-shadow .2s ease;
+}
+
+body.sfi-page .slds-checkbox_toggle .slds-checkbox_faux:hover {
+  --slds-c-checkbox-toggle-color-background: light-dark(rgba(120, 120, 128, .34), rgba(120, 120, 128, .52));
+}
+
+/* The knob is lit from above and casts a little shadow, which is what separates it from the track
+   once the track itself is translucent. */
+body.sfi-page .slds-checkbox_toggle .slds-checkbox_faux::after {
+  background-image: linear-gradient(180deg, #fff, light-dark(#f4f4f7, #e6e6ea));
+  box-shadow:
+    0 1px 3px light-dark(rgba(60, 50, 90, .28), rgba(0, 0, 0, .44)),
+    0 0 0 .5px light-dark(rgba(60, 50, 90, .06), rgba(0, 0, 0, .18));
+}
+
+body.sfi-page .slds-checkbox_toggle [type="checkbox"]:checked + .slds-checkbox_faux,
+body.sfi-page .slds-checkbox_toggle [type="checkbox"]:checked ~ .slds-checkbox_faux,
+body.sfi-page .slds-checkbox_toggle [type="checkbox"]:checked + .slds-checkbox_faux_container .slds-checkbox_faux {
+  --slds-c-checkbox-toggle-color-background: light-dark(rgba(0, 113, 227, .78), rgba(10, 132, 255, .72));
+  --slds-c-checkbox-toggle-color-border: light-dark(rgba(255, 255, 255, .45), rgba(255, 255, 255, .18));
+  box-shadow:
+    0 2px 10px light-dark(rgba(0, 113, 227, .26), rgba(10, 132, 255, .30)),
+    inset 0 1px 0 rgba(255, 255, 255, .32);
 }
 
 .slds-input,
@@ -652,6 +845,99 @@ body.sfi-page .area:last-child {
 }
 
 /* ==================================================================================================
+ * 10b. Code viewer
+ *
+ * prism.css ships the "Coy" theme: a white sheet with a page-curl shadow and syntax colours chosen
+ * for it. None of it follows a token, so in the dark scheme a white code block sat in the middle of
+ * a dark page with #2f9c0a and #1990b8 on it, both under 4:1. The sheet and the tokens are restated
+ * as pairs; the curl is dropped, because a lifted-paper edge only reads on white.
+ * ================================================================================================ */
+
+body.sfi-page pre[class*="language-"] > code,
+body.sfi-page :not(pre) > code[class*="language-"],
+body.sfi-page pre[class*="language-"],
+body.sfi-page pre:has(> code .token),
+body.sfi-page pre > code:has(.token) {
+  background-color: light-dark(#fdfdfd, #1b1b1f) !important;
+  background-image: none !important;
+  color: var(--slds-g-color-on-surface-1);
+}
+
+body.sfi-page pre[class*="language-"] > code {
+  border-left-color: var(--sfi-accent);
+  box-shadow: -1px 0 0 0 var(--sfi-accent), 0 0 0 1px var(--slds-g-color-border-1);
+}
+
+body.sfi-page pre[class*="language-"]::before,
+body.sfi-page pre[class*="language-"]::after {
+  display: none;
+}
+
+body.sfi-page .token.comment,
+body.sfi-page .token.block-comment,
+body.sfi-page .token.cdata,
+body.sfi-page .token.doctype,
+body.sfi-page .token.prolog { color: light-dark(#7d8b99, #8b98a5); }
+
+body.sfi-page .token.punctuation { color: light-dark(#5f6364, #9aa0a6); }
+
+body.sfi-page .token.tag,
+body.sfi-page .token.boolean,
+body.sfi-page .token.constant,
+body.sfi-page .token.deleted,
+body.sfi-page .token.function-name,
+body.sfi-page .token.number,
+body.sfi-page .token.property,
+body.sfi-page .token.symbol { color: light-dark(#c92c2c, #ff8a80); }
+
+body.sfi-page .token.attr-name,
+body.sfi-page .token.builtin,
+body.sfi-page .token.char,
+body.sfi-page .token.function,
+body.sfi-page .token.inserted,
+body.sfi-page .token.selector,
+body.sfi-page .token.string { color: light-dark(#1f6b06, #8bd97a); }
+
+body.sfi-page .token.atrule,
+body.sfi-page .token.attr-value,
+body.sfi-page .token.class-name,
+body.sfi-page .token.keyword { color: light-dark(#10657f, #6fc6e8); }
+
+body.sfi-page .token.entity,
+body.sfi-page .token.operator,
+body.sfi-page .token.url,
+body.sfi-page .token.variable {
+  color: light-dark(#a67f59, #d6b48c);
+  background: none;
+}
+
+body.sfi-page .token.important,
+body.sfi-page .token.regex { color: light-dark(#e90, #ffc043); }
+
+/* A checkbox- or radio-button carries its label inside the faux element, and SLDS colours that
+   label with --slds-g-color-surface-container-1 -- a surface token again, white in light and
+   #232326 in dark, which put near-black text on the selected segment's accent fill. */
+body.sfi-page [type="checkbox"]:checked + .slds-checkbox_button__label .slds-checkbox_faux,
+body.sfi-page [type="radio"]:checked + .slds-radio_button__label .slds-radio_faux,
+body.sfi-page [type="checkbox"]:checked + .slds-checkbox_faux,
+body.sfi-page [type="radio"]:checked + .slds-radio_faux {
+  color: #fff;
+}
+
+/* The selected segment takes the same fill as a brand button, for the same reason: SLDS's own
+   accent is light enough in the dark scheme that white on it only reaches 3.7:1. */
+body.sfi-page [type="checkbox"]:checked + .slds-checkbox_button__label,
+body.sfi-page [type="radio"]:checked + .slds-radio_button__label {
+  background-color: light-dark(rgba(0, 92, 184, .92), rgba(10, 118, 226, .88));
+}
+
+/* Status badges. SLDS pairs a deep fill with a barely lighter label of the same hue -- 3.2:1 in the
+   dark scheme. The fills stay; the labels come from the theme's status tokens. */
+body.sfi-page .slds-badge.slds-theme_success { background-color: var(--sfi-success-surface); color: var(--sfi-success); }
+body.sfi-page .slds-badge.slds-theme_warning { background-color: var(--sfi-warning-surface); color: var(--sfi-warning); }
+body.sfi-page .slds-badge.slds-theme_error   { background-color: var(--sfi-danger-surface);  color: var(--sfi-danger); }
+
+/* ==================================================================================================
  * 11. Popup
  *
  * popup.html is loaded in an iframe that button.js drops into the Salesforce page, so this file
@@ -694,6 +980,27 @@ body.sfi-popup .page-button {
 body.sfi-popup .slds-button_neutral:hover:not(:disabled),
 body.sfi-popup .page-button:hover:not(:disabled) {
   background-color: light-dark(rgba(255, 255, 255, .80), rgba(255, 255, 255, .13));
+}
+
+/* popup.css writes every link, button and nested span in --sfir-blue-color, which is a fixed
+   palette blue: it does not follow the scheme, so on the dark panel it was the low-contrast blue
+   the buttons were showing. Pointing it at the text accent makes all of it scheme-aware in one
+   place, rather than chasing each rule that uses it. */
+body.sfi-popup {
+  --sfir-blue-color: var(--sfi-accent-text);
+}
+
+/* The tool buttons are anchors, and popup.css reaches them through `a:visited` and `a > span` --
+   both of which outrank a single class, which is why these kept the link colour while every other
+   neutral button had already picked up the scheme's text colour. Matched here at a specificity that
+   actually wins, so a button label is the plain text colour on dark and the accent on light. */
+body.sfi-popup a.page-button,
+body.sfi-popup a.page-button:visited,
+body.sfi-popup a.slds-button_neutral,
+body.sfi-popup a.slds-button_neutral:visited,
+body.sfi-popup .page-button > span,
+body.sfi-popup .slds-button_neutral > span {
+  color: light-dark(var(--sfi-accent-text), var(--slds-g-color-on-surface-1));
 }
 
 body.sfi-popup .slds-input,

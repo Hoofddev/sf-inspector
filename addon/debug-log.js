@@ -1270,15 +1270,17 @@ function Filters({model}) {
 
   const userOptions = [{value: "", label: "All users"}, ...model.userOptions.map(u => ({value: u.id, label: model.getUserDisplayName(u.id)}))];
 
-  return h("form", {className: "slds-grid slds-gutters slds-m-bottom_small slds-m-top_xx-large slds-size_xx-large", onSubmit: apply},
-    h("div", {className: "slds-col slds-size_1-of-3"},
+  // A quarter each rather than a third: the three fields plus the Apply/Reset column make four, and
+  // at a third apiece the buttons had no room left in the row and were pushed outside it.
+  return h("form", {className: "slds-grid slds-gutters slds-m-bottom_small slds-m-top_xx-large sfir-log-filters", onSubmit: apply},
+    h("div", {className: "slds-col slds-size_1-of-4"},
       h(SldsPicklist, {label: "Filter by User", value: model.filters.userId, options: userOptions, onChange: onUserPick})
     ),
-    h("div", {className: "slds-col slds-size_1-of-3"},
+    h("div", {className: "slds-col slds-size_1-of-4"},
       h("label", {className: "slds-form-element__label"}, "From"),
       h("input", {type: "datetime-local", className: "slds-input", value: model.filters.start, onChange: onStartChange})
     ),
-    h("div", {className: "slds-col slds-size_1-of-3"},
+    h("div", {className: "slds-col slds-size_1-of-4"},
       h("label", {className: "slds-form-element__label"}, "To"),
       h("input", {type: "datetime-local", className: "slds-input", value: model.filters.end, onChange: onEndChange})
     ),
@@ -2000,7 +2002,7 @@ class App extends React.Component {
         ...this.model.userInfoModel.getProps()
       }),
 
-      h("div", {className: "slds-m-around_medium"},
+      h("div", {className: "slds-m-around_medium sfi-page-column"},
         h(Filters, {model}),
         h(LogsTable, {model, hideButtonsOption})
       ),
