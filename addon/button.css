@@ -1,17 +1,21 @@
 :root {
   /* Button-specific variables */
-  --sfir-btn-white: var(--slds-g-color-surface-container-1);
-  --sfir-btn-border: var(--slds-g-color-border-1);
-  --sfir-btn-border-active: var(--sfi-accent);
+  /* This file is injected into the Salesforce page, where the theme's tokens are absent, so
+     each reference carries its own fallback. On Lightning the SLDS hooks resolve to the org's
+     values and the tab matches its surroundings; on Classic the literal is used. */
+  --sfir-btn-white: var(--slds-g-color-surface-container-1, #fff);
+  --sfir-btn-border: var(--slds-g-color-border-1, rgba(60, 50, 90, .14));
+  --sfir-btn-border-active: var(--sfi-accent, #0071e3);
   --sfir-btn-shadow: rgba(0, 0, 0, 0.15);
   --sfir-btn-shadow-inset: rgba(255, 255, 255, 0.1);
   --sfir-btn-shadow-light: rgba(0, 0, 0, 0.16);
+  --sfir-btn-shadow-panel: rgba(60, 50, 90, 0.18);
   --sfir-btn-radius: 25px;
   --sfir-btn-radius-sm: 4px;
   --sfir-btn-z-base: 1000;
   --sfir-btn-z-high: 9999;
   --sfir-btn-z-fixed: 10000;
-  --sfir-btn-success: var(--sfi-success);
+  --sfir-btn-success: var(--sfi-success, #1a7f4f);
 }
 
 #insext {
@@ -28,14 +32,14 @@
     background-color: var(--sfir-btn-white);
     border-radius: var(--sfir-btn-radius-sm);
     z-index: 1;
-    border: 1px solid var(--slds-g-color-border-1);
+    border: 1px solid var(--sfir-btn-border);
     display: none;
   }
 
   #insext .insext-popup-vertical {
     right: 0%;
     border-top-right-radius: 0;
-    box-shadow: 0 -2px 2px 0 var(--sfir-btn-shadow-light);
+    box-shadow: -8px 0 32px 0 var(--sfir-btn-shadow-panel);
     position: absolute;
     top: 0;
     border-top-left-radius: var(--sfir-btn-radius);
@@ -49,7 +53,7 @@
 
   #insext .insext-popup-horizontal {
     bottom: 0;
-    box-shadow: 2px 0 2px 0 var(--sfir-btn-shadow-light);
+    box-shadow: 0 -8px 32px 0 var(--sfir-btn-shadow-panel);
     border-top-left-radius: var(--sfir-btn-radius);
     border-top-right-radius: var(--sfir-btn-radius);
   }

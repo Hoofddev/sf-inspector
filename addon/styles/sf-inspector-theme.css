@@ -3,23 +3,32 @@
  *
  * Loaded after slds.css and after each page's own stylesheet, so it has the last word.
  *
- * The Lightning Design System exposes global styling hooks (--slds-g-*), so most of this is
- * redefining tokens rather than fighting selectors. SLDS already resolves them through
- * light-dark(), which means both appearances come from one declaration.
+ * The Lightning Design System exposes global styling hooks (--slds-g-*) and resolves them through
+ * light-dark(), so most of the work here is redefining tokens rather than fighting selectors.
  *
- * Where the glass goes, and where it does not:
- *   Translucency is applied to chrome only -- the popup shell, page headers, toolbars, modals,
- *   dropdowns. Content surfaces stay opaque. These are reading tools: record grids, SOQL results,
- *   debug logs and XML are dense text, and putting a blurred backdrop behind them costs contrast
- *   for no gain. Apple's own dense interfaces work the same way: glass in the chrome, solid paper
- *   under the content.
+ * Two rules of thumb run through the whole file:
+ *
+ *   Separation is carried by luminance, not by lines. The ground is pale and lit; panels sit a
+ *   shade above it, held apart by a soft, wide shadow. Borders are nearly invisible.
+ *
+ *   Translucency belongs to chrome, never to content. Popovers, headers, toolbars and the popup are
+ *   frosted; record grids, logs, editors and XML are opaque, because they are read closely and blur
+ *   behind text costs contrast for nothing.
+ *
+ * Sections run from tokens outwards, and each concern appears exactly once. This file previously
+ * grew by appending: 2,750 lines with the page header defined nine times, where which rule won came
+ * down to load order.
  */
 
+/* ==================================================================================================
+ * 1. Tokens
+ * ================================================================================================ */
+
 :root {
-  /* Light by default. The tokens below are all light-dark() pairs, so the dark half is written and
-     ready, but following the system appearance is off: the interface it themes was built for a
-     white page and several of its own surfaces do not follow along, which leaves parts of it
-     unreadable. Flip this to "light dark" once every page has been checked in both. */
+  /* Light by default. Every token below is a light-dark() pair, so the dark half is written and
+     ready, but following the system appearance stays off: the interface underneath was built for a
+     white page and several of its own surfaces do not follow the tokens, which leaves parts of it
+     unreadable. Switch this to "light dark" once every page has been checked in both. */
   color-scheme: light;
 
   /* --- Type ------------------------------------------------------------------------------- */
@@ -29,8 +38,8 @@
     ui-monospace, "SF Mono", SFMono-Regular, Menlo, monospace;
 
   /* --- Surfaces --------------------------------------------------------------------------- */
-  /* Neutrals carry a slight blue cast rather than being pure grey, which is what makes an
-     interface read as macOS rather than as a default stylesheet. */
+  /* Neutrals carry a slight blue cast rather than being pure grey; that is what makes an interface
+     read as macOS rather than as a default stylesheet. */
   --slds-g-color-surface-1:           light-dark(#f5f6f8, #1c1c1e);
   --slds-g-color-surface-2:           light-dark(#eceef2, #242426);
   --slds-g-color-surface-3:           light-dark(#e2e5eb, #2c2c2e);
@@ -42,12 +51,11 @@
   --slds-g-color-on-surface-2: light-dark(#3c4350, #c7c7cc);
   --slds-g-color-on-surface-3: light-dark(#69707d, #98989f);
 
-  --slds-g-color-border-1:      light-dark(#dcdfe6, #38383c);
-  --slds-g-color-border-2:      light-dark(#c9cdd6, #48484c);
-  --slds-g-color-border-base-1: light-dark(#dcdfe6, #38383c);
+  --slds-g-color-border-1:      light-dark(rgba(60, 50, 90, .08), rgba(255, 255, 255, .08));
+  --slds-g-color-border-2:      light-dark(rgba(60, 50, 90, .14), rgba(255, 255, 255, .14));
+  --slds-g-color-border-base-1: var(--slds-g-color-border-1);
 
   /* --- Accent ----------------------------------------------------------------------------- */
-  /* macOS system blue, which is what a Safari-native tool should key off. */
   --sfi-accent:       light-dark(#0071e3, #0a84ff);
   --sfi-accent-hover: light-dark(#0062c4, #3d9bff);
 
@@ -60,55 +68,111 @@
   --slds-g-color-brand-base-50:      var(--sfi-accent);
   --slds-g-color-brand-base-60:      var(--sfi-accent-hover);
 
-  /* --- Semantic ---------------------------------------------------------------------------- */
-  /* Status colours, kept separate from the accent so severity never competes with brand. Used by
-     flow-scanner.css and dependencies-explorer.css, which previously hardcoded their own. */
+  /* --- Status ----------------------------------------------------------------------------- */
+  /* Kept apart from the accent so severity never competes with brand. */
   --sfi-danger:          light-dark(#c9372c, #ff6f61);
   --sfi-danger-surface:  light-dark(#fdeceb, #3a1a18);
-  --sfi-danger-on:       light-dark(#8b2019, #ffb3aa);
-
   --sfi-warning:         light-dark(#a16207, #e0a33a);
   --sfi-warning-surface: light-dark(#fdf4e3, #332a13);
-  --sfi-warning-on:      light-dark(#7c4a02, #f0c987);
-
   --sfi-success:         light-dark(#1a7f4f, #4fc98c);
   --sfi-success-surface: light-dark(#e7f5ee, #12301f);
-  --sfi-success-on:      light-dark(#115c39, #8fdcb5);
-
   --sfi-info:            light-dark(#0e7490, #4bb8d4);
   --sfi-info-surface:    light-dark(#e6f4f8, #102a33);
-  --sfi-info-on:         light-dark(#0b5468, #93d5e6);
-
-  /* --- Value types ------------------------------------------------------------------------- */
-  /* Show All Data tints values by type. The original colours were picked for a white page and go
-     unreadable on a dark one, so each gets a pair. */
-  --sfi-value-object:       light-dark(#8a7a00, #d6c25a);
-  --sfi-value-number:       light-dark(#9026a0, #dda0e8);
-  --sfi-value-boolean:      light-dark(#a01c1c, #f09090);
-  --sfi-value-boolean-true: light-dark(#0d7377, #5fd0d4);
 
   /* --- Shape ------------------------------------------------------------------------------ */
-  /* Apple's radii are larger than SLDS's, and it is most of what separates the two visually. */
-  --slds-g-radius-border-1: 6px;
-  --slds-g-radius-border-2: 10px;
-  --slds-g-radius-border-3: 14px;
-  --slds-g-radius-border-4: 18px;
+  --slds-g-radius-border-1: 8px;
+  --slds-g-radius-border-2: 12px;
+  --slds-g-radius-border-3: 18px;
+  --slds-g-radius-border-4: 24px;
 
   /* --- Depth ------------------------------------------------------------------------------ */
-  /* Softer and more diffuse than SLDS's, which reads flatter and more modern. */
-  --slds-g-shadow-1: 0 1px 2px light-dark(rgba(17, 21, 28, .06), rgba(0, 0, 0, .5));
-  --slds-g-shadow-2: 0 2px 8px light-dark(rgba(17, 21, 28, .08), rgba(0, 0, 0, .55));
-  --slds-g-shadow-3: 0 8px 24px light-dark(rgba(17, 21, 28, .10), rgba(0, 0, 0, .6));
-  --slds-g-shadow-4: 0 16px 48px light-dark(rgba(17, 21, 28, .14), rgba(0, 0, 0, .7));
+  /* Wide and weightless: a card rests just off the page rather than being stamped onto it. */
+  --slds-g-shadow-1: 0 1px 2px   light-dark(rgba(60, 50, 90, .04), rgba(0, 0, 0, .40));
+  --slds-g-shadow-2: 0 4px 16px  light-dark(rgba(60, 50, 90, .06), rgba(0, 0, 0, .45));
+  --slds-g-shadow-3: 0 10px 32px light-dark(rgba(60, 50, 90, .07), rgba(0, 0, 0, .50));
+  --slds-g-shadow-4: 0 20px 60px light-dark(rgba(60, 50, 90, .09), rgba(0, 0, 0, .60));
 
-  /* --- Glass ------------------------------------------------------------------------------ */
-  --sfi-glass-bg:     light-dark(rgba(255, 255, 255, .72), rgba(30, 30, 34, .68));
-  --sfi-glass-border: light-dark(rgba(255, 255, 255, .55), rgba(255, 255, 255, .09));
-  --sfi-glass-blur:   saturate(180%) blur(22px);
+  /* --- Material --------------------------------------------------------------------------- */
+  --sfi-glass-bg:     light-dark(rgba(255, 255, 255, .86), rgba(38, 38, 44, .74));
+  --sfi-glass-border: light-dark(rgba(255, 255, 255, .90), rgba(255, 255, 255, .07));
+  --sfi-glass-blur:   saturate(150%) blur(28px);
+  --sfi-glass-lip:    inset 0 1px 0 light-dark(rgba(255, 255, 255, .95), rgba(255, 255, 255, .05));
+
+  /* --- Layout ----------------------------------------------------------------------------- */
+  --sfi-measure: 1600px;
+  --sfi-gutter: 1.75rem;
+  --sfi-gap: 1.25rem;
+  --sfi-gap-chrome: 2.25rem;
 }
 
-/* Chrome surfaces. Backdrop blur is expensive, so it is applied to a short list rather than
-   broadcast across the interface. */
+/* ==================================================================================================
+ * 2. Page ground
+ * ================================================================================================ */
+
+body.sfi-page {
+  padding: 0 0 3rem;
+  background-color: light-dark(#f4f2fb, #16161a);
+  /* Every centre sits inside the viewport. With one above the top edge, the first strip of the page
+     fell outside all four gradients and showed the bare base colour as a grey band. */
+  background-image:
+    radial-gradient(74rem 56rem at 2% 4%,    light-dark(rgba(168, 148, 255, .34), rgba(120, 100, 220, .24)), transparent 70%),
+    radial-gradient(64rem 50rem at 98% 2%,   light-dark(rgba(255, 176, 156, .30), rgba(210, 130, 120, .20)), transparent 68%),
+    radial-gradient(66rem 50rem at 46% 114%, light-dark(rgba(140, 226, 214, .26), rgba(90, 180, 175, .18)),  transparent 64%),
+    radial-gradient(46rem 40rem at 88% 58%,  light-dark(rgba(176, 200, 255, .24), rgba(110, 140, 210, .16)), transparent 66%);
+  background-attachment: fixed;
+  -webkit-font-smoothing: antialiased;
+  letter-spacing: -.004em;
+}
+
+/* One measure and one gutter for every top-level piece, so they share an edge. The header sits
+   outside this container and is inset by hand to land on the same line. */
+body.sfi-page .sfir-page-container {
+  max-width: var(--sfi-measure);
+  margin-inline: auto;
+  padding-inline: var(--sfi-gutter);
+}
+
+/* ==================================================================================================
+ * 3. Panels
+ * ================================================================================================ */
+
+.sfi-panel,
+.slds-card,
+.slds-box,
+body.sfi-page .area,
+body.sfi-page .sfi-group {
+  background-color: var(--sfi-glass-bg);
+  -webkit-backdrop-filter: var(--sfi-glass-blur);
+  backdrop-filter: var(--sfi-glass-blur);
+  border: 1px solid var(--sfi-glass-border);
+  border-radius: var(--slds-g-radius-border-4);
+  box-shadow: var(--slds-g-shadow-3), var(--sfi-glass-lip);
+}
+
+body.sfi-page .area {
+  padding: 1.35rem 1.5rem;
+}
+
+body.sfi-page .sfi-group {
+  overflow: hidden;
+}
+
+/* options.js wraps the tabs in a .slds-card.main-container. It is a wrapper, not a surface, so it
+   must not take the card treatment above -- that produced a frosted card holding frosted cards. It
+   also grows past the viewport, which is why its lower corners were never on screen. */
+body.sfi-page .main-container,
+body.sfi-page .slds-card.main-container {
+  background: none !important;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+/* Chrome that floats over something else. Content surfaces are handled in section 9 and stay solid. */
 .slds-popover,
 .slds-dropdown,
 .slds-modal__container,
@@ -117,137 +181,12 @@
 .slds-page-header,
 .slds-docked-composer,
 .slds-context-bar,
-#insext .slds-card,
-.sfi-glass {
+body.sfi-page .autocomplete-results {
   background-color: var(--sfi-glass-bg);
   -webkit-backdrop-filter: var(--sfi-glass-blur);
   backdrop-filter: var(--sfi-glass-blur);
   border-color: var(--sfi-glass-border);
 }
-
-/* macOS lets people turn translucency off system-wide. Honour it: fall back to opaque
-   surfaces rather than leaving a washed-out panel with no blur behind it. */
-@media (prefers-reduced-transparency: reduce) {
-  .slds-popover,
-  .slds-dropdown,
-  .slds-modal__container,
-  .slds-modal__header,
-  .slds-modal__footer,
-  .slds-page-header,
-  .slds-docked-composer,
-  .slds-context-bar,
-  #insext .slds-card,
-  .sfi-glass {
-    background-color: var(--slds-g-color-surface-container-1);
-    -webkit-backdrop-filter: none;
-    backdrop-filter: none;
-  }
-}
-
-/* Content surfaces stay opaque: these are the parts people read. */
-.slds-table,
-.slds-table td,
-.slds-table th,
-.slds-textarea,
-.slds-input,
-pre,
-code {
-  -webkit-backdrop-filter: none;
-  backdrop-filter: none;
-}
-
-/* --- Controls ------------------------------------------------------------------------------ */
-
-.slds-button {
-  border-radius: var(--slds-g-radius-border-2);
-  font-weight: 500;
-  letter-spacing: -.006em;
-  transition: background-color .15s ease, border-color .15s ease, transform .06s ease;
-}
-
-.slds-button:active {
-  transform: scale(.975);
-}
-
-.slds-button_neutral {
-  background-color: var(--slds-g-color-surface-container-1);
-  border-color: var(--slds-g-color-border-1);
-  box-shadow: var(--slds-g-shadow-1);
-}
-
-.slds-button_neutral:hover:not(:disabled) {
-  background-color: var(--slds-g-color-surface-container-3);
-}
-
-.slds-button_brand {
-  background-color: var(--sfi-accent);
-  border-color: transparent;
-  color: #fff;
-  box-shadow: var(--slds-g-shadow-1);
-}
-
-.slds-button_brand:hover:not(:disabled),
-.slds-button_brand:focus:not(:disabled) {
-  background-color: var(--sfi-accent-hover);
-  border-color: transparent;
-  color: #fff;
-}
-
-.slds-input,
-.slds-textarea,
-.slds-select {
-  border-radius: var(--slds-g-radius-border-2);
-  border-color: var(--slds-g-color-border-1);
-  background-color: var(--slds-g-color-surface-container-1);
-  transition: border-color .15s ease, box-shadow .15s ease;
-}
-
-.slds-input:focus,
-.slds-textarea:focus,
-.slds-select:focus {
-  border-color: var(--sfi-accent);
-  box-shadow: 0 0 0 3px light-dark(rgba(0, 113, 227, .18), rgba(10, 132, 255, .28));
-  outline: none;
-}
-
-/* A visible ring for keyboard users, since the focus styles above are also used for pointer
-   focus and are deliberately quiet. */
-:focus-visible {
-  outline: 2px solid var(--sfi-accent);
-  outline-offset: 2px;
-}
-
-.slds-form-element__label {
-  color: var(--slds-g-color-on-surface-2);
-  font-weight: 500;
-}
-
-/* --- Data surfaces -------------------------------------------------------------------------- */
-
-.slds-table th {
-  background-color: var(--slds-g-color-surface-container-2);
-  color: var(--slds-g-color-on-surface-2);
-  font-weight: 600;
-  letter-spacing: .01em;
-}
-
-.slds-table td,
-.slds-table th {
-  border-color: var(--slds-g-color-border-1);
-}
-
-/* Digits in a column should line up; most of this interface is identifiers and counts. */
-.slds-table td {
-  font-variant-numeric: tabular-nums;
-}
-
-pre,
-code,
-.slds-textarea {
-  font-family: var(--slds-g-font-family-monospace);
-}
-
-/* --- Chrome details ------------------------------------------------------------------------- */
 
 .slds-modal__container {
   border-radius: var(--slds-g-radius-border-4);
@@ -256,166 +195,68 @@ code,
 }
 
 .slds-dropdown,
-.slds-popover {
+.slds-popover,
+body.sfi-page .autocomplete-results {
   border-radius: var(--slds-g-radius-border-3);
+  border: 1px solid var(--sfi-glass-border);
   box-shadow: var(--slds-g-shadow-3);
-  border-width: 1px;
-  border-style: solid;
 }
 
-.slds-dropdown__item > a:hover,
-.slds-dropdown__item > a:focus {
-  background-color: var(--sfi-accent);
-  color: #fff;
-  border-radius: var(--slds-g-radius-border-1);
-}
-
-/* Overlay scrollbars, the way macOS draws them. */
-::-webkit-scrollbar {
-  width: 11px;
-  height: 11px;
-}
-
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-::-webkit-scrollbar-thumb {
-  background-color: light-dark(rgba(17, 21, 28, .22), rgba(255, 255, 255, .22));
-  border: 3px solid transparent;
-  background-clip: content-box;
-  border-radius: 999px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background-color: light-dark(rgba(17, 21, 28, .36), rgba(255, 255, 255, .36));
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .slds-button,
-  .slds-input,
-  .slds-textarea,
-  .slds-select {
-    transition: none;
-  }
-  .slds-button:active {
-    transform: none;
-  }
-}
-
-/* ================================================================================================
- * Material
+/* ==================================================================================================
+ * 4. Page header
  *
- * Glass only reads as glass when there is something behind it to refract. The popup floats over a
- * Salesforce page, so it gets that for free; the full-page tools do not, and translucency over a
- * flat white ground is just grey -- which is what made the first pass look cheap. So the pages get
- * a ground of their own, and panels float on it.
- * ============================================================================================== */
+ * Detached rather than full-bleed: it floats on the ground like the panels, with air above it and
+ * corners of its own. A flat bar edge to edge read as a strip bolted onto something else.
+ * ================================================================================================ */
 
-.sfi-page,
-body.sfi-page {
-  background-color: var(--slds-g-color-surface-1);
-  background-image:
-    radial-gradient(60rem 44rem at 2% 4%, light-dark(rgba(0, 106, 224, .38),  rgba(10, 132, 255, .42)),  transparent 66%),
-    radial-gradient(50rem 40rem at 98% 2%, light-dark(rgba(96, 76, 255, .32),  rgba(130, 108, 255, .38)), transparent 64%),
-    radial-gradient(56rem 42rem at 50% 114%, light-dark(rgba(0, 176, 196, .26),  rgba(0, 190, 210, .28)),   transparent 62%);
-  background-attachment: fixed;
-}
-
-/* Panels. The inset highlight along the top edge is what separates a frosted panel from a plain
-   translucent rectangle: it reads as the lit edge of a physical sheet. */
-.sfi-panel,
-.slds-card,
-.slds-box {
-  background-color: light-dark(rgba(255, 255, 255, .78), rgba(32, 32, 36, .74));
+body.sfi-page .slds-builder-header {
+  position: sticky;
+  inset-block-start: 1rem;
+  z-index: 100;
+  max-width: calc(var(--sfi-measure) - (2 * var(--sfi-gutter)));
+  margin: 1rem auto var(--sfi-gap-chrome);
+  padding-inline: 1.25rem;
+  background-color: light-dark(rgba(255, 255, 255, .70), rgba(30, 30, 36, .70)) !important;
   -webkit-backdrop-filter: var(--sfi-glass-blur);
   backdrop-filter: var(--sfi-glass-blur);
   border: 1px solid var(--sfi-glass-border);
-  border-radius: var(--slds-g-radius-border-4);
-  box-shadow:
-    var(--slds-g-shadow-3),
-    inset 0 1px 0 light-dark(rgba(255, 255, 255, .85), rgba(255, 255, 255, .07));
-}
-
-@media (prefers-reduced-transparency: reduce) {
-  .sfi-page,
-  body.sfi-page {
-    background-image: none;
-  }
-  .sfi-panel,
-  .slds-card,
-  .slds-box {
-    background-color: var(--slds-g-color-surface-container-1);
-    -webkit-backdrop-filter: none;
-    backdrop-filter: none;
-  }
-}
-
-/* ================================================================================================
- * Rhythm
- *
- * The single biggest tell of a cheap interface is uniform, cramped spacing: everything the same
- * distance from everything else, so nothing groups. These give the dense screens room and let the
- * eye find the structure.
- * ============================================================================================== */
-
-.slds-card__header,
-.slds-card__body,
-.slds-card__footer {
-  padding-inline: 1.5rem;
-}
-
-.slds-card__header { padding-block: 1.15rem; }
-.slds-card__body   { padding-block: .35rem 1.15rem; }
-
-.slds-form-element + .slds-form-element { margin-top: 1rem; }
-
-/* Settings read as a list of rows, so give each row real height and a hairline instead of packing
-   them together. */
-.slds-tabs_default__content tr > td,
-.slds-tabs_default__content tr > th {
-  padding-block: .85rem;
-  border-bottom: 1px solid var(--slds-g-color-border-1);
-  vertical-align: middle;
-}
-
-.slds-tabs_default__content tr:last-child > td,
-.slds-tabs_default__content tr:last-child > th {
-  border-bottom: 0;
-}
-
-/* ================================================================================================
- * Type
- * ============================================================================================== */
-
-body {
-  -webkit-font-smoothing: antialiased;
-  letter-spacing: -.004em;
-}
-
-.slds-text-heading_large,
-.slds-text-heading_medium,
-.slds-text-heading_small,
-.slds-card__header-title {
-  font-weight: 600;
-  letter-spacing: -.018em;
+  border-radius: var(--slds-g-radius-border-3);
+  box-shadow: var(--slds-g-shadow-2);
   color: var(--slds-g-color-on-surface-1);
 }
 
-.slds-text-heading_large  { font-size: 1.6rem; line-height: 1.2; }
-.slds-text-heading_medium { font-size: 1.2rem; line-height: 1.25; }
-.slds-text-heading_small  { font-size: 1rem;   line-height: 1.3; }
-
-.slds-text-title,
-.slds-text-title_caps,
-.slds-form-element__help {
-  color: var(--slds-g-color-on-surface-3);
-  letter-spacing: .02em;
+body.sfi-page .slds-builder-header a,
+body.sfi-page .slds-builder-header button,
+body.sfi-page .slds-builder-header .slds-text-heading_small,
+body.sfi-page .slds-builder-header__item,
+body.sfi-page .slds-builder-header__item-label {
+  color: var(--slds-g-color-on-surface-1);
 }
 
-/* ================================================================================================
- * Tabs
- * ============================================================================================== */
+body.sfi-page .slds-builder-header .slds-text-heading_small,
+body.sfi-page .slds-builder-header__item-label {
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: -.016em;
+}
+
+/* Icons inherit rather than staying white on a light bar. */
+body.sfi-page .slds-builder-header svg {
+  fill: currentColor;
+}
+
+/* The org name reads as a chip, not a white block. */
+body.sfi-page .slds-builder-header .slds-builder-header__item-action,
+body.sfi-page .slds-builder-header .sfir-org-name {
+  background-color: light-dark(rgba(60, 50, 90, .06), rgba(255, 255, 255, .08));
+  border-radius: 999px;
+  padding: .25rem .7rem;
+  font-weight: 500;
+}
+
+/* ==================================================================================================
+ * 5. Tabs
+ * ================================================================================================ */
 
 .slds-tabs_default__nav {
   border-bottom: 1px solid var(--slds-g-color-border-1);
@@ -424,12 +265,9 @@ body {
   scrollbar-width: thin;
 }
 
-/* Labels must not be clipped or wrapped: these are names, and half a name is useless. */
+/* Labels must not wrap or be clipped: half a name is useless. */
 .slds-tabs_default__link {
   white-space: nowrap;
-}
-
-.slds-tabs_default__link {
   border: 0;
   border-radius: var(--slds-g-radius-border-2) var(--slds-g-radius-border-2) 0 0;
   color: var(--slds-g-color-on-surface-2);
@@ -447,204 +285,136 @@ body {
   box-shadow: inset 0 -2px 0 var(--sfi-accent);
 }
 
-/* ================================================================================================
- * Popup
- *
- * This one genuinely floats over the Salesforce page, so it is where the material belongs.
- * ============================================================================================== */
-
-
-/* ================================================================================================
- * Layout
- *
- * The tools render edge to edge, which is what made them read as a web form rather than as an app:
- * rows running the full width of a 27-inch display with nothing containing them. Giving the content
- * a measure and floating it as one panel is most of the difference, and it is also what makes the
- * translucency legible -- there is finally a boundary for the ground to show around.
- * ============================================================================================== */
-
-/* The padding sits on the containers, not on the page. Putting it on the body indented the header
-   along with everything else, so it read as another element inside the layout rather than as the
-   chrome above it. */
-body.sfi-page {
-  padding: 0 0 3rem;
+/* The full-width pages clipped their labels because the items were allowed to shrink; there they
+   keep their width and the strip scrolls instead. Scoped deliberately -- the popup's strip is a few
+   hundred pixels wide and does need to shrink to fit. */
+body.sfi-page .slds-tabs_default__nav > li {
+  flex: 0 0 auto;
 }
 
-body.sfi-page .sfir-page-container,
-body.sfi-page > .slds-tabs_default {
-  padding-inline: 1.5rem;
-}
-
-/* The tab container is the panel on every settings-style page. */
-body.sfi-page .slds-tabs_default {
-  max-width: 1160px;
-  margin-inline: auto;
-  border-radius: var(--slds-g-radius-border-4);
-  overflow: hidden;
-  background-color: light-dark(rgba(255, 255, 255, .74), rgba(28, 28, 32, .70));
+/* The settings tab strip is its own floating bar. Not sticky: scrolling slid it over the first card
+   and it read as belonging to that card, and a translucent bar with content passing beneath it has
+   no good answer at this size. */
+body.sfi-page .sfir-options-tab-container {
+  position: static !important;
+  margin: 0 0 var(--sfi-gap-chrome) !important;
+  padding: .3rem .4rem;
+  background-color: var(--sfi-glass-bg) !important;
   -webkit-backdrop-filter: var(--sfi-glass-blur);
   backdrop-filter: var(--sfi-glass-blur);
   border: 1px solid var(--sfi-glass-border);
-  box-shadow:
-    var(--slds-g-shadow-4),
-    inset 0 1px 0 light-dark(rgba(255, 255, 255, .9), rgba(255, 255, 255, .07));
+  border-radius: var(--slds-g-radius-border-3);
+  box-shadow: var(--slds-g-shadow-2) !important;
+  /* Fades the trailing edge, so a strip running past the fold does not end in what looks like a
+     clipped final tab. */
+  -webkit-mask-image: linear-gradient(90deg, #000 calc(100% - 2.5rem), transparent 100%);
+  mask-image: linear-gradient(90deg, #000 calc(100% - 2.5rem), transparent 100%);
 }
 
-body.sfi-page .slds-tabs_default__nav {
-  background-color: light-dark(rgba(255, 255, 255, .35), rgba(255, 255, 255, .04));
+body.sfi-page .slds-tabs_default {
+  background: none;
+  border: 0;
+  box-shadow: none;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  overflow: visible;
 }
 
 body.sfi-page .slds-tabs_default__content {
-  padding: .25rem .5rem .5rem;
+  padding: 0 !important;
 }
 
-/* Setting rows: hairlines rather than full borders, and enough height to breathe. */
-body.sfi-page .slds-tabs_default__content > div > .slds-grid {
-  border-bottom: 1px solid light-dark(rgba(17, 21, 28, .07), rgba(255, 255, 255, .07));
+body.sfi-page .sfir-options-tab-container .slds-tabs_default__nav {
+  border-bottom: 0;
+}
+
+body.sfi-page .sfir-options-tab-container .slds-tabs_default__item.slds-is-active .slds-tabs_default__link {
+  background-color: light-dark(rgba(0, 113, 227, .10), rgba(10, 132, 255, .18));
+  border-radius: var(--slds-g-radius-border-2);
+  box-shadow: none;
+}
+
+/* ==================================================================================================
+ * 6. Setting groups
+ * ================================================================================================ */
+
+body.sfi-page .sfi-group__title {
+  font-size: .72rem;
+  font-weight: 600;
+  letter-spacing: .07em;
+  text-transform: uppercase;
+  color: var(--slds-g-color-on-surface-3);
+  padding: 1rem 1.35rem .35rem;
+  margin: 0;
+}
+
+/* Inside a group the rows are rows: separated by light, not each given a card of its own. */
+body.sfi-page .sfi-group > .slds-grid {
+  background: none;
+  border: 0;
+  border-bottom: 1px solid light-dark(rgba(60, 50, 90, .07), rgba(255, 255, 255, .06));
+  border-radius: 0;
+  box-shadow: none;
+  padding: .95rem 1.35rem;
   align-items: center;
   transition: background-color .12s ease;
 }
 
-body.sfi-page .slds-tabs_default__content > div > .slds-grid:last-child {
-  border-bottom: 0 !important;
+body.sfi-page .sfi-group > .slds-grid:last-child {
+  border-bottom: 0;
 }
 
-body.sfi-page .slds-tabs_default__content > div > .slds-grid:hover {
-  background-color: light-dark(rgba(17, 21, 28, .035), rgba(255, 255, 255, .045));
+body.sfi-page .sfi-group > .slds-grid:hover {
+  background-color: light-dark(rgba(60, 50, 90, .03), rgba(255, 255, 255, .04));
 }
 
-
-
-@media (prefers-reduced-transparency: reduce) {
-  body.sfi-page .slds-tabs_default {
-    background-color: var(--slds-g-color-surface-container-1);
-    -webkit-backdrop-filter: none;
-    backdrop-filter: none;
-  }
-  .slds-builder-header {
-    background-color: light-dark(#141a28, #0c0e14) !important;
-    -webkit-backdrop-filter: none;
-    backdrop-filter: none;
-  }
-}
-
-/* ================================================================================================
- * Popup
- *
- * Controls inside the panel were opaque white, so they sat on the frost as solid blocks rather than
- * belonging to it. Nesting another backdrop-filter would do nothing -- the parent has already
- * composited -- so they are translucent instead, letting the panel's own frost read through.
- * ============================================================================================== */
-
-}
-
-/* ================================================================================================
- * Tool pages
- *
- * Data Export, Show All Data, Data Import, Org Limits, REST Explorer and API Statistics all render
- * into .sfir-page-container, which had no styling at all -- so it is the hook for giving them the
- * same treatment the settings pages got.
- *
- * The measure here is far wider than on the settings pages on purpose: these show result grids that
- * genuinely need the room. It exists to stop rows stretching across a 27-inch display, not to make
- * a column of text.
- * ============================================================================================== */
-
-body.sfi-page .sfir-page-container {
-  max-width: 1680px;
-  margin-inline: auto;
-}
-
-/* Sections within a tool: the query editor, the result panel, the filters. */
-body.sfi-page .area {
-  background-color: light-dark(rgba(255, 255, 255, .74), rgba(28, 28, 32, .70));
-  -webkit-backdrop-filter: var(--sfi-glass-blur);
-  backdrop-filter: var(--sfi-glass-blur);
-  border: 1px solid var(--sfi-glass-border);
-  border-radius: var(--slds-g-radius-border-3);
-  box-shadow:
-    var(--slds-g-shadow-2),
-    inset 0 1px 0 light-dark(rgba(255, 255, 255, .85), rgba(255, 255, 255, .06));
-  padding: 1rem 1.15rem;
-  margin: 1rem 1rem 0;
-}
-
-/* The bar above the results: a toolbar, so it gets a shade rather than a border. */
-body.sfi-page .result-bar {
-  padding: .7rem 1.15rem;
-  border-radius: var(--slds-g-radius-border-2);
-  background-color: light-dark(rgba(255, 255, 255, .42), rgba(255, 255, 255, .05));
-  border: 1px solid light-dark(rgba(255, 255, 255, .6), rgba(255, 255, 255, .07));
-  margin: 0 1rem .5rem;
-}
-
-body.sfi-page .result-info,
-body.sfi-page .result-status {
+body.sfi-page .sfi-group > .slds-grid > .slds-col:first-child {
   color: var(--slds-g-color-on-surface-2);
-  font-variant-numeric: tabular-nums;
+  font-size: .92rem;
 }
 
-/* Where the data actually lives, the glass stops. Result grids, the field table in Show All Data,
-   the query editor and the response viewer are all read closely and at length, and translucency
-   costs contrast there for nothing. They sit as opaque paper on top of the frosted panel. */
-body.sfi-page .data-table,
-body.sfi-page .result-table,
-body.sfi-page table.slds-table,
-body.sfi-page .sfir-inspect-table-text,
-body.sfi-page textarea,
-body.sfi-page .editor,
-body.sfi-page pre {
-  background-color: var(--slds-g-color-surface-container-1);
-  -webkit-backdrop-filter: none;
-  backdrop-filter: none;
+/* ==================================================================================================
+ * 7. Controls
+ * ================================================================================================ */
+
+.slds-button {
+  border-radius: var(--slds-g-radius-border-2);
+  font-weight: 500;
+  letter-spacing: -.006em;
+  white-space: nowrap;
+  transition: background-color .15s ease, border-color .15s ease, transform .06s ease;
 }
 
-body.sfi-page table.slds-table thead th {
-  position: sticky;
-  top: 0;
-  z-index: 1;
-  background-color: var(--slds-g-color-surface-container-2);
-  box-shadow: inset 0 -1px 0 var(--slds-g-color-border-1);
+.slds-button:active {
+  transform: scale(.975);
 }
 
-/* Zebra striping earns its keep on grids this wide: it is what stops the eye losing its row
-   halfway across. Kept very faint so it does not fight the text. */
-body.sfi-page table.slds-table tbody tr:nth-child(even) > td {
-  background-color: light-dark(rgba(17, 21, 28, .022), rgba(255, 255, 255, .022));
+.slds-button_neutral {
+  background-color: light-dark(rgba(255, 255, 255, .70), rgba(255, 255, 255, .07));
+  border-color: var(--slds-g-color-border-1);
+  box-shadow: none;
 }
 
-body.sfi-page table.slds-table tbody tr:hover > td {
-  background-color: light-dark(rgba(0, 113, 227, .06), rgba(10, 132, 255, .10));
+.slds-button_neutral:hover:not(:disabled) {
+  background-color: var(--slds-g-color-surface-container-3);
 }
 
-/* Autocomplete floats over the editor, so it is chrome and gets the frost. */
-body.sfi-page .autocomplete-results {
-  background-color: light-dark(rgba(255, 255, 255, .88), rgba(32, 32, 36, .86));
-  -webkit-backdrop-filter: var(--sfi-glass-blur);
-  backdrop-filter: var(--sfi-glass-blur);
-  border: 1px solid var(--sfi-glass-border);
-  border-radius: var(--slds-g-radius-border-3);
-  box-shadow: var(--slds-g-shadow-3);
+.slds-button_brand {
+  background-color: var(--sfi-accent);
+  border-color: transparent;
+  color: #fff;
+  box-shadow: 0 2px 10px light-dark(rgba(0, 113, 227, .28), rgba(10, 132, 255, .30));
 }
 
-@media (prefers-reduced-transparency: reduce) {
-  body.sfi-page .area,
-  body.sfi-page .result-bar,
-  body.sfi-page .autocomplete-results {
-    background-color: var(--slds-g-color-surface-container-1);
-    -webkit-backdrop-filter: none;
-    backdrop-filter: none;
-  }
+.slds-button_brand:hover:not(:disabled),
+.slds-button_brand:focus:not(:disabled) {
+  background-color: var(--sfi-accent-hover);
+  border-color: transparent;
+  color: #fff;
 }
 
-/* ================================================================================================
- * Corrections
- *
- * Rounding every button independently breaks grouped ones: a button group is meant to read as one
- * control with a seam down the middle, and giving each segment its own corners turns it into a row
- * of separate pills with gaps punched through it. Only the outer edges get rounded.
- * ============================================================================================== */
-
+/* A button group is one control with seams, not a row of pills. Rounding each segment punched gaps
+   through it, so only the outer edges are rounded. */
 .slds-button-group .slds-button,
 .slds-button-group-list .slds-button {
   border-radius: 0;
@@ -666,875 +436,12 @@ body.sfi-page .autocomplete-results {
   border-radius: var(--slds-g-radius-border-2);
 }
 
-/* Button labels are short and meaningful; wrapping them mid-phrase reads as breakage. */
-.slds-button {
-  white-space: nowrap;
-}
-
-/* ================================================================================================
- * Production warning
- *
- * sfir.css floods the page with a flat pink when the org is production. That is a safety signal and
- * it stays -- knowing at a glance that you are about to edit live data is worth more than any
- * amount of polish -- but a flat wash overrides everything else and reads as a rendering fault
- * rather than a warning.
- *
- * So it keeps the same meaning and gets louder, not quieter: the ground turns warm, and a solid bar
- * runs along the top edge where a warning belongs. Unmissable, and deliberate.
- * ============================================================================================== */
-
-html:has(body.sfir-prod),
-body.sfir-prod {
-  background-color: light-dark(#fbeef0, #241a1d) !important;
-  background-image:
-    radial-gradient(60rem 44rem at 2% 4%, light-dark(rgba(214, 48, 90, .34),  rgba(255, 90, 130, .32)), transparent 66%),
-    radial-gradient(50rem 40rem at 98% 2%, light-dark(rgba(232, 92, 62, .26),  rgba(255, 130, 90, .26)), transparent 64%),
-    radial-gradient(56rem 42rem at 50% 114%, light-dark(rgba(190, 40, 110, .20), rgba(230, 80, 150, .20)), transparent 62%) !important;
-  background-attachment: fixed !important;
-}
-
-body.sfir-prod::before {
-  content: "";
-  position: fixed;
-  inset-block-start: 0;
-  inset-inline: 0;
-  height: 4px;
-  background: linear-gradient(90deg, #d6305a, #e85c3e);
-  z-index: 9999;
-  pointer-events: none;
-}
-
-/* Panels on a production org pick up a warm edge, so the signal survives even when the page is
-   scrolled and the bar is the only thing still in view. */
-body.sfir-prod .slds-tabs_default,
-body.sfir-prod .area,
-body.sfir-prod .slds-card {
-  border-color: light-dark(rgba(214, 48, 90, .30), rgba(255, 90, 130, .28));
-}
-
-@media (prefers-reduced-transparency: reduce) {
-  html:has(body.sfir-prod),
-  body.sfir-prod {
-    background-image: none !important;
-    background-color: light-dark(#f6dfe4, #2b1e21) !important;
-  }
-}
-
-/* ================================================================================================
- * Revised material
- *
- * The earlier pass used contrast where this language uses luminance. Its ground was saturated and
- * dark, its panels sat well below the ground in value, and every edge was drawn with a line. The
- * result read as tinted boxes on a coloured page.
- *
- * The logic is the other way round: a pale, luminous ground; panels only a shade lighter than it;
- * separation carried by light and a soft shadow rather than a border; large radii; and a lot of air
- * inside. Colour is spent on status and on one accent, never on structure.
- * ============================================================================================== */
-
-:root {
-  --sfi-glass-bg:     light-dark(rgba(255, 255, 255, .86), rgba(38, 38, 44, .74));
-  --sfi-glass-border: light-dark(rgba(255, 255, 255, .9), rgba(255, 255, 255, .07));
-  --sfi-glass-blur:   saturate(150%) blur(28px);
-
-  --slds-g-radius-border-1: 8px;
-  --slds-g-radius-border-2: 12px;
-  --slds-g-radius-border-3: 18px;
-  --slds-g-radius-border-4: 24px;
-
-  /* Wide, weightless shadows. A card should look like it is resting just off the page, not
-     stamped onto it. */
-  --slds-g-shadow-1: 0 1px 2px   light-dark(rgba(60, 50, 90, .04), rgba(0, 0, 0, .4));
-  --slds-g-shadow-2: 0 4px 16px  light-dark(rgba(60, 50, 90, .06), rgba(0, 0, 0, .45));
-  --slds-g-shadow-3: 0 10px 32px light-dark(rgba(60, 50, 90, .07), rgba(0, 0, 0, .5));
-  --slds-g-shadow-4: 0 20px 60px light-dark(rgba(60, 50, 90, .09), rgba(0, 0, 0, .6));
-
-  --slds-g-color-border-1: light-dark(rgba(60, 50, 90, .08), rgba(255, 255, 255, .08));
-  --slds-g-color-border-2: light-dark(rgba(60, 50, 90, .14), rgba(255, 255, 255, .14));
-}
-
-/* Pale and luminous rather than saturated: lavender, peach and mint, spread wide and kept light,
-   so panels can sit *above* it in value instead of below. */
-.sfi-page,
-body.sfi-page {
-  background-color: light-dark(#f4f2fb, #16161a);
-  background-image:
-    radial-gradient(70rem 52rem at 2% 4%, light-dark(rgba(168, 148, 255, .30), rgba(120, 100, 220, .22)), transparent 68%),
-    radial-gradient(60rem 46rem at 98% 2%, light-dark(rgba(255, 176, 156, .26), rgba(210, 130, 120, .18)), transparent 66%),
-    radial-gradient(66rem 50rem at 46% 114%, light-dark(rgba(140, 226, 214, .26), rgba(90, 180, 175, .18)), transparent 64%),
-    radial-gradient(44rem 38rem at 88% 62%, light-dark(rgba(176, 200, 255, .24), rgba(110, 140, 210, .16)), transparent 66%);
-  background-attachment: fixed;
-}
-
-/* Panels: nearly white, edges barely drawn, corners generous, and room to breathe. */
-body.sfi-page .slds-tabs_default,
-body.sfi-page .area,
-.sfi-panel,
-.slds-card,
-.slds-box {
-  background-color: var(--sfi-glass-bg);
-  border: 1px solid var(--sfi-glass-border);
-  border-radius: var(--slds-g-radius-border-4);
-  box-shadow:
-    var(--slds-g-shadow-3),
-    inset 0 1px 0 light-dark(rgba(255, 255, 255, .95), rgba(255, 255, 255, .05));
-}
-
-body.sfi-page .area {
-  padding: 1.35rem 1.5rem;
-  margin: 1.25rem 1.25rem 0;
-}
-
-body.sfi-page .slds-tabs_default__content {
-  padding: .5rem 1rem 1rem;
-}
-
-body.sfi-page .slds-tabs_default__content > div > .slds-grid {
-  padding-block: .95rem;
-}
-
-/* Row separation by light, not by line. */
-body.sfi-page .slds-tabs_default__content > div > .slds-grid,
-body.sfi-page .slds-border_bottom {
-  border-bottom: 1px solid light-dark(rgba(60, 50, 90, .07), rgba(255, 255, 255, .06)) !important;
-}
-
-/* Labels quiet and small, values carrying the weight -- the hierarchy these references lean on. */
-body.sfi-page .slds-tabs_default__content > div > .slds-grid > .slds-col:first-child {
-  color: var(--slds-g-color-on-surface-2);
-  font-size: .92rem;
-}
-
-/* Controls: pill-shaped, solid for the primary action, quiet for everything else. */
-.slds-button_neutral {
-  background-color: light-dark(rgba(255, 255, 255, .7), rgba(255, 255, 255, .07));
-  border-color: var(--slds-g-color-border-1);
-  box-shadow: none;
-}
-
-.slds-button_brand {
-  box-shadow: 0 2px 10px light-dark(rgba(0, 113, 227, .28), rgba(10, 132, 255, .3));
-}
-
 .slds-input,
 .slds-textarea,
 .slds-select {
+  border-radius: var(--slds-g-radius-border-2);
+  border-color: var(--slds-g-color-border-1);
   background-color: light-dark(rgba(255, 255, 255, .78), rgba(255, 255, 255, .06));
-  border-color: var(--slds-g-color-border-1);
-}
-
-/* ================================================================================================
- * Options as cards
- *
- * Each tab is a flat list of eighteen or so unrelated settings with no grouping in the markup, so
- * wrapping the lot in one panel made a wall of rows. Each setting becomes its own card instead,
- * floating on the ground with the others -- which is the pattern the references use, and it lets a
- * setting be scanned as a unit rather than as a line in a table.
- *
- * The tab strip stays a distinct object above them; the container behind it stops being a card,
- * since a card inside a card is what made the previous pass feel boxed in.
- * ============================================================================================== */
-
-body.sfi-page .slds-tabs_default {
-  background: none;
-  border: 0;
-  box-shadow: none;
-  -webkit-backdrop-filter: none;
-  backdrop-filter: none;
-  overflow: visible;
-}
-
-/* The tab strip: one floating bar, scrolling rather than clipping. */
-body.sfi-page .slds-tabs_default__nav {
-  background-color: var(--sfi-glass-bg);
-  -webkit-backdrop-filter: var(--sfi-glass-blur);
-  backdrop-filter: var(--sfi-glass-blur);
-  border: 1px solid var(--sfi-glass-border);
-  border-radius: var(--slds-g-radius-border-3);
-  box-shadow: var(--slds-g-shadow-2);
-  padding: .3rem .4rem;
-  margin-bottom: 1rem;
-}
-
-body.sfi-page .slds-tabs_default__link {
-  border-radius: var(--slds-g-radius-border-2);
-  padding-inline: .85rem;
-}
-
-body.sfi-page .slds-tabs_default__item.slds-is-active .slds-tabs_default__link {
-  background-color: light-dark(rgba(0, 113, 227, .10), rgba(10, 132, 255, .18));
-  box-shadow: none;
-}
-
-body.sfi-page .slds-tabs_default__content {
-  padding: 0;
-}
-
-/* Each setting, its own card. */
-body.sfi-page .slds-tabs_default__content > div > .slds-grid {
-  background-color: var(--sfi-glass-bg);
-  -webkit-backdrop-filter: var(--sfi-glass-blur);
-  backdrop-filter: var(--sfi-glass-blur);
-  border: 1px solid var(--sfi-glass-border) !important;
-  border-radius: var(--slds-g-radius-border-3);
-  box-shadow:
-    var(--slds-g-shadow-2),
-    inset 0 1px 0 light-dark(rgba(255, 255, 255, .95), rgba(255, 255, 255, .05));
-  padding: 1.05rem 1.35rem !important;
-  margin-bottom: .6rem;
-  transition: box-shadow .16s ease, transform .16s ease;
-}
-
-body.sfi-page .slds-tabs_default__content > div > .slds-grid:hover {
-  box-shadow:
-    var(--slds-g-shadow-3),
-    inset 0 1px 0 light-dark(rgba(255, 255, 255, .95), rgba(255, 255, 255, .05));
-  background-color: light-dark(rgba(255, 255, 255, .93), rgba(44, 44, 50, .8));
-}
-
-/* The section header above the list is a caption, not a card. */
-body.sfi-page .slds-tabs_default__content > div > .slds-border_bottom:first-child {
-  background: none;
-  border: 0 !important;
-  box-shadow: none;
-  padding-inline: .35rem !important;
-  margin-bottom: .35rem;
-}
-
-@media (prefers-reduced-transparency: reduce) {
-  body.sfi-page .slds-tabs_default__nav,
-  body.sfi-page .slds-tabs_default__content > div > .slds-grid {
-    background-color: var(--slds-g-color-surface-container-1);
-    -webkit-backdrop-filter: none;
-    backdrop-filter: none;
-  }
-}
-
-/* ================================================================================================
- * Popup, colour only
- *
- * The popup is a fixed-size iframe with tightly fitted contents. Earlier passes gave it radii,
- * overflow:hidden and its own padding, which clipped the panel and pushed the footer over the
- * buttons. Nothing here touches the box model -- background, border colour and backdrop only, all
- * of which are free of layout consequences.
- * ============================================================================================== */
-
-#insext {
-  background-color: var(--sfi-glass-bg);
-  -webkit-backdrop-filter: var(--sfi-glass-blur);
-  backdrop-filter: var(--sfi-glass-blur);
-}
-
-#insext .slds-button_neutral,
-#insext .page-button {
-  background-color: light-dark(rgba(255, 255, 255, .42), rgba(255, 255, 255, .06));
-  border-color: light-dark(rgba(255, 255, 255, .85), rgba(255, 255, 255, .12));
-}
-
-#insext .slds-button_neutral:hover:not(:disabled),
-#insext .page-button:hover:not(:disabled) {
-  background-color: light-dark(rgba(255, 255, 255, .8), rgba(255, 255, 255, .13));
-}
-
-#insext .slds-input,
-#insext .slds-select {
-  background-color: light-dark(rgba(255, 255, 255, .5), rgba(255, 255, 255, .07));
-  border-color: light-dark(rgba(255, 255, 255, .85), rgba(255, 255, 255, .12));
-}
-
-@media (prefers-reduced-transparency: reduce) {
-  #insext,
-  #insext .slds-button_neutral,
-  #insext .page-button,
-  #insext .slds-input,
-  #insext .slds-select {
-    background-color: var(--slds-g-color-surface-container-1);
-    -webkit-backdrop-filter: none;
-    backdrop-filter: none;
-  }
-}
-
-/* Tabs on the full-width pages were clipped because the list items were allowed to shrink. They
-   keep their width there and the strip scrolls instead. Scoped to those pages deliberately: the
-   popup's tab strip is only a few hundred pixels wide and does need to shrink to fit. */
-body.sfi-page .slds-tabs_default__nav > li {
-  flex: 0 0 auto;
-}
-
-/* ================================================================================================
- * Setting groups
- * ============================================================================================== */
-
-body.sfi-page .sfi-group {
-  background-color: var(--sfi-glass-bg);
-  -webkit-backdrop-filter: var(--sfi-glass-blur);
-  backdrop-filter: var(--sfi-glass-blur);
-  border: 1px solid var(--sfi-glass-border);
-  border-radius: var(--slds-g-radius-border-4);
-  box-shadow:
-    var(--slds-g-shadow-3),
-    inset 0 1px 0 light-dark(rgba(255, 255, 255, .95), rgba(255, 255, 255, .05));
-  margin-bottom: 1rem;
-  overflow: hidden;
-}
-
-body.sfi-page .sfi-group__title {
-  font-size: .72rem;
-  font-weight: 600;
-  letter-spacing: .07em;
-  text-transform: uppercase;
-  color: var(--slds-g-color-on-surface-3);
-  padding: 1rem 1.35rem .35rem;
-  margin: 0;
-}
-
-/* Inside a group the rows go back to being rows: separated by light, not by their own cards. */
-body.sfi-page .sfi-group > .slds-grid {
-  background: none !important;
-  border: 0 !important;
-  border-bottom: 1px solid light-dark(rgba(60, 50, 90, .07), rgba(255, 255, 255, .06)) !important;
-  border-radius: 0 !important;
-  box-shadow: none !important;
-  margin-bottom: 0 !important;
-  padding: .95rem 1.35rem !important;
-}
-
-body.sfi-page .sfi-group > .slds-grid:last-child {
-  border-bottom: 0 !important;
-}
-
-body.sfi-page .sfi-group > .slds-grid:hover {
-  background-color: light-dark(rgba(60, 50, 90, .03), rgba(255, 255, 255, .04)) !important;
-}
-
-/* ================================================================================================
- * Page header
- *
- * It sits above the content as a sibling, so it should read as the chrome of the window rather than
- * as the first element of the page: full width, square, and staying put while the content scrolls
- * under it.
- * ============================================================================================== */
-
-/* Detached rather than full-bleed: it floats on the ground like the panels do, with air above it
-   and its own corners, instead of being a strip welded to the top of the window. */
-body.sfi-page .slds-builder-header {
-  position: sticky;
-  inset-block-start: 1rem;
-  z-index: 100;
-  max-width: 1680px;
-  margin: 1rem auto 0;
-  padding-inline: 1.25rem;
-  border-radius: var(--slds-g-radius-border-3);
-  border: 1px solid var(--sfi-glass-border);
-  box-shadow: var(--slds-g-shadow-2);
-}
-
-body.sfi-page .slds-builder-header + * {
-  margin-block-start: 1.25rem;
-}
-
-/* The popup's own bars -- title, tab strip, footer -- were opaque white blocks sitting on the
-   frosted panel, which is what made it look assembled from separate pieces rather than being one
-   surface. Background only; their metrics are left exactly as they were. */
-#insext .popup-header,
-#insext .popup-header.slds-page-header,
-#insext .slds-tabs_default__nav,
-#insext #footer {
-  background-color: light-dark(rgba(255, 255, 255, .34), rgba(255, 255, 255, .05)) !important;
-  -webkit-backdrop-filter: none;
-  backdrop-filter: none;
-}
-
-#insext .slds-tabs_default__item.slds-is-active .slds-tabs_default__link {
-  background-color: light-dark(rgba(255, 255, 255, .55), rgba(255, 255, 255, .09));
-}
-
-@media (prefers-reduced-transparency: reduce) {
-  #insext .popup-header,
-  #insext .popup-header.slds-page-header,
-  #insext .slds-tabs_default__nav,
-  #insext #footer {
-    background-color: var(--slds-g-color-surface-container-1) !important;
-  }
-}
-
-/* ================================================================================================
- * Popup panel
- *
- * The frost was being applied to #insext, which is only the wrapper. The panel itself is
- * .insext-popup and paints an opaque white over it, so none of it ever showed. It goes on the panel
- * instead.
- *
- * Rounding the panel needs overflow:hidden for the children to follow its corners. That is safe
- * here, unlike the earlier attempt: the scrolling happens on .main inside, so clipping the outer
- * panel costs nothing.
- * ============================================================================================== */
-
-#insext .insext-popup {
-  background-color: var(--sfi-glass-bg);
-  -webkit-backdrop-filter: var(--sfi-glass-blur);
-  backdrop-filter: var(--sfi-glass-blur);
-  border-color: var(--sfi-glass-border);
-  border-radius: 16px;
-  overflow: hidden;
-  box-shadow:
-    0 16px 48px light-dark(rgba(60, 50, 90, .18), rgba(0, 0, 0, .55)),
-    inset 0 1px 0 light-dark(rgba(255, 255, 255, .9), rgba(255, 255, 255, .06));
-}
-
-/* The edge meeting the tab stays square, as it did before. */
-#insext .insext-popup-vertical {
-  border-top-right-radius: 0;
-}
-
-/* An overlay scrollbar rather than a channel: the track disappears and the thumb only shows against
-   the content, which is how the panel avoids reading as a scrolling box with a gutter down its side. */
-#insext .main {
-  scrollbar-width: thin;
-  scrollbar-color: light-dark(rgba(60, 50, 90, .25), rgba(255, 255, 255, .25)) transparent;
-}
-
-#insext .main::-webkit-scrollbar {
-  width: 7px;
-}
-
-#insext .main::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-#insext .main::-webkit-scrollbar-thumb {
-  background-color: light-dark(rgba(60, 50, 90, .22), rgba(255, 255, 255, .22));
-  border: 2px solid transparent;
-  background-clip: content-box;
-  border-radius: 999px;
-}
-
-#insext .main::-webkit-scrollbar-thumb:hover {
-  background-color: light-dark(rgba(60, 50, 90, .38), rgba(255, 255, 255, .38));
-}
-
-@media (prefers-reduced-transparency: reduce) {
-  #insext .insext-popup {
-    background-color: var(--slds-g-color-surface-container-1);
-    -webkit-backdrop-filter: none;
-    backdrop-filter: none;
-  }
-}
-
-
-/* ================================================================================================
- * Page header
- *
- * A flat dark bar over a pale luminous page reads as a strip bolted on top of something else. In
- * this language the top bar belongs to the page: the same frost as the panels, the ground showing
- * through it, and the separation carried by a hairline rather than by a block of colour.
- * ============================================================================================== */
-
-body.sfi-page .slds-builder-header {
-  background-color: light-dark(rgba(255, 255, 255, .70), rgba(30, 30, 36, .70)) !important;
-  -webkit-backdrop-filter: var(--sfi-glass-blur);
-  backdrop-filter: var(--sfi-glass-blur);
-  border: 0;
-  border-bottom: 1px solid light-dark(rgba(60, 50, 90, .09), rgba(255, 255, 255, .07));
-  box-shadow: none;
-  color: var(--slds-g-color-on-surface-1);
-}
-
-body.sfi-page .slds-builder-header a,
-body.sfi-page .slds-builder-header button,
-body.sfi-page .slds-builder-header .slds-text-heading_small,
-body.sfi-page .slds-builder-header__item-label,
-body.sfi-page .slds-builder-header__item {
-  color: var(--slds-g-color-on-surface-1);
-}
-
-/* The page title carries the bar, so it gets the weight and tracking of a title rather than of a
-   label sitting in a strip. */
-body.sfi-page .slds-builder-header .slds-text-heading_small,
-body.sfi-page .slds-builder-header__item-label {
-  font-size: 1rem;
-  font-weight: 600;
-  letter-spacing: -.016em;
-}
-
-/* Icons inherit rather than staying white on a light bar. */
-body.sfi-page .slds-builder-header svg {
-  fill: currentColor;
-}
-
-/* The org name is a chip: a quiet pill rather than a white block. */
-body.sfi-page .slds-builder-header .slds-builder-header__item-action,
-body.sfi-page .slds-builder-header .sfir-org-name {
-  background-color: light-dark(rgba(60, 50, 90, .06), rgba(255, 255, 255, .08));
-  border-radius: 999px;
-  padding: .25rem .7rem;
-  font-weight: 500;
-}
-
-/* Production stays unmistakable: the bar warms up and keeps its edge. */
-body.sfir-prod .slds-builder-header {
-  background-color: light-dark(rgba(255, 244, 246, .78), rgba(48, 26, 30, .78)) !important;
-  border-bottom-color: light-dark(rgba(214, 48, 90, .35), rgba(255, 90, 130, .3));
-}
-
-@media (prefers-reduced-transparency: reduce) {
-  body.sfi-page .slds-builder-header {
-    background-color: var(--slds-g-color-surface-container-1) !important;
-    -webkit-backdrop-filter: none;
-    backdrop-filter: none;
-  }
-}
-
-/* ================================================================================================
- * Nested containers
- *
- * options.js wraps the tabs in a .slds-card.main-container, and the glass rule above catches every
- * .slds-card -- so a frosted card ended up holding frosted cards. It is a wrapper, not a surface,
- * so it stops painting itself. That also removes the square bottom edge: the wrapper grows past the
- * viewport, so its lower corners were never on screen to be rounded.
- * ============================================================================================== */
-
-body.sfi-page .main-container,
-body.sfi-page .slds-card.main-container {
-  background: none !important;
-  -webkit-backdrop-filter: none;
-  backdrop-filter: none;
-  border: 0 !important;
-  border-radius: 0 !important;
-  box-shadow: none !important;
-  padding: 0 !important;
-  margin: 0 !important;
-}
-
-/* The tab strip was stuck to the top of that wrapper with a hard shadow. It becomes its own
-   floating bar with room around it. */
-body.sfi-page .sfir-options-tab-container {
-  background-color: var(--sfi-glass-bg) !important;
-  -webkit-backdrop-filter: var(--sfi-glass-blur);
-  backdrop-filter: var(--sfi-glass-blur);
-  border: 1px solid var(--sfi-glass-border);
-  border-radius: var(--slds-g-radius-border-3);
-  box-shadow: var(--slds-g-shadow-2) !important;
-  padding: .3rem .4rem;
-  margin-bottom: 1rem;
-  top: 1rem;
-}
-
-/* Fade the trailing edge so it is visible that the strip runs on past what fits. Without it a
-   clipped tab just looks like the last one. */
-body.sfi-page .sfir-options-tab-container {
-  -webkit-mask-image: linear-gradient(90deg, #000 calc(100% - 2.5rem), transparent 100%);
-  mask-image: linear-gradient(90deg, #000 calc(100% - 2.5rem), transparent 100%);
-}
-
-@media (prefers-reduced-transparency: reduce) {
-  body.sfi-page .sfir-options-tab-container {
-    background-color: var(--slds-g-color-surface-container-1) !important;
-    -webkit-backdrop-filter: none;
-    backdrop-filter: none;
-  }
-}
-
-/* ================================================================================================
- * Popup height
- *
- * .insext-popup is the iframe itself -- button.js puts the class on the frame, there is no wrapper
- * around it. An earlier attempt at this made the panel a flex column and told a child frame to
- * grow, which matched nothing and could not have worked.
- *
- * Inside the frame the chain is already right: html, body and #root are all height:100% with the
- * column on #root. What it lacked was something to resolve against, since the frame is given only
- * a min-height and no height, and button.js clears any inline height unless the dynamic-height
- * option is on. Giving it a real height makes the column fill and drops the footer to the foot of
- * the panel. Declared without !important on purpose: the inline height that option writes still
- * takes precedence.
- * ============================================================================================== */
-
-#insext.insext-active .insext-popup {
-  height: 450px;
-}
-
-/* ================================================================================================
- * One measure
- *
- * The header, the page container and the panels inside it each carried their own width and
- * padding, so nothing lined up: the header sat on a different left edge from the cards under it and
- * the gutters changed from element to element. One measure and one gutter, applied to every
- * top-level piece, so they share an edge.
- * ============================================================================================== */
-
-:root {
-  --sfi-measure: 1600px;
-  --sfi-gutter: 1.75rem;
-}
-
-body.sfi-page .sfir-page-container {
-  max-width: var(--sfi-measure);
-  margin-inline: auto;
-  padding-inline: var(--sfi-gutter);
-}
-
-/* The header is not inside the container, so it is inset by hand to land on the same edge. */
-body.sfi-page .slds-builder-header {
-  max-width: calc(var(--sfi-measure) - (2 * var(--sfi-gutter)));
-  margin-inline: auto;
-}
-
-/* Panels take their gutter from the container and only space themselves vertically. */
-body.sfi-page .area {
-  margin: 0 0 1.25rem;
-}
-
-body.sfi-page .area:last-child {
-  margin-bottom: 0;
-}
-
-/* ================================================================================================
- * Vertical rhythm, in one place
- *
- * Spacing had ended up scattered across this file: the tab strip alone is touched in four separate
- * rules, each setting its own margins, and the result is elements that butt against each other
- * because the last rule to load happens not to set a gap. Every vertical gap on the tool and
- * settings pages is decided here, last, so there is one place to read and one place to change.
- * ============================================================================================== */
-
-:root {
-  --sfi-gap: 1.25rem;
-  --sfi-header-height: 3.5rem;
-}
-
-body.sfi-page .slds-builder-header {
-  margin-block: 1rem var(--sfi-gap);
-}
-
-/* Cancel the sibling rule from earlier; the header's own bottom margin provides this gap now, and
-   having both produced a double space on some pages and none on others. */
-body.sfi-page .slds-builder-header + * {
-  margin-block-start: 0;
-}
-
-body.sfi-page .sfir-options-tab-container {
-  margin-block: 0 var(--sfi-gap) !important;
-  /* Sticks below the header rather than under it, which is where the two were colliding. */
-  top: calc(1rem + var(--sfi-header-height) + var(--sfi-gap)) !important;
-}
-
-body.sfi-page .sfi-group,
-body.sfi-page .area {
-  margin-block: 0 var(--sfi-gap) !important;
-}
-
-body.sfi-page .sfi-group:last-child,
-body.sfi-page .area:last-child {
-  margin-block-end: 0 !important;
-}
-
-/* Settings rows carry their own card, so the group they sit in needs no padding of its own. */
-body.sfi-page .slds-tabs_default__content {
-  padding: 0 !important;
-}
-
-
- * SF Inspector theme
- *
- * Loaded after slds.css and after each page's own stylesheet, so it has the last word.
- *
- * The Lightning Design System exposes global styling hooks (--slds-g-*), so most of this is
- * redefining tokens rather than fighting selectors. SLDS already resolves them through
- * light-dark(), which means both appearances come from one declaration.
- *
- * Where the glass goes, and where it does not:
- *   Translucency is applied to chrome only -- the popup shell, page headers, toolbars, modals,
- *   dropdowns. Content surfaces stay opaque. These are reading tools: record grids, SOQL results,
- *   debug logs and XML are dense text, and putting a blurred backdrop behind them costs contrast
- *   for no gain. Apple's own dense interfaces work the same way: glass in the chrome, solid paper
- *   under the content.
- */
-
-:root {
-  /* Light by default. The tokens below are all light-dark() pairs, so the dark half is written and
-     ready, but following the system appearance is off: the interface it themes was built for a
-     white page and several of its own surfaces do not follow along, which leaves parts of it
-     unreadable. Flip this to "light dark" once every page has been checked in both. */
-  color-scheme: light;
-
-  /* --- Type ------------------------------------------------------------------------------- */
-  --slds-g-font-family-base:
-    -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", system-ui, sans-serif;
-  --slds-g-font-family-monospace:
-    ui-monospace, "SF Mono", SFMono-Regular, Menlo, monospace;
-
-  /* --- Surfaces --------------------------------------------------------------------------- */
-  /* Neutrals carry a slight blue cast rather than being pure grey, which is what makes an
-     interface read as macOS rather than as a default stylesheet. */
-  --slds-g-color-surface-1:           light-dark(#f5f6f8, #1c1c1e);
-  --slds-g-color-surface-2:           light-dark(#eceef2, #242426);
-  --slds-g-color-surface-3:           light-dark(#e2e5eb, #2c2c2e);
-  --slds-g-color-surface-container-1: light-dark(#ffffff, #232326);
-  --slds-g-color-surface-container-2: light-dark(#f7f8fa, #2a2a2d);
-  --slds-g-color-surface-container-3: light-dark(#eef0f4, #313134);
-
-  --slds-g-color-on-surface-1: light-dark(#11151c, #f2f2f7);
-  --slds-g-color-on-surface-2: light-dark(#3c4350, #c7c7cc);
-  --slds-g-color-on-surface-3: light-dark(#69707d, #98989f);
-
-  --slds-g-color-border-1:      light-dark(#dcdfe6, #38383c);
-  --slds-g-color-border-2:      light-dark(#c9cdd6, #48484c);
-  --slds-g-color-border-base-1: light-dark(#dcdfe6, #38383c);
-
-  /* --- Accent ----------------------------------------------------------------------------- */
-  /* macOS system blue, which is what a Safari-native tool should key off. */
-  --sfi-accent:       light-dark(#0071e3, #0a84ff);
-  --sfi-accent-hover: light-dark(#0062c4, #3d9bff);
-
-  --slds-g-color-accent-1:           var(--sfi-accent);
-  --slds-g-color-accent-2:           var(--sfi-accent-hover);
-  --slds-g-color-accent-container-1: var(--sfi-accent);
-  --slds-g-color-accent-container-2: var(--sfi-accent-hover);
-  --slds-g-color-border-accent-1:    var(--sfi-accent);
-  --slds-g-color-border-accent-2:    var(--sfi-accent-hover);
-  --slds-g-color-brand-base-50:      var(--sfi-accent);
-  --slds-g-color-brand-base-60:      var(--sfi-accent-hover);
-
-  /* --- Semantic ---------------------------------------------------------------------------- */
-  /* Status colours, kept separate from the accent so severity never competes with brand. Used by
-     flow-scanner.css and dependencies-explorer.css, which previously hardcoded their own. */
-  --sfi-danger:          light-dark(#c9372c, #ff6f61);
-  --sfi-danger-surface:  light-dark(#fdeceb, #3a1a18);
-  --sfi-danger-on:       light-dark(#8b2019, #ffb3aa);
-
-  --sfi-warning:         light-dark(#a16207, #e0a33a);
-  --sfi-warning-surface: light-dark(#fdf4e3, #332a13);
-  --sfi-warning-on:      light-dark(#7c4a02, #f0c987);
-
-  --sfi-success:         light-dark(#1a7f4f, #4fc98c);
-  --sfi-success-surface: light-dark(#e7f5ee, #12301f);
-  --sfi-success-on:      light-dark(#115c39, #8fdcb5);
-
-  --sfi-info:            light-dark(#0e7490, #4bb8d4);
-  --sfi-info-surface:    light-dark(#e6f4f8, #102a33);
-  --sfi-info-on:         light-dark(#0b5468, #93d5e6);
-
-  /* --- Value types ------------------------------------------------------------------------- */
-  /* Show All Data tints values by type. The original colours were picked for a white page and go
-     unreadable on a dark one, so each gets a pair. */
-  --sfi-value-object:       light-dark(#8a7a00, #d6c25a);
-  --sfi-value-number:       light-dark(#9026a0, #dda0e8);
-  --sfi-value-boolean:      light-dark(#a01c1c, #f09090);
-  --sfi-value-boolean-true: light-dark(#0d7377, #5fd0d4);
-
-  /* --- Shape ------------------------------------------------------------------------------ */
-  /* Apple's radii are larger than SLDS's, and it is most of what separates the two visually. */
-  --slds-g-radius-border-1: 6px;
-  --slds-g-radius-border-2: 10px;
-  --slds-g-radius-border-3: 14px;
-  --slds-g-radius-border-4: 18px;
-
-  /* --- Depth ------------------------------------------------------------------------------ */
-  /* Softer and more diffuse than SLDS's, which reads flatter and more modern. */
-  --slds-g-shadow-1: 0 1px 2px light-dark(rgba(17, 21, 28, .06), rgba(0, 0, 0, .5));
-  --slds-g-shadow-2: 0 2px 8px light-dark(rgba(17, 21, 28, .08), rgba(0, 0, 0, .55));
-  --slds-g-shadow-3: 0 8px 24px light-dark(rgba(17, 21, 28, .10), rgba(0, 0, 0, .6));
-  --slds-g-shadow-4: 0 16px 48px light-dark(rgba(17, 21, 28, .14), rgba(0, 0, 0, .7));
-
-  /* --- Glass ------------------------------------------------------------------------------ */
-  --sfi-glass-bg:     light-dark(rgba(255, 255, 255, .72), rgba(30, 30, 34, .68));
-  --sfi-glass-border: light-dark(rgba(255, 255, 255, .55), rgba(255, 255, 255, .09));
-  --sfi-glass-blur:   saturate(180%) blur(22px);
-}
-
-/* Chrome surfaces. Backdrop blur is expensive, so it is applied to a short list rather than
-   broadcast across the interface. */
-.slds-popover,
-.slds-dropdown,
-.slds-modal__container,
-.slds-modal__header,
-.slds-modal__footer,
-.slds-page-header,
-.slds-docked-composer,
-.slds-context-bar,
-#insext .slds-card,
-.sfi-glass {
-  background-color: var(--sfi-glass-bg);
-  -webkit-backdrop-filter: var(--sfi-glass-blur);
-  backdrop-filter: var(--sfi-glass-blur);
-  border-color: var(--sfi-glass-border);
-}
-
-/* macOS lets people turn translucency off system-wide. Honour it: fall back to opaque
-   surfaces rather than leaving a washed-out panel with no blur behind it. */
-@media (prefers-reduced-transparency: reduce) {
-  .slds-popover,
-  .slds-dropdown,
-  .slds-modal__container,
-  .slds-modal__header,
-  .slds-modal__footer,
-  .slds-page-header,
-  .slds-docked-composer,
-  .slds-context-bar,
-  #insext .slds-card,
-  .sfi-glass {
-    background-color: var(--slds-g-color-surface-container-1);
-    -webkit-backdrop-filter: none;
-    backdrop-filter: none;
-  }
-}
-
-/* Content surfaces stay opaque: these are the parts people read. */
-.slds-table,
-.slds-table td,
-.slds-table th,
-.slds-textarea,
-.slds-input,
-pre,
-code {
-  -webkit-backdrop-filter: none;
-  backdrop-filter: none;
-}
-
-/* --- Controls ------------------------------------------------------------------------------ */
-
-.slds-button {
-  border-radius: var(--slds-g-radius-border-2);
-  font-weight: 500;
-  letter-spacing: -.006em;
-  transition: background-color .15s ease, border-color .15s ease, transform .06s ease;
-}
-
-.slds-button:active {
-  transform: scale(.975);
-}
-
-.slds-button_neutral {
-  background-color: var(--slds-g-color-surface-container-1);
-  border-color: var(--slds-g-color-border-1);
-  box-shadow: var(--slds-g-shadow-1);
-}
-
-.slds-button_neutral:hover:not(:disabled) {
-  background-color: var(--slds-g-color-surface-container-3);
-}
-
-.slds-button_brand {
-  background-color: var(--sfi-accent);
-  border-color: transparent;
-  color: #fff;
-  box-shadow: var(--slds-g-shadow-1);
-}
-
-.slds-button_brand:hover:not(:disabled),
-.slds-button_brand:focus:not(:disabled) {
-  background-color: var(--sfi-accent-hover);
-  border-color: transparent;
-  color: #fff;
-}
-
-.slds-input,
-.slds-textarea,
-.slds-select {
-  border-radius: var(--slds-g-radius-border-2);
-  border-color: var(--slds-g-color-border-1);
-  background-color: var(--slds-g-color-surface-container-1);
   transition: border-color .15s ease, box-shadow .15s ease;
 }
 
@@ -1546,8 +453,7 @@ code {
   outline: none;
 }
 
-/* A visible ring for keyboard users, since the focus styles above are also used for pointer
-   focus and are deliberately quiet. */
+/* A visible ring for keyboard users, since the focus styles above are deliberately quiet. */
 :focus-visible {
   outline: 2px solid var(--sfi-accent);
   outline-offset: 2px;
@@ -1558,7 +464,83 @@ code {
   font-weight: 500;
 }
 
-/* --- Data surfaces -------------------------------------------------------------------------- */
+.slds-dropdown__item > a:hover,
+.slds-dropdown__item > a:focus {
+  background-color: var(--sfi-accent);
+  color: #fff;
+  border-radius: var(--slds-g-radius-border-1);
+}
+
+/* ==================================================================================================
+ * 8. Type
+ * ================================================================================================ */
+
+.slds-text-heading_large,
+.slds-text-heading_medium,
+.slds-text-heading_small,
+.slds-card__header-title {
+  font-weight: 600;
+  letter-spacing: -.018em;
+  color: var(--slds-g-color-on-surface-1);
+}
+
+.slds-text-heading_large  { font-size: 1.6rem; line-height: 1.20; }
+.slds-text-heading_medium { font-size: 1.2rem; line-height: 1.25; }
+.slds-text-heading_small  { font-size: 1rem;   line-height: 1.30; }
+
+.slds-text-title,
+.slds-text-title_caps,
+.slds-form-element__help {
+  color: var(--slds-g-color-on-surface-3);
+  letter-spacing: .02em;
+}
+
+.slds-card__header,
+.slds-card__body,
+.slds-card__footer {
+  padding-inline: 1.5rem;
+}
+
+.slds-card__header { padding-block: 1.15rem; }
+.slds-card__body   { padding-block: .35rem 1.15rem; }
+
+.slds-form-element + .slds-form-element {
+  margin-top: 1rem;
+}
+
+/* ==================================================================================================
+ * 9. Data
+ *
+ * Where the data lives the glass stops: grids, the field table in Show All Data, editors and
+ * response viewers are read closely and at length.
+ * ================================================================================================ */
+
+body.sfi-page .data-table,
+body.sfi-page .result-table,
+body.sfi-page table.slds-table,
+body.sfi-page .sfir-inspect-table-text,
+body.sfi-page textarea,
+body.sfi-page .editor,
+body.sfi-page pre,
+.slds-table,
+.slds-table td,
+.slds-table th,
+.slds-textarea,
+.slds-input,
+pre,
+code {
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+
+body.sfi-page .data-table,
+body.sfi-page .result-table,
+body.sfi-page table.slds-table,
+body.sfi-page textarea,
+body.sfi-page .editor,
+body.sfi-page pre {
+  background-color: var(--slds-g-color-surface-container-1);
+}
 
 .slds-table th {
   background-color: var(--slds-g-color-surface-container-2);
@@ -1572,379 +554,19 @@ code {
   border-color: var(--slds-g-color-border-1);
 }
 
-/* Digits in a column should line up; most of this interface is identifiers and counts. */
+/* Identifiers and counts line up. */
 .slds-table td {
   font-variant-numeric: tabular-nums;
 }
 
-pre,
-code,
-.slds-textarea {
-  font-family: var(--slds-g-font-family-monospace);
-}
-
-/* --- Chrome details ------------------------------------------------------------------------- */
-
-.slds-modal__container {
-  border-radius: var(--slds-g-radius-border-4);
-  box-shadow: var(--slds-g-shadow-4);
-  overflow: hidden;
-}
-
-.slds-dropdown,
-.slds-popover {
-  border-radius: var(--slds-g-radius-border-3);
-  box-shadow: var(--slds-g-shadow-3);
-  border-width: 1px;
-  border-style: solid;
-}
-
-.slds-dropdown__item > a:hover,
-.slds-dropdown__item > a:focus {
-  background-color: var(--sfi-accent);
-  color: #fff;
-  border-radius: var(--slds-g-radius-border-1);
-}
-
-/* Overlay scrollbars, the way macOS draws them. */
-::-webkit-scrollbar {
-  width: 11px;
-  height: 11px;
-}
-
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-::-webkit-scrollbar-thumb {
-  background-color: light-dark(rgba(17, 21, 28, .22), rgba(255, 255, 255, .22));
-  border: 3px solid transparent;
-  background-clip: content-box;
-  border-radius: 999px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background-color: light-dark(rgba(17, 21, 28, .36), rgba(255, 255, 255, .36));
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .slds-button,
-  .slds-input,
-  .slds-textarea,
-  .slds-select {
-    transition: none;
-  }
-  .slds-button:active {
-    transform: none;
-  }
-}
-
-/* ================================================================================================
- * Material
- *
- * Glass only reads as glass when there is something behind it to refract. The popup floats over a
- * Salesforce page, so it gets that for free; the full-page tools do not, and translucency over a
- * flat white ground is just grey -- which is what made the first pass look cheap. So the pages get
- * a ground of their own, and panels float on it.
- * ============================================================================================== */
-
-.sfi-page,
-body.sfi-page {
-  background-color: var(--slds-g-color-surface-1);
-  background-image:
-    radial-gradient(60rem 44rem at 2% 4%, light-dark(rgba(0, 106, 224, .38),  rgba(10, 132, 255, .42)),  transparent 66%),
-    radial-gradient(50rem 40rem at 98% 2%, light-dark(rgba(96, 76, 255, .32),  rgba(130, 108, 255, .38)), transparent 64%),
-    radial-gradient(56rem 42rem at 50% 114%, light-dark(rgba(0, 176, 196, .26),  rgba(0, 190, 210, .28)),   transparent 62%);
-  background-attachment: fixed;
-}
-
-/* Panels. The inset highlight along the top edge is what separates a frosted panel from a plain
-   translucent rectangle: it reads as the lit edge of a physical sheet. */
-.sfi-panel,
-.slds-card,
-.slds-box {
-  background-color: light-dark(rgba(255, 255, 255, .78), rgba(32, 32, 36, .74));
-  -webkit-backdrop-filter: var(--sfi-glass-blur);
-  backdrop-filter: var(--sfi-glass-blur);
-  border: 1px solid var(--sfi-glass-border);
-  border-radius: var(--slds-g-radius-border-4);
-  box-shadow:
-    var(--slds-g-shadow-3),
-    inset 0 1px 0 light-dark(rgba(255, 255, 255, .85), rgba(255, 255, 255, .07));
-}
-
-@media (prefers-reduced-transparency: reduce) {
-  .sfi-page,
-  body.sfi-page {
-    background-image: none;
-  }
-  .sfi-panel,
-  .slds-card,
-  .slds-box {
-    background-color: var(--slds-g-color-surface-container-1);
-    -webkit-backdrop-filter: none;
-    backdrop-filter: none;
-  }
-}
-
-/* ================================================================================================
- * Rhythm
- *
- * The single biggest tell of a cheap interface is uniform, cramped spacing: everything the same
- * distance from everything else, so nothing groups. These give the dense screens room and let the
- * eye find the structure.
- * ============================================================================================== */
-
-.slds-card__header,
-.slds-card__body,
-.slds-card__footer {
-  padding-inline: 1.5rem;
-}
-
-.slds-card__header { padding-block: 1.15rem; }
-.slds-card__body   { padding-block: .35rem 1.15rem; }
-
-.slds-form-element + .slds-form-element { margin-top: 1rem; }
-
-/* Settings read as a list of rows, so give each row real height and a hairline instead of packing
-   them together. */
-.slds-tabs_default__content tr > td,
-.slds-tabs_default__content tr > th {
-  padding-block: .85rem;
-  border-bottom: 1px solid var(--slds-g-color-border-1);
-  vertical-align: middle;
-}
-
-.slds-tabs_default__content tr:last-child > td,
-.slds-tabs_default__content tr:last-child > th {
-  border-bottom: 0;
-}
-
-/* ================================================================================================
- * Type
- * ============================================================================================== */
-
-body {
-  -webkit-font-smoothing: antialiased;
-  letter-spacing: -.004em;
-}
-
-.slds-text-heading_large,
-.slds-text-heading_medium,
-.slds-text-heading_small,
-.slds-card__header-title {
-  font-weight: 600;
-  letter-spacing: -.018em;
-  color: var(--slds-g-color-on-surface-1);
-}
-
-.slds-text-heading_large  { font-size: 1.6rem; line-height: 1.2; }
-.slds-text-heading_medium { font-size: 1.2rem; line-height: 1.25; }
-.slds-text-heading_small  { font-size: 1rem;   line-height: 1.3; }
-
-.slds-text-title,
-.slds-text-title_caps,
-.slds-form-element__help {
-  color: var(--slds-g-color-on-surface-3);
-  letter-spacing: .02em;
-}
-
-/* ================================================================================================
- * Tabs
- * ============================================================================================== */
-
-.slds-tabs_default__nav {
-  border-bottom: 1px solid var(--slds-g-color-border-1);
-  flex-wrap: nowrap;
-  overflow-x: auto;
-  scrollbar-width: thin;
-}
-
-/* Labels must not be clipped or wrapped: these are names, and half a name is useless. */
-.slds-tabs_default__link {
-  white-space: nowrap;
-}
-
-.slds-tabs_default__link {
-  border: 0;
-  border-radius: var(--slds-g-radius-border-2) var(--slds-g-radius-border-2) 0 0;
-  color: var(--slds-g-color-on-surface-2);
-  font-weight: 500;
-  transition: background-color .15s ease, color .15s ease;
-}
-
-.slds-tabs_default__link:hover {
-  background-color: light-dark(rgba(0, 0, 0, .04), rgba(255, 255, 255, .05));
-  color: var(--slds-g-color-on-surface-1);
-}
-
-.slds-tabs_default__item.slds-is-active .slds-tabs_default__link {
-  color: var(--sfi-accent);
-  box-shadow: inset 0 -2px 0 var(--sfi-accent);
-}
-
-/* ================================================================================================
- * Popup
- *
- * This one genuinely floats over the Salesforce page, so it is where the material belongs.
- * ============================================================================================== */
-
-
-/* ================================================================================================
- * Layout
- *
- * The tools render edge to edge, which is what made them read as a web form rather than as an app:
- * rows running the full width of a 27-inch display with nothing containing them. Giving the content
- * a measure and floating it as one panel is most of the difference, and it is also what makes the
- * translucency legible -- there is finally a boundary for the ground to show around.
- * ============================================================================================== */
-
-/* The padding sits on the containers, not on the page. Putting it on the body indented the header
-   along with everything else, so it read as another element inside the layout rather than as the
-   chrome above it. */
-body.sfi-page {
-  padding: 0 0 3rem;
-}
-
-body.sfi-page .sfir-page-container,
-body.sfi-page > .slds-tabs_default {
-  padding-inline: 1.5rem;
-}
-
-/* The tab container is the panel on every settings-style page. */
-body.sfi-page .slds-tabs_default {
-  max-width: 1160px;
-  margin-inline: auto;
-  border-radius: var(--slds-g-radius-border-4);
-  overflow: hidden;
-  background-color: light-dark(rgba(255, 255, 255, .74), rgba(28, 28, 32, .70));
-  -webkit-backdrop-filter: var(--sfi-glass-blur);
-  backdrop-filter: var(--sfi-glass-blur);
-  border: 1px solid var(--sfi-glass-border);
-  box-shadow:
-    var(--slds-g-shadow-4),
-    inset 0 1px 0 light-dark(rgba(255, 255, 255, .9), rgba(255, 255, 255, .07));
-}
-
-body.sfi-page .slds-tabs_default__nav {
-  background-color: light-dark(rgba(255, 255, 255, .35), rgba(255, 255, 255, .04));
-}
-
-body.sfi-page .slds-tabs_default__content {
-  padding: .25rem .5rem .5rem;
-}
-
-/* Setting rows: hairlines rather than full borders, and enough height to breathe. */
-body.sfi-page .slds-tabs_default__content > div > .slds-grid {
-  border-bottom: 1px solid light-dark(rgba(17, 21, 28, .07), rgba(255, 255, 255, .07));
-  align-items: center;
-  transition: background-color .12s ease;
-}
-
-body.sfi-page .slds-tabs_default__content > div > .slds-grid:last-child {
-  border-bottom: 0 !important;
-}
-
-body.sfi-page .slds-tabs_default__content > div > .slds-grid:hover {
-  background-color: light-dark(rgba(17, 21, 28, .035), rgba(255, 255, 255, .045));
-}
-
-
-
-@media (prefers-reduced-transparency: reduce) {
-  body.sfi-page .slds-tabs_default {
-    background-color: var(--slds-g-color-surface-container-1);
-    -webkit-backdrop-filter: none;
-    backdrop-filter: none;
-  }
-  .slds-builder-header {
-    background-color: light-dark(#141a28, #0c0e14) !important;
-    -webkit-backdrop-filter: none;
-    backdrop-filter: none;
-  }
-}
-
-/* ================================================================================================
- * Popup
- *
- * Controls inside the panel were opaque white, so they sat on the frost as solid blocks rather than
- * belonging to it. Nesting another backdrop-filter would do nothing -- the parent has already
- * composited -- so they are translucent instead, letting the panel's own frost read through.
- * ============================================================================================== */
-
-}
-
-/* ================================================================================================
- * Tool pages
- *
- * Data Export, Show All Data, Data Import, Org Limits, REST Explorer and API Statistics all render
- * into .sfir-page-container, which had no styling at all -- so it is the hook for giving them the
- * same treatment the settings pages got.
- *
- * The measure here is far wider than on the settings pages on purpose: these show result grids that
- * genuinely need the room. It exists to stop rows stretching across a 27-inch display, not to make
- * a column of text.
- * ============================================================================================== */
-
-body.sfi-page .sfir-page-container {
-  max-width: 1680px;
-  margin-inline: auto;
-}
-
-/* Sections within a tool: the query editor, the result panel, the filters. */
-body.sfi-page .area {
-  background-color: light-dark(rgba(255, 255, 255, .74), rgba(28, 28, 32, .70));
-  -webkit-backdrop-filter: var(--sfi-glass-blur);
-  backdrop-filter: var(--sfi-glass-blur);
-  border: 1px solid var(--sfi-glass-border);
-  border-radius: var(--slds-g-radius-border-3);
-  box-shadow:
-    var(--slds-g-shadow-2),
-    inset 0 1px 0 light-dark(rgba(255, 255, 255, .85), rgba(255, 255, 255, .06));
-  padding: 1rem 1.15rem;
-  margin: 1rem 1rem 0;
-}
-
-/* The bar above the results: a toolbar, so it gets a shade rather than a border. */
-body.sfi-page .result-bar {
-  padding: .7rem 1.15rem;
-  border-radius: var(--slds-g-radius-border-2);
-  background-color: light-dark(rgba(255, 255, 255, .42), rgba(255, 255, 255, .05));
-  border: 1px solid light-dark(rgba(255, 255, 255, .6), rgba(255, 255, 255, .07));
-  margin: 0 1rem .5rem;
-}
-
-body.sfi-page .result-info,
-body.sfi-page .result-status {
-  color: var(--slds-g-color-on-surface-2);
-  font-variant-numeric: tabular-nums;
-}
-
-/* Where the data actually lives, the glass stops. Result grids, the field table in Show All Data,
-   the query editor and the response viewer are all read closely and at length, and translucency
-   costs contrast there for nothing. They sit as opaque paper on top of the frosted panel. */
-body.sfi-page .data-table,
-body.sfi-page .result-table,
-body.sfi-page table.slds-table,
-body.sfi-page .sfir-inspect-table-text,
-body.sfi-page textarea,
-body.sfi-page .editor,
-body.sfi-page pre {
-  background-color: var(--slds-g-color-surface-container-1);
-  -webkit-backdrop-filter: none;
-  backdrop-filter: none;
-}
-
+/* Grids this wide need a header that stays and a stripe to keep the eye on its row. */
 body.sfi-page table.slds-table thead th {
   position: sticky;
   top: 0;
   z-index: 1;
-  background-color: var(--slds-g-color-surface-container-2);
   box-shadow: inset 0 -1px 0 var(--slds-g-color-border-1);
 }
 
-/* Zebra striping earns its keep on grids this wide: it is what stops the eye losing its row
-   halfway across. Kept very faint so it does not fight the text. */
 body.sfi-page table.slds-table tbody tr:nth-child(even) > td {
   background-color: light-dark(rgba(17, 21, 28, .022), rgba(255, 255, 255, .022));
 }
@@ -1953,776 +575,282 @@ body.sfi-page table.slds-table tbody tr:hover > td {
   background-color: light-dark(rgba(0, 113, 227, .06), rgba(10, 132, 255, .10));
 }
 
-/* Autocomplete floats over the editor, so it is chrome and gets the frost. */
-body.sfi-page .autocomplete-results {
-  background-color: light-dark(rgba(255, 255, 255, .88), rgba(32, 32, 36, .86));
-  -webkit-backdrop-filter: var(--sfi-glass-blur);
-  backdrop-filter: var(--sfi-glass-blur);
-  border: 1px solid var(--sfi-glass-border);
-  border-radius: var(--slds-g-radius-border-3);
-  box-shadow: var(--slds-g-shadow-3);
+pre,
+code,
+.slds-textarea {
+  font-family: var(--slds-g-font-family-monospace);
 }
 
-@media (prefers-reduced-transparency: reduce) {
-  body.sfi-page .area,
-  body.sfi-page .result-bar,
-  body.sfi-page .autocomplete-results {
-    background-color: var(--slds-g-color-surface-container-1);
-    -webkit-backdrop-filter: none;
-    backdrop-filter: none;
-  }
-}
-
-/* ================================================================================================
- * Corrections
- *
- * Rounding every button independently breaks grouped ones: a button group is meant to read as one
- * control with a seam down the middle, and giving each segment its own corners turns it into a row
- * of separate pills with gaps punched through it. Only the outer edges get rounded.
- * ============================================================================================== */
-
-.slds-button-group .slds-button,
-.slds-button-group-list .slds-button {
-  border-radius: 0;
-}
-
-.slds-button-group > .slds-button:first-child,
-.slds-button-group-list > *:first-child .slds-button {
-  border-start-start-radius: var(--slds-g-radius-border-2);
-  border-end-start-radius: var(--slds-g-radius-border-2);
-}
-
-.slds-button-group > .slds-button:last-child,
-.slds-button-group-list > *:last-child .slds-button {
-  border-start-end-radius: var(--slds-g-radius-border-2);
-  border-end-end-radius: var(--slds-g-radius-border-2);
-}
-
-.slds-button-group > .slds-button:only-child {
+/* The toolbar above a result set: a shade, not a border. */
+body.sfi-page .result-bar {
+  padding: .7rem 1.15rem;
   border-radius: var(--slds-g-radius-border-2);
+  background-color: light-dark(rgba(255, 255, 255, .42), rgba(255, 255, 255, .05));
+  border: 1px solid light-dark(rgba(255, 255, 255, .60), rgba(255, 255, 255, .07));
+  margin: 0 0 .5rem;
 }
 
-/* Button labels are short and meaningful; wrapping them mid-phrase reads as breakage. */
-.slds-button {
-  white-space: nowrap;
-}
-
-/* ================================================================================================
- * Production warning
- *
- * sfir.css floods the page with a flat pink when the org is production. That is a safety signal and
- * it stays -- knowing at a glance that you are about to edit live data is worth more than any
- * amount of polish -- but a flat wash overrides everything else and reads as a rendering fault
- * rather than a warning.
- *
- * So it keeps the same meaning and gets louder, not quieter: the ground turns warm, and a solid bar
- * runs along the top edge where a warning belongs. Unmissable, and deliberate.
- * ============================================================================================== */
-
-html:has(body.sfir-prod),
-body.sfir-prod {
-  background-color: light-dark(#fbeef0, #241a1d) !important;
-  background-image:
-    radial-gradient(60rem 44rem at 2% 4%, light-dark(rgba(214, 48, 90, .34),  rgba(255, 90, 130, .32)), transparent 66%),
-    radial-gradient(50rem 40rem at 98% 2%, light-dark(rgba(232, 92, 62, .26),  rgba(255, 130, 90, .26)), transparent 64%),
-    radial-gradient(56rem 42rem at 50% 114%, light-dark(rgba(190, 40, 110, .20), rgba(230, 80, 150, .20)), transparent 62%) !important;
-  background-attachment: fixed !important;
-}
-
-body.sfir-prod::before {
-  content: "";
-  position: fixed;
-  inset-block-start: 0;
-  inset-inline: 0;
-  height: 4px;
-  background: linear-gradient(90deg, #d6305a, #e85c3e);
-  z-index: 9999;
-  pointer-events: none;
-}
-
-/* Panels on a production org pick up a warm edge, so the signal survives even when the page is
-   scrolled and the bar is the only thing still in view. */
-body.sfir-prod .slds-tabs_default,
-body.sfir-prod .area,
-body.sfir-prod .slds-card {
-  border-color: light-dark(rgba(214, 48, 90, .30), rgba(255, 90, 130, .28));
-}
-
-@media (prefers-reduced-transparency: reduce) {
-  html:has(body.sfir-prod),
-  body.sfir-prod {
-    background-image: none !important;
-    background-color: light-dark(#f6dfe4, #2b1e21) !important;
-  }
-}
-
-/* ================================================================================================
- * Revised material
- *
- * The earlier pass used contrast where this language uses luminance. Its ground was saturated and
- * dark, its panels sat well below the ground in value, and every edge was drawn with a line. The
- * result read as tinted boxes on a coloured page.
- *
- * The logic is the other way round: a pale, luminous ground; panels only a shade lighter than it;
- * separation carried by light and a soft shadow rather than a border; large radii; and a lot of air
- * inside. Colour is spent on status and on one accent, never on structure.
- * ============================================================================================== */
-
-:root {
-  --sfi-glass-bg:     light-dark(rgba(255, 255, 255, .86), rgba(38, 38, 44, .74));
-  --sfi-glass-border: light-dark(rgba(255, 255, 255, .9), rgba(255, 255, 255, .07));
-  --sfi-glass-blur:   saturate(150%) blur(28px);
-
-  --slds-g-radius-border-1: 8px;
-  --slds-g-radius-border-2: 12px;
-  --slds-g-radius-border-3: 18px;
-  --slds-g-radius-border-4: 24px;
-
-  /* Wide, weightless shadows. A card should look like it is resting just off the page, not
-     stamped onto it. */
-  --slds-g-shadow-1: 0 1px 2px   light-dark(rgba(60, 50, 90, .04), rgba(0, 0, 0, .4));
-  --slds-g-shadow-2: 0 4px 16px  light-dark(rgba(60, 50, 90, .06), rgba(0, 0, 0, .45));
-  --slds-g-shadow-3: 0 10px 32px light-dark(rgba(60, 50, 90, .07), rgba(0, 0, 0, .5));
-  --slds-g-shadow-4: 0 20px 60px light-dark(rgba(60, 50, 90, .09), rgba(0, 0, 0, .6));
-
-  --slds-g-color-border-1: light-dark(rgba(60, 50, 90, .08), rgba(255, 255, 255, .08));
-  --slds-g-color-border-2: light-dark(rgba(60, 50, 90, .14), rgba(255, 255, 255, .14));
-}
-
-/* Pale and luminous rather than saturated: lavender, peach and mint, spread wide and kept light,
-   so panels can sit *above* it in value instead of below. */
-.sfi-page,
-body.sfi-page {
-  background-color: light-dark(#f4f2fb, #16161a);
-  background-image:
-    radial-gradient(70rem 52rem at 2% 4%, light-dark(rgba(168, 148, 255, .30), rgba(120, 100, 220, .22)), transparent 68%),
-    radial-gradient(60rem 46rem at 98% 2%, light-dark(rgba(255, 176, 156, .26), rgba(210, 130, 120, .18)), transparent 66%),
-    radial-gradient(66rem 50rem at 46% 114%, light-dark(rgba(140, 226, 214, .26), rgba(90, 180, 175, .18)), transparent 64%),
-    radial-gradient(44rem 38rem at 88% 62%, light-dark(rgba(176, 200, 255, .24), rgba(110, 140, 210, .16)), transparent 66%);
-  background-attachment: fixed;
-}
-
-/* Panels: nearly white, edges barely drawn, corners generous, and room to breathe. */
-body.sfi-page .slds-tabs_default,
-body.sfi-page .area,
-.sfi-panel,
-.slds-card,
-.slds-box {
-  background-color: var(--sfi-glass-bg);
-  border: 1px solid var(--sfi-glass-border);
-  border-radius: var(--slds-g-radius-border-4);
-  box-shadow:
-    var(--slds-g-shadow-3),
-    inset 0 1px 0 light-dark(rgba(255, 255, 255, .95), rgba(255, 255, 255, .05));
-}
-
-body.sfi-page .area {
-  padding: 1.35rem 1.5rem;
-  margin: 1.25rem 1.25rem 0;
-}
-
-body.sfi-page .slds-tabs_default__content {
-  padding: .5rem 1rem 1rem;
-}
-
-body.sfi-page .slds-tabs_default__content > div > .slds-grid {
-  padding-block: .95rem;
-}
-
-/* Row separation by light, not by line. */
-body.sfi-page .slds-tabs_default__content > div > .slds-grid,
-body.sfi-page .slds-border_bottom {
-  border-bottom: 1px solid light-dark(rgba(60, 50, 90, .07), rgba(255, 255, 255, .06)) !important;
-}
-
-/* Labels quiet and small, values carrying the weight -- the hierarchy these references lean on. */
-body.sfi-page .slds-tabs_default__content > div > .slds-grid > .slds-col:first-child {
+body.sfi-page .result-info,
+body.sfi-page .result-status {
   color: var(--slds-g-color-on-surface-2);
-  font-size: .92rem;
+  font-variant-numeric: tabular-nums;
 }
 
-/* Controls: pill-shaped, solid for the primary action, quiet for everything else. */
-.slds-button_neutral {
-  background-color: light-dark(rgba(255, 255, 255, .7), rgba(255, 255, 255, .07));
-  border-color: var(--slds-g-color-border-1);
-  box-shadow: none;
-}
-
-.slds-button_brand {
-  box-shadow: 0 2px 10px light-dark(rgba(0, 113, 227, .28), rgba(10, 132, 255, .3));
-}
-
-.slds-input,
-.slds-textarea,
-.slds-select {
-  background-color: light-dark(rgba(255, 255, 255, .78), rgba(255, 255, 255, .06));
-  border-color: var(--slds-g-color-border-1);
-}
-
-/* ================================================================================================
- * Options as cards
+/* ==================================================================================================
+ * 10. Vertical rhythm
  *
- * Each tab is a flat list of eighteen or so unrelated settings with no grouping in the markup, so
- * wrapping the lot in one panel made a wall of rows. Each setting becomes its own card instead,
- * floating on the ground with the others -- which is the pattern the references use, and it lets a
- * setting be scanned as a unit rather than as a line in a table.
- *
- * The tab strip stays a distinct object above them; the container behind it stops being a card,
- * since a card inside a card is what made the previous pass feel boxed in.
- * ============================================================================================== */
-
-body.sfi-page .slds-tabs_default {
-  background: none;
-  border: 0;
-  box-shadow: none;
-  -webkit-backdrop-filter: none;
-  backdrop-filter: none;
-  overflow: visible;
-}
-
-/* The tab strip: one floating bar, scrolling rather than clipping. */
-body.sfi-page .slds-tabs_default__nav {
-  background-color: var(--sfi-glass-bg);
-  -webkit-backdrop-filter: var(--sfi-glass-blur);
-  backdrop-filter: var(--sfi-glass-blur);
-  border: 1px solid var(--sfi-glass-border);
-  border-radius: var(--slds-g-radius-border-3);
-  box-shadow: var(--slds-g-shadow-2);
-  padding: .3rem .4rem;
-  margin-bottom: 1rem;
-}
-
-body.sfi-page .slds-tabs_default__link {
-  border-radius: var(--slds-g-radius-border-2);
-  padding-inline: .85rem;
-}
-
-body.sfi-page .slds-tabs_default__item.slds-is-active .slds-tabs_default__link {
-  background-color: light-dark(rgba(0, 113, 227, .10), rgba(10, 132, 255, .18));
-  box-shadow: none;
-}
-
-body.sfi-page .slds-tabs_default__content {
-  padding: 0;
-}
-
-/* Each setting, its own card. */
-body.sfi-page .slds-tabs_default__content > div > .slds-grid {
-  background-color: var(--sfi-glass-bg);
-  -webkit-backdrop-filter: var(--sfi-glass-blur);
-  backdrop-filter: var(--sfi-glass-blur);
-  border: 1px solid var(--sfi-glass-border) !important;
-  border-radius: var(--slds-g-radius-border-3);
-  box-shadow:
-    var(--slds-g-shadow-2),
-    inset 0 1px 0 light-dark(rgba(255, 255, 255, .95), rgba(255, 255, 255, .05));
-  padding: 1.05rem 1.35rem !important;
-  margin-bottom: .6rem;
-  transition: box-shadow .16s ease, transform .16s ease;
-}
-
-body.sfi-page .slds-tabs_default__content > div > .slds-grid:hover {
-  box-shadow:
-    var(--slds-g-shadow-3),
-    inset 0 1px 0 light-dark(rgba(255, 255, 255, .95), rgba(255, 255, 255, .05));
-  background-color: light-dark(rgba(255, 255, 255, .93), rgba(44, 44, 50, .8));
-}
-
-/* The section header above the list is a caption, not a card. */
-body.sfi-page .slds-tabs_default__content > div > .slds-border_bottom:first-child {
-  background: none;
-  border: 0 !important;
-  box-shadow: none;
-  padding-inline: .35rem !important;
-  margin-bottom: .35rem;
-}
-
-@media (prefers-reduced-transparency: reduce) {
-  body.sfi-page .slds-tabs_default__nav,
-  body.sfi-page .slds-tabs_default__content > div > .slds-grid {
-    background-color: var(--slds-g-color-surface-container-1);
-    -webkit-backdrop-filter: none;
-    backdrop-filter: none;
-  }
-}
-
-/* ================================================================================================
- * Popup, colour only
- *
- * The popup is a fixed-size iframe with tightly fitted contents. Earlier passes gave it radii,
- * overflow:hidden and its own padding, which clipped the panel and pushed the footer over the
- * buttons. Nothing here touches the box model -- background, border colour and backdrop only, all
- * of which are free of layout consequences.
- * ============================================================================================== */
-
-#insext {
-  background-color: var(--sfi-glass-bg);
-  -webkit-backdrop-filter: var(--sfi-glass-blur);
-  backdrop-filter: var(--sfi-glass-blur);
-}
-
-#insext .slds-button_neutral,
-#insext .page-button {
-  background-color: light-dark(rgba(255, 255, 255, .42), rgba(255, 255, 255, .06));
-  border-color: light-dark(rgba(255, 255, 255, .85), rgba(255, 255, 255, .12));
-}
-
-#insext .slds-button_neutral:hover:not(:disabled),
-#insext .page-button:hover:not(:disabled) {
-  background-color: light-dark(rgba(255, 255, 255, .8), rgba(255, 255, 255, .13));
-}
-
-#insext .slds-input,
-#insext .slds-select {
-  background-color: light-dark(rgba(255, 255, 255, .5), rgba(255, 255, 255, .07));
-  border-color: light-dark(rgba(255, 255, 255, .85), rgba(255, 255, 255, .12));
-}
-
-@media (prefers-reduced-transparency: reduce) {
-  #insext,
-  #insext .slds-button_neutral,
-  #insext .page-button,
-  #insext .slds-input,
-  #insext .slds-select {
-    background-color: var(--slds-g-color-surface-container-1);
-    -webkit-backdrop-filter: none;
-    backdrop-filter: none;
-  }
-}
-
-/* Tabs on the full-width pages were clipped because the list items were allowed to shrink. They
-   keep their width there and the strip scrolls instead. Scoped to those pages deliberately: the
-   popup's tab strip is only a few hundred pixels wide and does need to shrink to fit. */
-body.sfi-page .slds-tabs_default__nav > li {
-  flex: 0 0 auto;
-}
-
-/* ================================================================================================
- * Setting groups
- * ============================================================================================== */
-
-body.sfi-page .sfi-group {
-  background-color: var(--sfi-glass-bg);
-  -webkit-backdrop-filter: var(--sfi-glass-blur);
-  backdrop-filter: var(--sfi-glass-blur);
-  border: 1px solid var(--sfi-glass-border);
-  border-radius: var(--slds-g-radius-border-4);
-  box-shadow:
-    var(--slds-g-shadow-3),
-    inset 0 1px 0 light-dark(rgba(255, 255, 255, .95), rgba(255, 255, 255, .05));
-  margin-bottom: 1rem;
-  overflow: hidden;
-}
-
-body.sfi-page .sfi-group__title {
-  font-size: .72rem;
-  font-weight: 600;
-  letter-spacing: .07em;
-  text-transform: uppercase;
-  color: var(--slds-g-color-on-surface-3);
-  padding: 1rem 1.35rem .35rem;
-  margin: 0;
-}
-
-/* Inside a group the rows go back to being rows: separated by light, not by their own cards. */
-body.sfi-page .sfi-group > .slds-grid {
-  background: none !important;
-  border: 0 !important;
-  border-bottom: 1px solid light-dark(rgba(60, 50, 90, .07), rgba(255, 255, 255, .06)) !important;
-  border-radius: 0 !important;
-  box-shadow: none !important;
-  margin-bottom: 0 !important;
-  padding: .95rem 1.35rem !important;
-}
-
-body.sfi-page .sfi-group > .slds-grid:last-child {
-  border-bottom: 0 !important;
-}
-
-body.sfi-page .sfi-group > .slds-grid:hover {
-  background-color: light-dark(rgba(60, 50, 90, .03), rgba(255, 255, 255, .04)) !important;
-}
-
-/* ================================================================================================
- * Page header
- *
- * It sits above the content as a sibling, so it should read as the chrome of the window rather than
- * as the first element of the page: full width, square, and staying put while the content scrolls
- * under it.
- * ============================================================================================== */
-
-/* Detached rather than full-bleed: it floats on the ground like the panels do, with air above it
-   and its own corners, instead of being a strip welded to the top of the window. */
-body.sfi-page .slds-builder-header {
-  position: sticky;
-  inset-block-start: 1rem;
-  z-index: 100;
-  max-width: 1680px;
-  margin: 1rem auto 0;
-  padding-inline: 1.25rem;
-  border-radius: var(--slds-g-radius-border-3);
-  border: 1px solid var(--sfi-glass-border);
-  box-shadow: var(--slds-g-shadow-2);
-}
-
-body.sfi-page .slds-builder-header + * {
-  margin-block-start: 1.25rem;
-}
-
-/* The popup's own bars -- title, tab strip, footer -- were opaque white blocks sitting on the
-   frosted panel, which is what made it look assembled from separate pieces rather than being one
-   surface. Background only; their metrics are left exactly as they were. */
-#insext .popup-header,
-#insext .popup-header.slds-page-header,
-#insext .slds-tabs_default__nav,
-#insext #footer {
-  background-color: light-dark(rgba(255, 255, 255, .34), rgba(255, 255, 255, .05)) !important;
-  -webkit-backdrop-filter: none;
-  backdrop-filter: none;
-}
-
-#insext .slds-tabs_default__item.slds-is-active .slds-tabs_default__link {
-  background-color: light-dark(rgba(255, 255, 255, .55), rgba(255, 255, 255, .09));
-}
-
-@media (prefers-reduced-transparency: reduce) {
-  #insext .popup-header,
-  #insext .popup-header.slds-page-header,
-  #insext .slds-tabs_default__nav,
-  #insext #footer {
-    background-color: var(--slds-g-color-surface-container-1) !important;
-  }
-}
-
-/* ================================================================================================
- * Popup panel
- *
- * The frost was being applied to #insext, which is only the wrapper. The panel itself is
- * .insext-popup and paints an opaque white over it, so none of it ever showed. It goes on the panel
- * instead.
- *
- * Rounding the panel needs overflow:hidden for the children to follow its corners. That is safe
- * here, unlike the earlier attempt: the scrolling happens on .main inside, so clipping the outer
- * panel costs nothing.
- * ============================================================================================== */
-
-#insext .insext-popup {
-  background-color: var(--sfi-glass-bg);
-  -webkit-backdrop-filter: var(--sfi-glass-blur);
-  backdrop-filter: var(--sfi-glass-blur);
-  border-color: var(--sfi-glass-border);
-  border-radius: 16px;
-  overflow: hidden;
-  box-shadow:
-    0 16px 48px light-dark(rgba(60, 50, 90, .18), rgba(0, 0, 0, .55)),
-    inset 0 1px 0 light-dark(rgba(255, 255, 255, .9), rgba(255, 255, 255, .06));
-}
-
-/* The edge meeting the tab stays square, as it did before. */
-#insext .insext-popup-vertical {
-  border-top-right-radius: 0;
-}
-
-/* An overlay scrollbar rather than a channel: the track disappears and the thumb only shows against
-   the content, which is how the panel avoids reading as a scrolling box with a gutter down its side. */
-#insext .main {
-  scrollbar-width: thin;
-  scrollbar-color: light-dark(rgba(60, 50, 90, .25), rgba(255, 255, 255, .25)) transparent;
-}
-
-#insext .main::-webkit-scrollbar {
-  width: 7px;
-}
-
-#insext .main::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-#insext .main::-webkit-scrollbar-thumb {
-  background-color: light-dark(rgba(60, 50, 90, .22), rgba(255, 255, 255, .22));
-  border: 2px solid transparent;
-  background-clip: content-box;
-  border-radius: 999px;
-}
-
-#insext .main::-webkit-scrollbar-thumb:hover {
-  background-color: light-dark(rgba(60, 50, 90, .38), rgba(255, 255, 255, .38));
-}
-
-@media (prefers-reduced-transparency: reduce) {
-  #insext .insext-popup {
-    background-color: var(--slds-g-color-surface-container-1);
-    -webkit-backdrop-filter: none;
-    backdrop-filter: none;
-  }
-}
-
-
-/* ================================================================================================
- * Page header
- *
- * A flat dark bar over a pale luminous page reads as a strip bolted on top of something else. In
- * this language the top bar belongs to the page: the same frost as the panels, the ground showing
- * through it, and the separation carried by a hairline rather than by a block of colour.
- * ============================================================================================== */
-
-body.sfi-page .slds-builder-header {
-  background-color: light-dark(rgba(255, 255, 255, .70), rgba(30, 30, 36, .70)) !important;
-  -webkit-backdrop-filter: var(--sfi-glass-blur);
-  backdrop-filter: var(--sfi-glass-blur);
-  border: 0;
-  border-bottom: 1px solid light-dark(rgba(60, 50, 90, .09), rgba(255, 255, 255, .07));
-  box-shadow: none;
-  color: var(--slds-g-color-on-surface-1);
-}
-
-body.sfi-page .slds-builder-header a,
-body.sfi-page .slds-builder-header button,
-body.sfi-page .slds-builder-header .slds-text-heading_small,
-body.sfi-page .slds-builder-header__item-label,
-body.sfi-page .slds-builder-header__item {
-  color: var(--slds-g-color-on-surface-1);
-}
-
-/* The page title carries the bar, so it gets the weight and tracking of a title rather than of a
-   label sitting in a strip. */
-body.sfi-page .slds-builder-header .slds-text-heading_small,
-body.sfi-page .slds-builder-header__item-label {
-  font-size: 1rem;
-  font-weight: 600;
-  letter-spacing: -.016em;
-}
-
-/* Icons inherit rather than staying white on a light bar. */
-body.sfi-page .slds-builder-header svg {
-  fill: currentColor;
-}
-
-/* The org name is a chip: a quiet pill rather than a white block. */
-body.sfi-page .slds-builder-header .slds-builder-header__item-action,
-body.sfi-page .slds-builder-header .sfir-org-name {
-  background-color: light-dark(rgba(60, 50, 90, .06), rgba(255, 255, 255, .08));
-  border-radius: 999px;
-  padding: .25rem .7rem;
-  font-weight: 500;
-}
-
-/* Production stays unmistakable: the bar warms up and keeps its edge. */
-body.sfir-prod .slds-builder-header {
-  background-color: light-dark(rgba(255, 244, 246, .78), rgba(48, 26, 30, .78)) !important;
-  border-bottom-color: light-dark(rgba(214, 48, 90, .35), rgba(255, 90, 130, .3));
-}
-
-@media (prefers-reduced-transparency: reduce) {
-  body.sfi-page .slds-builder-header {
-    background-color: var(--slds-g-color-surface-container-1) !important;
-    -webkit-backdrop-filter: none;
-    backdrop-filter: none;
-  }
-}
-
-/* ================================================================================================
- * Nested containers
- *
- * options.js wraps the tabs in a .slds-card.main-container, and the glass rule above catches every
- * .slds-card -- so a frosted card ended up holding frosted cards. It is a wrapper, not a surface,
- * so it stops painting itself. That also removes the square bottom edge: the wrapper grows past the
- * viewport, so its lower corners were never on screen to be rounded.
- * ============================================================================================== */
-
-body.sfi-page .main-container,
-body.sfi-page .slds-card.main-container {
-  background: none !important;
-  -webkit-backdrop-filter: none;
-  backdrop-filter: none;
-  border: 0 !important;
-  border-radius: 0 !important;
-  box-shadow: none !important;
-  padding: 0 !important;
-  margin: 0 !important;
-}
-
-/* The tab strip was stuck to the top of that wrapper with a hard shadow. It becomes its own
-   floating bar with room around it. */
-body.sfi-page .sfir-options-tab-container {
-  background-color: var(--sfi-glass-bg) !important;
-  -webkit-backdrop-filter: var(--sfi-glass-blur);
-  backdrop-filter: var(--sfi-glass-blur);
-  border: 1px solid var(--sfi-glass-border);
-  border-radius: var(--slds-g-radius-border-3);
-  box-shadow: var(--slds-g-shadow-2) !important;
-  padding: .3rem .4rem;
-  margin-bottom: 1rem;
-  top: 1rem;
-}
-
-/* Fade the trailing edge so it is visible that the strip runs on past what fits. Without it a
-   clipped tab just looks like the last one. */
-body.sfi-page .sfir-options-tab-container {
-  -webkit-mask-image: linear-gradient(90deg, #000 calc(100% - 2.5rem), transparent 100%);
-  mask-image: linear-gradient(90deg, #000 calc(100% - 2.5rem), transparent 100%);
-}
-
-@media (prefers-reduced-transparency: reduce) {
-  body.sfi-page .sfir-options-tab-container {
-    background-color: var(--slds-g-color-surface-container-1) !important;
-    -webkit-backdrop-filter: none;
-    backdrop-filter: none;
-  }
-}
-
-/* ================================================================================================
- * Popup height
- *
- * .insext-popup is the iframe itself -- button.js puts the class on the frame, there is no wrapper
- * around it. An earlier attempt at this made the panel a flex column and told a child frame to
- * grow, which matched nothing and could not have worked.
- *
- * Inside the frame the chain is already right: html, body and #root are all height:100% with the
- * column on #root. What it lacked was something to resolve against, since the frame is given only
- * a min-height and no height, and button.js clears any inline height unless the dynamic-height
- * option is on. Giving it a real height makes the column fill and drops the footer to the foot of
- * the panel. Declared without !important on purpose: the inline height that option writes still
- * takes precedence.
- * ============================================================================================== */
-
-#insext.insext-active .insext-popup {
-  height: 450px;
-}
-
-/* ================================================================================================
- * One measure
- *
- * The header, the page container and the panels inside it each carried their own width and
- * padding, so nothing lined up: the header sat on a different left edge from the cards under it and
- * the gutters changed from element to element. One measure and one gutter, applied to every
- * top-level piece, so they share an edge.
- * ============================================================================================== */
-
-:root {
-  --sfi-measure: 1600px;
-  --sfi-gutter: 1.75rem;
-}
-
-body.sfi-page .sfir-page-container {
-  max-width: var(--sfi-measure);
-  margin-inline: auto;
-  padding-inline: var(--sfi-gutter);
-}
-
-/* The header is not inside the container, so it is inset by hand to land on the same edge. */
-body.sfi-page .slds-builder-header {
-  max-width: calc(var(--sfi-measure) - (2 * var(--sfi-gutter)));
-  margin-inline: auto;
-}
-
-/* Panels take their gutter from the container and only space themselves vertically. */
-body.sfi-page .area {
-  margin: 0 0 1.25rem;
-}
-
-body.sfi-page .area:last-child {
-  margin-bottom: 0;
-}
-
-/* ================================================================================================
- * Vertical rhythm, in one place
- *
- * Spacing had ended up scattered across this file: the tab strip alone is touched in four separate
- * rules, each setting its own margins, and the result is elements that butt against each other
- * because the last rule to load happens not to set a gap. Every vertical gap on the tool and
- * settings pages is decided here, last, so there is one place to read and one place to change.
- * ============================================================================================== */
-
-:root {
-  --sfi-gap: 1.25rem;
-  --sfi-header-height: 3.5rem;
-}
-
-body.sfi-page .slds-builder-header {
-  margin-block: 1rem var(--sfi-gap);
-}
-
-/* Cancel the sibling rule from earlier; the header's own bottom margin provides this gap now, and
-   having both produced a double space on some pages and none on others. */
-body.sfi-page .slds-builder-header + * {
-  margin-block-start: 0;
-}
-
-body.sfi-page .sfir-options-tab-container {
-  margin-block: 0 var(--sfi-gap) !important;
-  /* Sticks below the header rather than under it, which is where the two were colliding. */
-  top: calc(1rem + var(--sfi-header-height) + var(--sfi-gap)) !important;
-}
+ * Every vertical gap on the tool and settings pages is decided here. It used to be scattered, and
+ * whether two elements had a gap came down to which rule loaded last.
+ * ================================================================================================ */
 
 body.sfi-page .sfi-group,
 body.sfi-page .area {
-  margin-block: 0 var(--sfi-gap) !important;
+  margin: 0 0 var(--sfi-gap);
 }
 
 body.sfi-page .sfi-group:last-child,
 body.sfi-page .area:last-child {
-  margin-block-end: 0 !important;
+  margin-bottom: 0;
 }
 
-/* Settings rows carry their own card, so the group they sit in needs no padding of its own. */
-body.sfi-page .slds-tabs_default__content {
-  padding: 0 !important;
+/* ==================================================================================================
+ * 11. Popup
+ *
+ * popup.html is loaded in an iframe that button.js drops into the Salesforce page, so this file
+ * runs inside the frame and body.sfi-popup -- the container holding the tab and the frame -- is not
+ * reachable from here. Everything below was written with an body.sfi-popup prefix and therefore never
+ * applied: the frosted bars, the translucent buttons and the pinned footer are all live for the
+ * first time. The frame itself is styled in button.css, which does run in the page.
+ *
+ * The body carries sfi-page as well, so it shares the tokens and controls with the full pages; only
+ * what a 280px frame needs differently is set here.
+ * ================================================================================================ */
+
+body.sfi-popup {
+  /* The page rule reserves 3rem below the fold and pins its gradients to the viewport. In a frame
+     this small that produced a scrollbar over empty space and a mesh that did not move with the
+     content -- part of why the footer never reached the bottom. */
+  padding: 0;
+  background-attachment: scroll;
 }
 
-/* ================================================================================================
- * Popup footer
- *
- * The header is a sibling of .main and so sits above the scrolling area. The footer is not: it is
- * rendered inside .main, so it scrolls with the content and comes to rest wherever the list ends.
- * Every attempt to fix this by giving the panel a height was aimed at the wrong thing -- the column
- * was filling correctly all along; the footer simply is not one of its children.
- *
- * Pinning the footer's row to the bottom of the scrolling area puts it where the header's mirror
- * image belongs. The structural fix is to move it out of .main in popup.js and make it a sibling,
- * which is what the header does; this achieves the same result without reaching into markup that
- * has already been broken twice from here.
- * ============================================================================================== */
+/* Title bar, tab strip and footer were opaque white blocks on the tinted ground, so the panel
+   looked assembled out of separate pieces. Background only: their metrics stay untouched. */
+body.sfi-popup .popup-header,
+body.sfi-popup .popup-header.slds-page-header,
+body.sfi-popup .slds-tabs_default__nav,
+body.sfi-popup .slds-grid:has(> #footer) {
+  background-color: light-dark(rgba(255, 255, 255, .34), rgba(255, 255, 255, .05)) !important;
+}
 
-#insext .main .slds-grid:has(> #footer) {
+body.sfi-popup .slds-button_neutral,
+body.sfi-popup .page-button {
+  background-color: light-dark(rgba(255, 255, 255, .42), rgba(255, 255, 255, .06));
+  border-color: light-dark(rgba(255, 255, 255, .85), rgba(255, 255, 255, .12));
+}
+
+body.sfi-popup .slds-button_neutral:hover:not(:disabled),
+body.sfi-popup .page-button:hover:not(:disabled) {
+  background-color: light-dark(rgba(255, 255, 255, .80), rgba(255, 255, 255, .13));
+}
+
+body.sfi-popup .slds-input,
+body.sfi-popup .slds-select {
+  background-color: light-dark(rgba(255, 255, 255, .50), rgba(255, 255, 255, .07));
+  border-color: light-dark(rgba(255, 255, 255, .85), rgba(255, 255, 255, .12));
+}
+
+body.sfi-popup .slds-tabs_default__item.slds-is-active .slds-tabs_default__link {
+  background-color: light-dark(rgba(255, 255, 255, .55), rgba(255, 255, 255, .09));
+}
+
+body.sfi-popup .slds-text-title,
+body.sfi-popup .slds-text-title_caps,
+body.sfi-popup .slds-section__title {
+  text-transform: uppercase;
+  font-size: .68rem;
+  font-weight: 600;
+  letter-spacing: .08em;
+  color: var(--slds-g-color-on-surface-3);
+}
+
+/* The popup nests a card inside a card body. At this width the full panel treatment from section 3
+   is far too heavy, so it is dialled back to a plain tinted block. */
+body.sfi-popup .slds-card {
+  border-radius: var(--slds-g-radius-border-2);
+  box-shadow: none;
+  background-color: light-dark(rgba(255, 255, 255, .38), rgba(255, 255, 255, .05));
+}
+
+body.sfi-popup .slds-card__header,
+body.sfi-popup .slds-card__body,
+body.sfi-popup .slds-card__footer {
+  padding-inline: 0;
+}
+
+/* The footer is the last child of .main, the scrolling area, so it travelled with the content and
+   stopped wherever the list ended. Two rules are needed, because there are two cases: with a long
+   object list .main overflows and sticky holds the footer at the foot of the scrollport, and with a
+   short one nothing overflows, so an auto margin has to push it down instead. */
+body.sfi-popup .main {
+  display: flex;
+  flex-direction: column;
+  scrollbar-width: thin;
+  scrollbar-color: light-dark(rgba(60, 50, 90, .25), rgba(255, 255, 255, .25)) transparent;
+}
+
+body.sfi-popup .main > * {
+  flex: 0 0 auto;
+}
+
+body.sfi-popup .main > .slds-grid:has(> #footer) {
+  margin-block-start: auto;
   position: sticky;
   inset-block-end: 0;
   z-index: 2;
-  background-color: light-dark(rgba(255, 255, 255, .82), rgba(32, 32, 38, .82));
+  background-color: light-dark(rgba(255, 255, 255, .82), rgba(32, 32, 38, .82)) !important;
   -webkit-backdrop-filter: var(--sfi-glass-blur);
   backdrop-filter: var(--sfi-glass-blur);
   border-top: 1px solid light-dark(rgba(60, 50, 90, .08), rgba(255, 255, 255, .07));
 }
 
+/* An overlay scrollbar rather than a channel down the side. */
+body.sfi-popup .main::-webkit-scrollbar { width: 7px; }
+body.sfi-popup .main::-webkit-scrollbar-track { background: transparent; }
+
+body.sfi-popup .main::-webkit-scrollbar-thumb {
+  background-color: light-dark(rgba(60, 50, 90, .22), rgba(255, 255, 255, .22));
+  border: 2px solid transparent;
+  background-clip: content-box;
+  border-radius: 999px;
+}
+
+body.sfi-popup .main::-webkit-scrollbar-thumb:hover {
+  background-color: light-dark(rgba(60, 50, 90, .38), rgba(255, 255, 255, .38));
+}
+
+/* ==================================================================================================
+ * 12. Production warning
+ *
+ * sfir.css floods the page with a flat pink when the org is production. That is a safety signal and
+ * it stays -- knowing at a glance that you are about to edit live data outweighs any amount of
+ * polish -- but a flat wash overrode everything and read as a rendering fault. It warms the ground
+ * and runs a bar along the top edge instead: unmissable, and deliberate.
+ * ================================================================================================ */
+
+html:has(body.sfir-prod),
+body.sfir-prod {
+  background-color: light-dark(#fbeef0, #241a1d) !important;
+  background-image:
+    radial-gradient(74rem 56rem at 2% 4%,    light-dark(rgba(214, 48, 90, .34),  rgba(255, 90, 130, .32)), transparent 70%),
+    radial-gradient(64rem 50rem at 98% 2%,   light-dark(rgba(232, 92, 62, .26),  rgba(255, 130, 90, .26)), transparent 68%),
+    radial-gradient(66rem 50rem at 46% 114%, light-dark(rgba(190, 40, 110, .20), rgba(230, 80, 150, .20)), transparent 64%) !important;
+  background-attachment: fixed !important;
+}
+
+body.sfir-prod::before {
+  content: "";
+  position: fixed;
+  inset-block-start: 0;
+  inset-inline: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #d6305a, #e85c3e);
+  z-index: 9999;
+  pointer-events: none;
+}
+
+body.sfir-prod .slds-card,
+body.sfir-prod .area,
+body.sfir-prod .sfi-group,
+body.sfir-prod .sfir-options-tab-container {
+  border-color: light-dark(rgba(214, 48, 90, .30), rgba(255, 90, 130, .28));
+}
+
+body.sfir-prod .slds-builder-header {
+  background-color: light-dark(rgba(255, 244, 246, .78), rgba(48, 26, 30, .78)) !important;
+  border-color: light-dark(rgba(214, 48, 90, .35), rgba(255, 90, 130, .30));
+}
+
+/* ==================================================================================================
+ * 13. Scrollbars
+ * ================================================================================================ */
+
+::-webkit-scrollbar {
+  width: 11px;
+  height: 11px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: light-dark(rgba(17, 21, 28, .22), rgba(255, 255, 255, .22));
+  border: 3px solid transparent;
+  background-clip: content-box;
+  border-radius: 999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: light-dark(rgba(17, 21, 28, .36), rgba(255, 255, 255, .36));
+}
+
+/* ==================================================================================================
+ * 14. Accessibility
+ *
+ * macOS lets people turn translucency and motion off system-wide. Both fall back to something solid
+ * and still, rather than leaving washed-out panels with no blur behind them.
+ * ================================================================================================ */
+
 @media (prefers-reduced-transparency: reduce) {
-  #insext .main .slds-grid:has(> #footer) {
-    background-color: var(--slds-g-color-surface-container-1);
+  body.sfi-page {
+    background-image: none;
+  }
+
+  html:has(body.sfir-prod),
+  body.sfir-prod {
+    background-image: none !important;
+    background-color: light-dark(#f6dfe4, #2b1e21) !important;
+  }
+
+  .sfi-panel,
+  .slds-card,
+  .slds-box,
+  .slds-popover,
+  .slds-dropdown,
+  .slds-modal__container,
+  .slds-modal__header,
+  .slds-modal__footer,
+  .slds-page-header,
+  .slds-docked-composer,
+  .slds-context-bar,
+  body.sfi-page .area,
+  body.sfi-page .sfi-group,
+  body.sfi-page .slds-builder-header,
+  body.sfi-page .sfir-options-tab-container,
+  body.sfi-page .autocomplete-results,
+  body.sfi-page .result-bar,
+  body.sfi-popup .slds-button_neutral,
+  body.sfi-popup .page-button,
+  body.sfi-popup .slds-input,
+  body.sfi-popup .slds-select,
+  body.sfi-popup .main > .slds-grid:has(> #footer) {
+    background-color: var(--slds-g-color-surface-container-1) !important;
     -webkit-backdrop-filter: none;
     backdrop-filter: none;
   }
 }
 
-/* The settings tab strip was sticky, so scrolling slid it over the first card and it read as being
-   inside it. A translucent bar with content passing beneath it has no good answer at this size, and
-   the strip is a few rows from the top anyway, so it scrolls with the page. */
-body.sfi-page .sfir-options-tab-container {
-  position: static !important;
-}
+@media (prefers-reduced-motion: reduce) {
+  .slds-button,
+  .slds-input,
+  .slds-textarea,
+  .slds-select,
+  body.sfi-page .sfi-group > .slds-grid {
+    transition: none;
+  }
 
-/* The footer now sits outside .main as a sibling, the mirror of the header, so it needs the panel's
-   bottom corners rather than the square ones it had as a scrolling child. */
-#insext .main + .slds-grid,
-#insext .slds-grid:has(> #footer) {
-  border-top: 1px solid light-dark(rgba(60, 50, 90, .08), rgba(255, 255, 255, .07));
-}
-
-/* More air between the chrome and the content than between the cards themselves, so the header and
-   the tab strip read as a level above what they sit over rather than as the first item in the
-   stack. */
-body.sfi-page .slds-builder-header {
-  margin-block: 1rem 2.25rem !important;
-}
-
-body.sfi-page .sfir-options-tab-container {
-  margin-block: 0 2.25rem !important;
+  .slds-button:active {
+    transform: none;
+  }
 }
