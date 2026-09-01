@@ -1069,3 +1069,66 @@ body.sfi-page .slds-builder-header + * {
     background-color: var(--slds-g-color-surface-container-1) !important;
   }
 }
+
+/* ================================================================================================
+ * Popup panel
+ *
+ * The frost was being applied to #insext, which is only the wrapper. The panel itself is
+ * .insext-popup and paints an opaque white over it, so none of it ever showed. It goes on the panel
+ * instead.
+ *
+ * Rounding the panel needs overflow:hidden for the children to follow its corners. That is safe
+ * here, unlike the earlier attempt: the scrolling happens on .main inside, so clipping the outer
+ * panel costs nothing.
+ * ============================================================================================== */
+
+#insext .insext-popup {
+  background-color: var(--sfi-glass-bg);
+  -webkit-backdrop-filter: var(--sfi-glass-blur);
+  backdrop-filter: var(--sfi-glass-blur);
+  border-color: var(--sfi-glass-border);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow:
+    0 16px 48px light-dark(rgba(60, 50, 90, .18), rgba(0, 0, 0, .55)),
+    inset 0 1px 0 light-dark(rgba(255, 255, 255, .9), rgba(255, 255, 255, .06));
+}
+
+/* The edge meeting the tab stays square, as it did before. */
+#insext .insext-popup-vertical {
+  border-top-right-radius: 0;
+}
+
+/* An overlay scrollbar rather than a channel: the track disappears and the thumb only shows against
+   the content, which is how the panel avoids reading as a scrolling box with a gutter down its side. */
+#insext .main {
+  scrollbar-width: thin;
+  scrollbar-color: light-dark(rgba(60, 50, 90, .25), rgba(255, 255, 255, .25)) transparent;
+}
+
+#insext .main::-webkit-scrollbar {
+  width: 7px;
+}
+
+#insext .main::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+#insext .main::-webkit-scrollbar-thumb {
+  background-color: light-dark(rgba(60, 50, 90, .22), rgba(255, 255, 255, .22));
+  border: 2px solid transparent;
+  background-clip: content-box;
+  border-radius: 999px;
+}
+
+#insext .main::-webkit-scrollbar-thumb:hover {
+  background-color: light-dark(rgba(60, 50, 90, .38), rgba(255, 255, 255, .38));
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  #insext .insext-popup {
+    background-color: var(--slds-g-color-surface-container-1);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+}
