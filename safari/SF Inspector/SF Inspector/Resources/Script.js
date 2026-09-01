@@ -1,22 +1,47 @@
-function show(enabled, useSettingsInsteadOfPreferences) {
-    if (useSettingsInsteadOfPreferences) {
-        document.getElementsByClassName('state-on')[0].innerText = "SF Inspector’s extension is currently on. You can turn it off in the Extensions section of Safari Settings.";
-        document.getElementsByClassName('state-off')[0].innerText = "SF Inspector’s extension is currently off. You can turn it on in the Extensions section of Safari Settings.";
-        document.getElementsByClassName('state-unknown')[0].innerText = "You can turn on SF Inspector’s extension in the Extensions section of Safari Settings.";
-        document.getElementsByClassName('open-preferences')[0].innerText = "Quit and Open Safari Settings…";
-    }
+/**
+ * The container app's first-run screen.
+ *
+ * ViewController calls show() with the extension's state, both when the window first loads and
+ * again whenever the app comes back to the front -- so returning from Safari's settings updates the
+ * checklist rather than leaving it showing what was true a minute ago.
+ */
 
-    if (typeof enabled === "boolean") {
-        document.body.classList.toggle(`state-on`, enabled);
-        document.body.classList.toggle(`state-off`, !enabled);
-    } else {
-        document.body.classList.remove(`state-on`);
-        document.body.classList.remove(`state-off`);
-    }
+/**
+ * @param {boolean|null} enabled  whether Safari reports the extension as on, or null if it could
+ *                                not be determined
+ * @param {boolean} usesSettings  macOS 13 and later call the window "Settings"; before that,
+ *                                "Preferences". Wrong wording here sends the reader looking for a
+ *                                menu item that does not exist.
+ */
+function show(enabled, usesSettings) {
+  const noun = usesSettings ? "Settings" : "Preferences";
+  const enable = document.getElementById("step-enable");
+  const access = document.getElementById("step-access");
+  const status = document.getElementById("status");
+
+  document.getElementById("open-settings").textContent = `Open Safari ${noun}…`;
+
+  if (enabled === true) {
+    enable.classList.add("step--done");
+    access.classList.remove("step--waiting");
+    status.textContent = "Ready. Open a Salesforce page to start.";
+    return;
+  }
+
+  enable.classList.remove("step--done");
+  // Until the first step is done the second cannot be acted on, so it is held back rather than
+  // presented as something to do now.
+  access.classList.add("step--waiting");
+
+  status.textContent = enabled === false
+    ? `The extension is off. Turn it on in Safari ${noun}.`
+    : `Could not tell whether the extension is on. Check Safari ${noun}.`;
 }
 
-function openPreferences() {
-    webkit.messageHandlers.controller.postMessage("open-preferences");
-}
+document.getElementById("open-settings").addEventListener("click", () => {
+  webkit.messageHandlers.controller.postMessage("open-settings");
+});
 
-document.querySelector("button.open-preferences").addEventListener("click", openPreferences);
+document.getElementById("open-docs").addEventListener("click", () => {
+  webkit.messageHandlers.controller.postMessage("open-docs");
+});
