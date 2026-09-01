@@ -903,23 +903,21 @@ class ThemeToggle extends React.Component {
     super(props);
     this.state = {theme: window.sfiTheme ? window.sfiTheme.get() : "system"};
     this.onClick = this.onClick.bind(this);
-    this.onStorage = this.onStorage.bind(this);
   }
 
   componentDidMount() {
     // The setting is shared across every page, so it can change without this button being the one
-    // that changed it. theme-init.js re-applies the attribute on its own; this keeps the glyph
-    // showing the same thing the page is actually doing.
-    addEventListener("storage", this.onStorage);
+    // that changed it -- and the authoritative value arrives a tick after the first paint, so even
+    // this page's own value can still correct itself. theme-init.js re-applies the attribute on
+    // its own; this keeps the glyph showing the same thing the page is actually doing.
+    if (window.sfiTheme) {
+      this.unsubscribe = window.sfiTheme.subscribe(theme => this.setState({theme}));
+    }
   }
 
   componentWillUnmount() {
-    removeEventListener("storage", this.onStorage);
-  }
-
-  onStorage(e) {
-    if (e.key === "sfiTheme" || e.key === null) {
-      this.setState({theme: window.sfiTheme ? window.sfiTheme.get() : "system"});
+    if (this.unsubscribe) {
+      this.unsubscribe();
     }
   }
 

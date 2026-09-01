@@ -666,13 +666,30 @@ body.sfi-page .slds-checkbox_toggle .slds-checkbox_faux:hover {
   --slds-c-checkbox-toggle-color-background: light-dark(rgba(120, 120, 128, .34), rgba(120, 120, 128, .52));
 }
 
-/* The knob is lit from above and casts a little shadow, which is what separates it from the track
+/* SLDS moves the knob between the two pseudo-elements rather than sliding one: off, it is ::after
+   sitting at the left; on, it is ::before at the right and ::after becomes the tick -- a 7x11 box
+   with two borders, rotated. So the knob treatment goes on both, and whichever is currently the
+   knob picks it up. Styling only ::after gave the tick a white fill and a shadow, which is what
+   put a small white square inside every toggle that was on; styling only ::before then left the
+   off state with no knob at all.
+ *
+ * The knob is lit from above and casts a little shadow, which is what separates it from the track
    once the track itself is translucent. */
+body.sfi-page .slds-checkbox_toggle .slds-checkbox_faux::before,
 body.sfi-page .slds-checkbox_toggle .slds-checkbox_faux::after {
   background-image: linear-gradient(180deg, #fff, light-dark(#f4f4f7, #e6e6ea));
   box-shadow:
     0 1px 3px light-dark(rgba(60, 50, 90, .28), rgba(0, 0, 0, .44)),
     0 0 0 .5px light-dark(rgba(60, 50, 90, .06), rgba(0, 0, 0, .18));
+}
+
+/* The tick goes: the knob's position already says which way the toggle is set, and the label
+   underneath says so in words. Only in the on state, where ::after is the tick rather than the
+   knob. */
+body.sfi-page .slds-checkbox_toggle [type="checkbox"]:checked + .slds-checkbox_faux::after,
+body.sfi-page .slds-checkbox_toggle [type="checkbox"]:checked ~ .slds-checkbox_faux::after,
+body.sfi-page .slds-checkbox_toggle [type="checkbox"]:checked + .slds-checkbox_faux_container .slds-checkbox_faux::after {
+  display: none;
 }
 
 body.sfi-page .slds-checkbox_toggle [type="checkbox"]:checked + .slds-checkbox_faux,

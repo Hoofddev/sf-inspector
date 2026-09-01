@@ -163,3 +163,71 @@ test.describe("Appearance", () => {
     expect(await current()).toBe("system");
   });
 });
+
+/**
+ * The toggle's knob.
+ *
+ * SLDS moves the knob between the faux element's two pseudo-elements rather than sliding one: off
+ * it is ::after at the left, on it is ::before at the right and ::after becomes a tick. The theme
+ * restyles the knob, so it has to follow that swap -- getting it wrong shows up as a white square
+ * inside a toggle that is on, or as no knob at all on one that is off, and neither is something a
+ * colour-contrast check would notice.
+ */
+test.describe("Toggle knob", () => {
+  const {mockHost, mockToken, apiVersion} = TEST_CONSTANTS;
+
+  test.beforeEach(async ({context}) => {
+    await injectSessionData(context, {
+      host: mockHost,
+      token: mockToken,
+      version: apiVersion,
+      additionalSetup: createModelExposureSetup()
+    });
+
+    await context.route("**/*", async route => {
+      if (!TEST_CONSTANTS.mockEnabled) {
+        await route.continue();
+        return;
+      }
+
+      if (await routeMock(route, mockHost)) {
+        return;
+      }
+
+      await route.continue();
+    });
+  });
+
+  test("is a single round knob in both states, and nothing else", async ({page, extensionId}) => {
+    await page.goto(`chrome-extension://${extensionId}/options.html?host=${mockHost}`);
+    await page.waitForSelector(".slds-checkbox_toggle", {timeout: 10000});
+
+    const shapes = await page.evaluate(() => {
+      const describe = checked => {
+        const input = Array.from(document.querySelectorAll(".slds-checkbox_toggle input[type=checkbox]"))
+          .find(candidate => candidate.checked === checked);
+        if (!input) {
+          return null;
+        }
+        const faux = input.parentElement.querySelector(".slds-checkbox_faux");
+        return ["::before", "::after"].map(pseudo => {
+          const style = getComputedStyle(faux, pseudo);
+          return {
+            drawn: style.content !== "none" && style.display !== "none",
+            width: parseFloat(style.width),
+            height: parseFloat(style.height)
+          };
+        });
+      };
+      return {on: describe(true), off: describe(false)};
+    });
+
+    for (const state of ["on", "off"]) {
+      const drawn = shapes[state].filter(shape => shape.drawn);
+      // Exactly one shape, and it is the round 20px knob -- not a 7x11 tick, and not nothing.
+      expect(drawn, `${state}: expected one drawn pseudo-element, got ${JSON.stringify(shapes[state])}`).toHaveLength(1);
+      expect(drawn[0].width).toBeCloseTo(20, 0);
+      expect(drawn[0].height).toBeCloseTo(20, 0);
+    }
+  });
+});

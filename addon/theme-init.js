@@ -9,64 +9,112 @@
  * This is a classic script rather than a module, and it is loaded from <head>, because it has to
  * run before the first paint: applied any later, a page stored as dark would flash light first.
  *
- * The key lives on the extension origin, so every page shares one setting, and the storage event
- * carries a change made in one tab to the pages already open in the others.
+ * Two stores, deliberately:
+ *
+ * chrome.storage.local is the source of truth. It is shared by every page and frame of the
+ * extension and is not partitioned, which localStorage is: the popup runs as a third-party frame
+ * inside the Salesforce page, and Safari gives such a frame its own localStorage bucket keyed by
+ * the top-level site. Storing the setting there meant the popup changed appearance and the tool
+ * pages, opened as first-party tabs, never saw it.
+ *
+ * localStorage is kept as a synchronous cache, because extension storage is async and reading it
+ * would land after the first paint. So the cached value paints immediately and the authoritative
+ * one corrects it a tick later if they disagree -- which they only do on the first load after a
+ * change made somewhere this page could not see.
  */
 (() => {
   const STORAGE_KEY = "sfiTheme";
   const ATTRIBUTE = "data-sfi-theme";
+  const ORDER = {light: "dark", dark: "system", system: "light"};
 
-  /** @returns {"light"|"dark"|"system"} */
-  const stored = () => {
+  const area = globalThis.chrome && chrome.storage ? chrome.storage.local : null;
+  const listeners = new Set();
+
+  const normalise = value => (value === "light" || value === "dark" ? value : "system");
+
+  const readCache = () => {
     try {
-      const value = localStorage.getItem(STORAGE_KEY);
-      return value === "light" || value === "dark" ? value : "system";
+      return normalise(localStorage.getItem(STORAGE_KEY));
     } catch {
-      // localStorage throws when site data is blocked. Following the desktop is the right
-      // fallback: it is what an unset preference does anyway.
+      // Site data blocked. Following the desktop is the right fallback: it is what an unset
+      // preference does anyway.
       return "system";
     }
   };
 
-  const apply = () => {
-    const value = stored();
+  const writeCache = value => {
+    try {
+      if (value === "system") {
+        localStorage.removeItem(STORAGE_KEY);
+      } else {
+        localStorage.setItem(STORAGE_KEY, value);
+      }
+    } catch {
+      // Nothing to cache to; the attribute still applies for this page's lifetime.
+    }
+  };
+
+  let current = readCache();
+
+  const paint = value => {
+    const changed = value !== current;
+    current = value;
     if (value === "system") {
       document.documentElement.removeAttribute(ATTRIBUTE);
     } else {
       document.documentElement.setAttribute(ATTRIBUTE, value);
     }
-    return value;
+    if (changed) {
+      listeners.forEach(listener => listener(value));
+    }
   };
 
-  apply();
+  // Before anything else, so the page paints once, in the right scheme.
+  paint(current);
 
-  // A change made on one page reaches the pages already open on the others.
-  addEventListener("storage", event => {
-    if (event.key === STORAGE_KEY || event.key === null) {
-      apply();
-    }
-  });
+  if (area) {
+    area.get(STORAGE_KEY, result => {
+      const stored = normalise(result && result[STORAGE_KEY]);
+      if (stored !== current) {
+        paint(stored);
+        writeCache(stored);
+      }
+    });
+
+    // Carries a change to every other page and frame of the extension, the popup included.
+    chrome.storage.onChanged.addListener((changes, areaName) => {
+      if (areaName !== "local" || !Object.prototype.hasOwnProperty.call(changes, STORAGE_KEY)) {
+        return;
+      }
+      const stored = normalise(changes[STORAGE_KEY].newValue);
+      paint(stored);
+      writeCache(stored);
+    });
+  }
 
   window.sfiTheme = {
-    get: stored,
+    /** @returns {"light"|"dark"|"system"} */
+    get: () => current,
 
     set(value) {
-      try {
-        if (value === "system") {
-          localStorage.removeItem(STORAGE_KEY);
-        } else {
-          localStorage.setItem(STORAGE_KEY, value);
-        }
-      } catch {
-        // Nothing to persist to; the attribute still applies for this page's lifetime.
+      const next = normalise(value);
+      paint(next);
+      writeCache(next);
+      if (area) {
+        area.set({[STORAGE_KEY]: next});
       }
-      return apply();
+      return next;
     },
 
     /** Light -> dark -> follow the desktop -> light. */
     next() {
-      const order = {light: "dark", dark: "system", system: "light"};
-      return window.sfiTheme.set(order[stored()]);
+      return window.sfiTheme.set(ORDER[current]);
+    },
+
+    /** Notified whenever the appearance changes, wherever the change was made. */
+    subscribe(listener) {
+      listeners.add(listener);
+      return () => listeners.delete(listener);
     }
   };
 })();
