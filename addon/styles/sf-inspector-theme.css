@@ -1342,3 +1342,35 @@ body.sfi-page .area:last-child {
 body.sfi-page .slds-tabs_default__content {
   padding: 0 !important;
 }
+
+/* ================================================================================================
+ * Popup footer
+ *
+ * The header is a sibling of .main and so sits above the scrolling area. The footer is not: it is
+ * rendered inside .main, so it scrolls with the content and comes to rest wherever the list ends.
+ * Every attempt to fix this by giving the panel a height was aimed at the wrong thing -- the column
+ * was filling correctly all along; the footer simply is not one of its children.
+ *
+ * Pinning the footer's row to the bottom of the scrolling area puts it where the header's mirror
+ * image belongs. The structural fix is to move it out of .main in popup.js and make it a sibling,
+ * which is what the header does; this achieves the same result without reaching into markup that
+ * has already been broken twice from here.
+ * ============================================================================================== */
+
+#insext .main .slds-grid:has(> #footer) {
+  position: sticky;
+  inset-block-end: 0;
+  z-index: 2;
+  background-color: light-dark(rgba(255, 255, 255, .82), rgba(32, 32, 38, .82));
+  -webkit-backdrop-filter: var(--sfi-glass-blur);
+  backdrop-filter: var(--sfi-glass-blur);
+  border-top: 1px solid light-dark(rgba(60, 50, 90, .08), rgba(255, 255, 255, .07));
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  #insext .main .slds-grid:has(> #footer) {
+    background-color: var(--slds-g-color-surface-container-1);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+}
