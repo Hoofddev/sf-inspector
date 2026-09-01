@@ -316,9 +316,9 @@ code,
 body.sfi-page {
   background-color: var(--slds-g-color-surface-1);
   background-image:
-    radial-gradient(60rem 44rem at -6% -18%, light-dark(rgba(0, 106, 224, .38),  rgba(10, 132, 255, .42)),  transparent 66%),
-    radial-gradient(50rem 40rem at 106% -6%, light-dark(rgba(96, 76, 255, .32),  rgba(130, 108, 255, .38)), transparent 64%),
-    radial-gradient(56rem 42rem at 50% 120%, light-dark(rgba(0, 176, 196, .26),  rgba(0, 190, 210, .28)),   transparent 62%);
+    radial-gradient(60rem 44rem at 2% 4%, light-dark(rgba(0, 106, 224, .38),  rgba(10, 132, 255, .42)),  transparent 66%),
+    radial-gradient(50rem 40rem at 98% 2%, light-dark(rgba(96, 76, 255, .32),  rgba(130, 108, 255, .38)), transparent 64%),
+    radial-gradient(56rem 42rem at 50% 114%, light-dark(rgba(0, 176, 196, .26),  rgba(0, 190, 210, .28)),   transparent 62%);
   background-attachment: fixed;
 }
 
@@ -687,9 +687,9 @@ html:has(body.sfir-prod),
 body.sfir-prod {
   background-color: light-dark(#fbeef0, #241a1d) !important;
   background-image:
-    radial-gradient(60rem 44rem at -6% -18%, light-dark(rgba(214, 48, 90, .34),  rgba(255, 90, 130, .32)), transparent 66%),
-    radial-gradient(50rem 40rem at 106% -6%, light-dark(rgba(232, 92, 62, .26),  rgba(255, 130, 90, .26)), transparent 64%),
-    radial-gradient(56rem 42rem at 50% 120%, light-dark(rgba(190, 40, 110, .20), rgba(230, 80, 150, .20)), transparent 62%) !important;
+    radial-gradient(60rem 44rem at 2% 4%, light-dark(rgba(214, 48, 90, .34),  rgba(255, 90, 130, .32)), transparent 66%),
+    radial-gradient(50rem 40rem at 98% 2%, light-dark(rgba(232, 92, 62, .26),  rgba(255, 130, 90, .26)), transparent 64%),
+    radial-gradient(56rem 42rem at 50% 114%, light-dark(rgba(190, 40, 110, .20), rgba(230, 80, 150, .20)), transparent 62%) !important;
   background-attachment: fixed !important;
 }
 
@@ -759,9 +759,9 @@ body.sfir-prod .slds-card {
 body.sfi-page {
   background-color: light-dark(#f4f2fb, #16161a);
   background-image:
-    radial-gradient(70rem 52rem at -8% -20%, light-dark(rgba(168, 148, 255, .30), rgba(120, 100, 220, .22)), transparent 68%),
-    radial-gradient(60rem 46rem at 108% -8%, light-dark(rgba(255, 176, 156, .26), rgba(210, 130, 120, .18)), transparent 66%),
-    radial-gradient(66rem 50rem at 46% 122%, light-dark(rgba(140, 226, 214, .26), rgba(90, 180, 175, .18)), transparent 64%),
+    radial-gradient(70rem 52rem at 2% 4%, light-dark(rgba(168, 148, 255, .30), rgba(120, 100, 220, .22)), transparent 68%),
+    radial-gradient(60rem 46rem at 98% 2%, light-dark(rgba(255, 176, 156, .26), rgba(210, 130, 120, .18)), transparent 66%),
+    radial-gradient(66rem 50rem at 46% 114%, light-dark(rgba(140, 226, 214, .26), rgba(90, 180, 175, .18)), transparent 64%),
     radial-gradient(44rem 38rem at 88% 62%, light-dark(rgba(176, 200, 255, .24), rgba(110, 140, 210, .16)), transparent 66%);
   background-attachment: fixed;
 }
@@ -1652,9 +1652,9 @@ code,
 body.sfi-page {
   background-color: var(--slds-g-color-surface-1);
   background-image:
-    radial-gradient(60rem 44rem at -6% -18%, light-dark(rgba(0, 106, 224, .38),  rgba(10, 132, 255, .42)),  transparent 66%),
-    radial-gradient(50rem 40rem at 106% -6%, light-dark(rgba(96, 76, 255, .32),  rgba(130, 108, 255, .38)), transparent 64%),
-    radial-gradient(56rem 42rem at 50% 120%, light-dark(rgba(0, 176, 196, .26),  rgba(0, 190, 210, .28)),   transparent 62%);
+    radial-gradient(60rem 44rem at 2% 4%, light-dark(rgba(0, 106, 224, .38),  rgba(10, 132, 255, .42)),  transparent 66%),
+    radial-gradient(50rem 40rem at 98% 2%, light-dark(rgba(96, 76, 255, .32),  rgba(130, 108, 255, .38)), transparent 64%),
+    radial-gradient(56rem 42rem at 50% 114%, light-dark(rgba(0, 176, 196, .26),  rgba(0, 190, 210, .28)),   transparent 62%);
   background-attachment: fixed;
 }
 
@@ -2023,9 +2023,9 @@ html:has(body.sfir-prod),
 body.sfir-prod {
   background-color: light-dark(#fbeef0, #241a1d) !important;
   background-image:
-    radial-gradient(60rem 44rem at -6% -18%, light-dark(rgba(214, 48, 90, .34),  rgba(255, 90, 130, .32)), transparent 66%),
-    radial-gradient(50rem 40rem at 106% -6%, light-dark(rgba(232, 92, 62, .26),  rgba(255, 130, 90, .26)), transparent 64%),
-    radial-gradient(56rem 42rem at 50% 120%, light-dark(rgba(190, 40, 110, .20), rgba(230, 80, 150, .20)), transparent 62%) !important;
+    radial-gradient(60rem 44rem at 2% 4%, light-dark(rgba(214, 48, 90, .34),  rgba(255, 90, 130, .32)), transparent 66%),
+    radial-gradient(50rem 40rem at 98% 2%, light-dark(rgba(232, 92, 62, .26),  rgba(255, 130, 90, .26)), transparent 64%),
+    radial-gradient(56rem 42rem at 50% 114%, light-dark(rgba(190, 40, 110, .20), rgba(230, 80, 150, .20)), transparent 62%) !important;
   background-attachment: fixed !important;
 }
 
@@ -2095,9 +2095,9 @@ body.sfir-prod .slds-card {
 body.sfi-page {
   background-color: light-dark(#f4f2fb, #16161a);
   background-image:
-    radial-gradient(70rem 52rem at -8% -20%, light-dark(rgba(168, 148, 255, .30), rgba(120, 100, 220, .22)), transparent 68%),
-    radial-gradient(60rem 46rem at 108% -8%, light-dark(rgba(255, 176, 156, .26), rgba(210, 130, 120, .18)), transparent 66%),
-    radial-gradient(66rem 50rem at 46% 122%, light-dark(rgba(140, 226, 214, .26), rgba(90, 180, 175, .18)), transparent 64%),
+    radial-gradient(70rem 52rem at 2% 4%, light-dark(rgba(168, 148, 255, .30), rgba(120, 100, 220, .22)), transparent 68%),
+    radial-gradient(60rem 46rem at 98% 2%, light-dark(rgba(255, 176, 156, .26), rgba(210, 130, 120, .18)), transparent 66%),
+    radial-gradient(66rem 50rem at 46% 114%, light-dark(rgba(140, 226, 214, .26), rgba(90, 180, 175, .18)), transparent 64%),
     radial-gradient(44rem 38rem at 88% 62%, light-dark(rgba(176, 200, 255, .24), rgba(110, 140, 210, .16)), transparent 66%);
   background-attachment: fixed;
 }
