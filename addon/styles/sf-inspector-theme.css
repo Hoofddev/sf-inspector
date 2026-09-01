@@ -1121,23 +1121,6 @@ body.sfi-page .slds-builder-header + * {
   }
 }
 
-/* The footer sits at the end of the content instead of at the foot of the panel, because the frame
-   inside has no height of its own unless the dynamic-height option is on -- button.js clears it
-   otherwise. With nothing to resolve against, the flex column inside cannot fill, so its last child
-   lands wherever the content stops.
- *
- * Making the panel a column and letting the frame grow into it gives that height back. The rule is
- * on the active state only, so the display:none that hides the panel is left alone. flex-basis
- * stays auto, so an inline height set by the dynamic-height option still wins. */
-#insext.insext-active .insext-popup {
-  display: flex;
-  flex-direction: column;
-}
-
-#insext.insext-active .insext-popup > iframe {
-  flex: 1 1 auto;
-  min-height: 0;
-}
 
 /* ================================================================================================
  * Page header
@@ -1250,4 +1233,23 @@ body.sfi-page .sfir-options-tab-container {
     -webkit-backdrop-filter: none;
     backdrop-filter: none;
   }
+}
+
+/* ================================================================================================
+ * Popup height
+ *
+ * .insext-popup is the iframe itself -- button.js puts the class on the frame, there is no wrapper
+ * around it. An earlier attempt at this made the panel a flex column and told a child frame to
+ * grow, which matched nothing and could not have worked.
+ *
+ * Inside the frame the chain is already right: html, body and #root are all height:100% with the
+ * column on #root. What it lacked was something to resolve against, since the frame is given only
+ * a min-height and no height, and button.js clears any inline height unless the dynamic-height
+ * option is on. Giving it a real height makes the column fill and drops the footer to the foot of
+ * the panel. Declared without !important on purpose: the inline height that option writes still
+ * takes precedence.
+ * ============================================================================================== */
+
+#insext.insext-active .insext-popup {
+  height: 450px;
 }
