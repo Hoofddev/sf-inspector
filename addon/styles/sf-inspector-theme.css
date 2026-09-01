@@ -2715,3 +2715,14 @@ body.sfi-page .sfir-options-tab-container {
 #insext .slds-grid:has(> #footer) {
   border-top: 1px solid light-dark(rgba(60, 50, 90, .08), rgba(255, 255, 255, .07));
 }
+
+/* More air between the chrome and the content than between the cards themselves, so the header and
+   the tab strip read as a level above what they sit over rather than as the first item in the
+   stack. */
+body.sfi-page .slds-builder-header {
+  margin-block: 1rem 2.25rem !important;
+}
+
+body.sfi-page .sfir-options-tab-container {
+  margin-block: 0 2.25rem !important;
+}
