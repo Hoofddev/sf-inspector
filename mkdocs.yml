@@ -1,6 +1,6 @@
 site_name: Salesforce Inspector reloaded
-site_url: https://tprouvot.github.io/Salesforce-Inspector-reloaded/
-repo_url: https://github.com/tprouvot/Salesforce-Inspector-reloaded
+site_url: https://hoofddev.github.io/sf-inspector/
+repo_url: https://github.com/Hoofddev/sf-inspector
 site_author: Thomas Prouvot
 
 theme:
@@ -35,7 +35,7 @@ theme:
 extra:
   social:
     - icon: fontawesome/brands/github-alt
-      link: https://github.com/tprouvot
+      link: https://github.com/Hoofddev
     - icon: fontawesome/brands/linkedin
       link: https://www.linkedin.com/in/thomasprouvot/
 
@@ -98,8 +98,7 @@ nav:
   - Support:
       - Troubleshooting: troubleshooting.md
       - Privacy Policy: privacy.md
-      - Donate: donate.md
       - Developer Notes: dev-notes.md
 
 copyright: |
-  &copy; 2025 <a href="https://github.com/tprouvot" target="_blank" rel="noopener">Thomas Prouvot</a>
+  &copy; 2026 <a href="https://github.com/Hoofddev" target="_blank" rel="noopener">Hoofddev</a> &middot; a fork of <a href="https://github.com/tprouvot/Salesforce-Inspector-reloaded" target="_blank" rel="noopener">Salesforce Inspector Reloaded</a> by Thomas Prouvot, MIT licensed
