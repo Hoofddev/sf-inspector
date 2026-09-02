@@ -224,6 +224,42 @@ rm -f "$LOG"
 PKG="$(find "$EXPORT_DIR" -name "*.pkg" -maxdepth 1 | head -1)"
 echo
 echo "Exported: ${PKG:-$EXPORT_DIR}"
+
+# What is in the package, rather than what the export claimed to do. Everything above this point
+# describes the archive, which is signed for development and re-signed during the export -- so the
+# archive's own authority and entitlements say nothing about what ships. This opens the package and
+# looks.
+if [ -n "$PKG" ]; then
+  echo
+  echo "==> Verifying the package"
+  echo "    installer: $(pkgutil --check-signature "$PKG" 2>/dev/null | sed -n 's/^ *1\. //p' | head -1)"
+
+  VERIFY="$OUT/verify"
+  rm -rf "$VERIFY"
+  if pkgutil --expand-full "$PKG" "$VERIFY" >/dev/null 2>&1; then
+    SHIPPED="$(find "$VERIFY" -name "$APP_NAME.app" -maxdepth 5 -type d | head -1)"
+    if [ -n "$SHIPPED" ]; then
+      echo "    app:       $(codesign -dvv "$SHIPPED" 2>&1 | sed -n 's/^Authority=//p' | head -1)"
+      echo "    profile:   $(security cms -D -i "$SHIPPED/Contents/embedded.provisionprofile" 2>/dev/null | plutil -extract Name raw -o - - 2>/dev/null)"
+      for bundle in "$SHIPPED" "$SHIPPED/Contents/PlugIns/$APP_NAME Extension.appex"; do
+        echo "    $(basename "$bundle") entitlements:"
+        codesign -d --entitlements - --xml "$bundle" 2>/dev/null | plutil -p - \
+          | grep -oE '"[a-z.-]+"' | sed 's/^/      /'
+      done
+
+      # An App Store build must not carry this. It means something signed it for development, and
+      # the upload is rejected rather than the build.
+      if codesign -d --entitlements - --xml "$SHIPPED" 2>/dev/null | grep -q "get-task-allow"; then
+        echo
+        echo "error: the shipped app carries get-task-allow and will be rejected on upload." >&2
+        exit 1
+      fi
+    fi
+    rm -rf "$VERIFY"
+  else
+    echo "    (could not expand the package to check it)"
+  fi
+fi
 echo
 echo "To upload, either:"
 echo "  - open Transporter, sign in, and drop that .pkg on it, or"
