@@ -66,26 +66,43 @@ TEAM="$(security find-certificate -c "Apple Development" -p 2>/dev/null \
   | openssl x509 -noout -subject 2>/dev/null \
   | sed -n 's/.*OU=\([A-Z0-9]\{10\}\).*/\1/p')"
 
-if security find-identity -v 2>/dev/null | grep -qE "Apple Distribution|3rd Party Mac Developer Application"; then
-  HAVE_DISTRIBUTION=1
-else
-  HAVE_DISTRIBUTION=0
-fi
+# A Mac App Store submission needs two different certificates, and missing either one fails the
+# same way: the archive builds, then the export dies with a signing error. They are checked
+# together because checking only the first is what let a run get all the way to the export before
+# reporting that the second was missing.
+#
+#   Apple Distribution        signs the .app
+#   Mac Installer Distribution  signs the .pkg that wraps it
+#
+# The installer certificate is not a codesigning identity, so find-identity never lists it however
+# it is queried; it has to be looked for as a certificate.
+HAVE_APP_CERT=0
+HAVE_INSTALLER_CERT=0
+security find-identity -v 2>/dev/null \
+  | grep -qE "Apple Distribution|3rd Party Mac Developer Application" && HAVE_APP_CERT=1
+for name in "Mac Installer Distribution" "3rd Party Mac Developer Installer"; do
+  if security find-certificate -c "$name" >/dev/null 2>&1; then
+    HAVE_INSTALLER_CERT=1
+  fi
+done
 
-if [ "$HAVE_DISTRIBUTION" = "0" ] && [ "$ARCHIVE_ONLY" = "0" ]; then
+if [ "$ARCHIVE_ONLY" = "0" ] && { [ "$HAVE_APP_CERT" = "0" ] || [ "$HAVE_INSTALLER_CERT" = "0" ]; }; then
   echo >&2
-  echo "error: no distribution certificate in the keychain." >&2
+  echo "error: the keychain is missing a certificate an App Store build needs." >&2
   echo >&2
-  echo "  The keychain has:" >&2
-  security find-identity -v -p codesigning 2>/dev/null | sed 's/^/  /' >&2
+  [ "$HAVE_APP_CERT" = "1" ] \
+    && echo "  present: Apple Distribution          (signs the .app)" >&2 \
+    || echo "  MISSING: Apple Distribution          (signs the .app)" >&2
+  [ "$HAVE_INSTALLER_CERT" = "1" ] \
+    && echo "  present: Mac Installer Distribution  (signs the .pkg)" >&2 \
+    || echo "  MISSING: Mac Installer Distribution  (signs the .pkg)" >&2
   echo >&2
-  echo "  An App Store build needs an Apple Distribution certificate, which Xcode creates for you" >&2
-  echo "  once it is signed in:" >&2
+  echo "  Xcode creates either one for you:" >&2
   echo >&2
-  echo "    1. Xcode > Settings > Accounts, add your Apple ID." >&2
-  echo "    2. Select the team, then Manage Certificates, and add an Apple Distribution one." >&2
+  echo "    Xcode > Settings > Accounts > select the team > Manage Certificates," >&2
+  echo "    then the + button, and pick the missing certificate by that name." >&2
   echo >&2
-  echo "  To check that the archive itself builds before doing any of that, run:" >&2
+  echo "  To check that the archive itself builds without them, run:" >&2
   echo "    npm run safari-app-archive -- --archive-only" >&2
   exit 1
 fi
@@ -102,6 +119,7 @@ xcodebuild archive \
   -configuration Release \
   -archivePath "$ARCHIVE" \
   -derivedDataPath "$OUT/DerivedData" \
+  -allowProvisioningUpdates \
   MARKETING_VERSION="$MARKETING_VERSION" \
   DEVELOPMENT_TEAM="$TEAM" \
   >"$LOG" 2>&1
@@ -143,6 +161,16 @@ if codesign -d --entitlements - --xml "$APP_IN_ARCHIVE" 2>/dev/null | grep -q "g
   echo "          an Apple Distribution certificate is in the keychain."
 fi
 
+# Archiving registers the archived app with LaunchServices under a virtual path inside the
+# archive, which leaves a second "SF Inspector" known to the system next to the installed one.
+# build-safari.sh already unregisters its build product for the same reason; this did not, and an
+# archive run duplicated the entry. The record outlives the archive directory, and lsregister
+# cannot remove one whose bundle is already gone, so it has to be undone here while it still can.
+LSREGISTER=/System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/LaunchServices.framework/Versions/A/Support/lsregister
+if [ -x "$LSREGISTER" ]; then
+  "$LSREGISTER" -u "$APP_IN_ARCHIVE" 2>/dev/null || true
+fi
+
 if [ "$ARCHIVE_ONLY" = "1" ]; then
   echo
   echo "Stopped after archiving, as asked. Export with:"
@@ -178,6 +206,7 @@ xcodebuild -exportArchive \
   -archivePath "$ARCHIVE" \
   -exportPath "$EXPORT_DIR" \
   -exportOptionsPlist "$OUT/ExportOptions.plist" \
+  -allowProvisioningUpdates \
   >"$LOG" 2>&1
 STATUS=$?
 set -e
@@ -195,6 +224,42 @@ rm -f "$LOG"
 PKG="$(find "$EXPORT_DIR" -name "*.pkg" -maxdepth 1 | head -1)"
 echo
 echo "Exported: ${PKG:-$EXPORT_DIR}"
+
+# What is in the package, rather than what the export claimed to do. Everything above this point
+# describes the archive, which is signed for development and re-signed during the export -- so the
+# archive's own authority and entitlements say nothing about what ships. This opens the package and
+# looks.
+if [ -n "$PKG" ]; then
+  echo
+  echo "==> Verifying the package"
+  echo "    installer: $(pkgutil --check-signature "$PKG" 2>/dev/null | sed -n 's/^ *1\. //p' | head -1)"
+
+  VERIFY="$OUT/verify"
+  rm -rf "$VERIFY"
+  if pkgutil --expand-full "$PKG" "$VERIFY" >/dev/null 2>&1; then
+    SHIPPED="$(find "$VERIFY" -name "$APP_NAME.app" -maxdepth 5 -type d | head -1)"
+    if [ -n "$SHIPPED" ]; then
+      echo "    app:       $(codesign -dvv "$SHIPPED" 2>&1 | sed -n 's/^Authority=//p' | head -1)"
+      echo "    profile:   $(security cms -D -i "$SHIPPED/Contents/embedded.provisionprofile" 2>/dev/null | plutil -extract Name raw -o - - 2>/dev/null)"
+      for bundle in "$SHIPPED" "$SHIPPED/Contents/PlugIns/$APP_NAME Extension.appex"; do
+        echo "    $(basename "$bundle") entitlements:"
+        codesign -d --entitlements - --xml "$bundle" 2>/dev/null | plutil -p - \
+          | grep -oE '"[a-z.-]+"' | sed 's/^/      /'
+      done
+
+      # An App Store build must not carry this. It means something signed it for development, and
+      # the upload is rejected rather than the build.
+      if codesign -d --entitlements - --xml "$SHIPPED" 2>/dev/null | grep -q "get-task-allow"; then
+        echo
+        echo "error: the shipped app carries get-task-allow and will be rejected on upload." >&2
+        exit 1
+      fi
+    fi
+    rm -rf "$VERIFY"
+  else
+    echo "    (could not expand the package to check it)"
+  fi
+fi
 echo
 echo "To upload, either:"
 echo "  - open Transporter, sign in, and drop that .pkg on it, or"
