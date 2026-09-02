@@ -5,6 +5,7 @@
     "firefox-release-build": "node scripts/release-build.js firefox",
     "safari-release-build": "node scripts/release-build.js safari",
     "safari-app-build": "bash scripts/build-safari.sh",
+    "safari-app-archive": "bash scripts/archive-safari.sh",
     "chrome-release-build": "node scripts/release-build.js chrome",
     "build-flow-scanner": "node scripts/build-flow-scanner.js",
     "set-test-constants": "node scripts/set-test-constants-from-org.js",
