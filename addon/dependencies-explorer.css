@@ -603,7 +603,7 @@ h1 {
 .dep-view-toggle {
     cursor: pointer;
     border-radius: var(--slds-g-radius-border-3) var(--slds-g-radius-border-3) 0 0;
-    background-color: white;
+    background-color: var(--slds-g-color-surface-container-1);
     color: var(--slds-g-color-on-surface-1);
     border: 1px solid var(--slds-g-color-border-1);
     font-size: 12px;
@@ -625,7 +625,7 @@ h1 {
 }
 
 .dep-view-toggle.inactive {
-    background-color: white;
+    background-color: var(--slds-g-color-surface-container-1);
     color: var(--slds-g-color-on-surface-3);
     border-color: var(--slds-g-color-border-1);
 }

@@ -141,7 +141,7 @@ button:active {
   border: 1px solid var(--slds-g-color-border-1);
   border-top: none;
   border-radius: 0 0 4px 4px;
-  background-color: white;
+  background-color: var(--slds-g-color-surface-container-1);
   list-style: none;
   padding: 0;
   margin: 0;
@@ -171,7 +171,7 @@ button,
   height: 32px;
   display: inline-block;
   text-decoration: none;
-  background-color: white;
+  background-color: var(--slds-g-color-surface-container-1);
   padding: 0 16px;
   color: var(--sfi-accent-text);
   cursor: pointer;
@@ -229,7 +229,7 @@ button:hover,
   z-index: 1000;
 }
 .modalContent {
-  background-color: white;
+  background-color: var(--slds-g-color-surface-container-1);
   padding: 20px;
   border-radius: 8px;
   width: 500px;

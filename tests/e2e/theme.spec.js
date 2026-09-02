@@ -57,17 +57,35 @@ test.describe("Appearance", () => {
     await page.waitForSelector("#root > *", {timeout: 10000});
   }
 
+  // A fresh install is dark, whatever the desktop is set to. Following the desktop is still
+  // available, but it is now something you choose rather than what you get for choosing nothing.
   for (const desktop of ["light", "dark"]) {
-    test(`follows a ${desktop} desktop when nothing is stored`, async ({page, extensionId}) => {
+    test(`a fresh install is dark on a ${desktop} desktop`, async ({page, extensionId}) => {
       await openPage(page, extensionId, desktop);
 
       const appearance = await readAppearance(page);
-      expect(appearance.stored).toBe("system");
-      expect(appearance.attribute).toBeNull();
-      expect(appearance.scheme).toBe("light dark");
-      expect(appearance.ground).toBe(desktop === "dark" ? DARK_GROUND : LIGHT_GROUND);
+      expect(appearance.stored).toBe("dark");
+      expect(appearance.attribute).toBe("dark");
+      expect(appearance.scheme).toBe("dark only");
+      expect(appearance.ground).toBe(DARK_GROUND);
     });
   }
+
+  test("choosing system hands the choice to the desktop, and survives a reload", async ({page, extensionId}) => {
+    await openPage(page, extensionId, "light");
+
+    // "system" has to be stored, not represented by an absent value: absent now means a fresh
+    // install, which is dark. If the two were conflated this would come back dark.
+    await page.evaluate(() => window.sfiTheme.set("system"));
+    expect((await readAppearance(page)).ground).toBe(LIGHT_GROUND);
+
+    await page.reload();
+    await page.waitForSelector("#root > *", {timeout: 10000});
+    const appearance = await readAppearance(page);
+    expect(appearance.stored).toBe("system");
+    expect(appearance.attribute).toBeNull();
+    expect(appearance.ground).toBe(LIGHT_GROUND);
+  });
 
   test("a stored choice overrides the desktop in both directions", async ({page, extensionId}) => {
     await openPage(page, extensionId, "light");
@@ -154,13 +172,14 @@ test.describe("Appearance", () => {
     const button = frame.locator("#themeBtn .sfir-theme-toggle");
     const current = () => frame.evaluate(() => window.sfiTheme.get());
 
+    // Starts at the default rather than at "system".
+    expect(await current()).toBe("dark");
+    await button.click();
     expect(await current()).toBe("system");
     await button.click();
     expect(await current()).toBe("light");
     await button.click();
     expect(await current()).toBe("dark");
-    await button.click();
-    expect(await current()).toBe("system");
   });
 });
 

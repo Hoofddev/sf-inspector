@@ -2,7 +2,8 @@
  * Appearance, applied before first paint.
  *
  * The theme's tokens are all light-dark() pairs, and :root declares `color-scheme: light dark`, so
- * with nothing stored the pages follow the desktop. A stored choice overrides that by setting
+ * `system` lets the pages follow the desktop. A fresh install is dark rather than `system`; a
+ * stored choice, `system` included, overrides that by setting
  * color-scheme to `only light` / `only dark` on the root element, which is what light-dark() reads
  * -- so one attribute flips every token at once, with no second set of rules to keep in step.
  *
@@ -27,10 +28,18 @@
   const ATTRIBUTE = "data-sfi-theme";
   const ORDER = {light: "dark", dark: "system", system: "light"};
 
+  // What an installation starts as, before anyone has chosen. Dark is deliberate rather than a
+  // reflection of the desktop: it is the appearance the product is designed and shown in.
+  // "system" remains available -- it is now something you pick, not what you get by default.
+  const DEFAULT = "dark";
+
   const area = globalThis.chrome && chrome.storage ? chrome.storage.local : null;
   const listeners = new Set();
 
-  const normalise = value => (value === "light" || value === "dark" ? value : "system");
+  // An unrecognised or absent value is a fresh install, which gets DEFAULT. "system" has to survive
+  // this untouched: it is a real choice, and it has to be distinguishable from having chosen nothing.
+  const normalise = value =>
+    (value === "light" || value === "dark" || value === "system" ? value : DEFAULT);
 
   const readCache = () => {
     try {
@@ -44,11 +53,10 @@
 
   const writeCache = value => {
     try {
-      if (value === "system") {
-        localStorage.removeItem(STORAGE_KEY);
-      } else {
-        localStorage.setItem(STORAGE_KEY, value);
-      }
+      // Every value is written, "system" included. Removing the key used to be equivalent, back when
+      // an absent key meant "follow the desktop"; now an absent key means DEFAULT, so clearing it
+      // would quietly turn a deliberate "system" into dark on the next load.
+      localStorage.setItem(STORAGE_KEY, value);
     } catch {
       // Nothing to cache to; the attribute still applies for this page's lifetime.
     }
