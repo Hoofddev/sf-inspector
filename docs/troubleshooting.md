@@ -4,12 +4,12 @@
 
 ### Blank popup
 
-You've just installed Salesforce Inspector Reloaded and ... the popup is blank 😥
+You've just installed SF Inspector and ... the popup is blank 😥
 Make sure that third party cookies are enabled in your browser:
 
 ![image](assets/images/guide/troubleshooting-01.png)
 
-### Salesforce Inspector Reloaded is not working anymore
+### SF Inspector is not working anymore
 
 One of the cause can be a domain update (Hyperforce migration, MyDomain change ...).
 What you need to do is to delete the sid cookie (and website associated cookies if sid did not worked).
@@ -56,9 +56,9 @@ When installing the default connected app when `API Access Control` is enabled, 
 
 ### Logging as incognito with ConnectedApp
 
-If you use the standard Salesforce Inspector Reloaded's Connected App and click `Generate New Token` the `LoginAs Incognito` feature might stop working correctly. Instead of automatically logging you in, you'll be sent to a regular login screen.
+If you use the standard SF Inspector's Connected App and click `Generate New Token` the `LoginAs Incognito` feature might stop working correctly. Instead of automatically logging you in, you'll be sent to a regular login screen.
 
-This issue occurs because the default Salesforce Inspector Reloaded Connected App doesn't use the required scope for this feature.
+This issue occurs because the default SF Inspector Connected App doesn't use the required scope for this feature.
 As a workaround, you can create a custom `External Client App` (since the creation of Connected Apps is soon to be deprecated) as described in this [article](https://hoofddev.github.io/sf-inspector/how-to/#external-client-app-creation).
 
 ### Deployment error: No package.xml found
@@ -84,7 +84,7 @@ If you're experiencing issues with the Salesforce Docs (SDocs) Template Editor, 
 **How to solve it:**
 
 * Disable any ad-blocking extensions (AdGuard AdBlocker etc.) on Salesforce sites
-* You can keep Salesforce Inspector Reloaded enabled
+* You can keep SF Inspector enabled
 
 **Related issue:** [#908](https://github.com/tprouvot/Salesforce-Inspector-reloaded/issues/908)
 

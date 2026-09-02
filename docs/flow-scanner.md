@@ -1,6 +1,6 @@
 # Flow Scanner User Guide
 
-The **Flow Scanner** is a powerful tool built into Salesforce Inspector Reloaded that helps you analyze Salesforce Flows for best practices, errors, and potential issues. This guide explains how to use the Flow Scanner, what to expect, and how to get the most out of your flow analysis.
+The **Flow Scanner** is a powerful tool built into SF Inspector that helps you analyze Salesforce Flows for best practices, errors, and potential issues. This guide explains how to use the Flow Scanner, what to expect, and how to get the most out of your flow analysis.
 
 ---
 
@@ -14,7 +14,7 @@ The Flow Scanner automatically reviews your Salesforce Flows and checks them aga
 
 **Built on Lightning Flow Scanner Core**
 
-The Flow Scanner in Salesforce Inspector Reloaded is powered by the [Lightning Flow Scanner](https://github.com/Flow-Scanner/lightning-flow-scanner), an open-source rule engine capable of conducting static analysis on Salesforce Lightning Flows, Process Builders, and Workflows. This core library provides the comprehensive rule definitions and scanning capabilities that make the Flow Scanner so powerful.
+The Flow Scanner in SF Inspector is powered by the [Lightning Flow Scanner](https://github.com/Flow-Scanner/lightning-flow-scanner), an open-source rule engine capable of conducting static analysis on Salesforce Lightning Flows, Process Builders, and Workflows. This core library provides the comprehensive rule definitions and scanning capabilities that make the Flow Scanner so powerful.
 
 ---
 
@@ -76,7 +76,7 @@ You can export the scan results as a CSV file for documentation or sharing:
 
 ## Customizing Rules
 
-- Go to the **Options** page of Salesforce Inspector Reloaded.
+- Go to the **Options** page of SF Inspector.
 - Select the **Flow Scanner** tab.
 - Enable or disable rules as needed, or adjust rule settings (like API version threshold or naming patterns).
 - Re-run the scan for updated results.
@@ -131,7 +131,7 @@ Using the purge feature periodically helps keep your org clean and avoids hittin
 
 ## Comparing Flow Versions
 
-Salesforce Inspector Reloaded provides quick access to Salesforce's Flow Compare feature, which allows you to visually compare different versions of a flow side-by-side in the Flow Builder.
+SF Inspector provides quick access to Salesforce's Flow Compare feature, which allows you to visually compare different versions of a flow side-by-side in the Flow Builder.
 
 ### What is Flow Compare?
 

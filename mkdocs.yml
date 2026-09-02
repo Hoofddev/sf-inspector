@@ -100,7 +100,6 @@ nav:
           - Org Limits: limits.md
           - SObject Cache Management: sobject-cache-management.md
       - How-To: how-to.md
-  - Articles: articles.md
 
   - Support:
       - Troubleshooting: troubleshooting.md
