@@ -21,19 +21,21 @@ theme:
   # Roboto is not fetched from Google on every page load, and the system stack in
   # assets/stylesheets/extra.css applies instead -- the same one the extension and the app use.
   font: false
+  # Dark first and no media key, which is what makes it the default: Material takes the first
+  # entry when nothing is stored, and only follows prefers-color-scheme where a media key says to.
+  # This matches the extension, which also starts dark. Light stays one click away and the choice
+  # is remembered.
   palette:
-    - media: "(prefers-color-scheme: light)"
-      scheme: default
-      toggle:
-        icon: material/toggle-switch-off-outline
-        name: Switch to dark mode
-      primary: custom
-      accent: custom
-    - media: "(prefers-color-scheme: dark)"
-      scheme: slate
+    - scheme: slate
       toggle:
         icon: material/toggle-switch
         name: Switch to light mode
+      primary: custom
+      accent: custom
+    - scheme: default
+      toggle:
+        icon: material/toggle-switch-off-outline
+        name: Switch to dark mode
       primary: custom
       accent: custom
 

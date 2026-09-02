@@ -173,6 +173,21 @@ test.describe("Contrast", () => {
   for (const scheme of ["light", "dark"]) {
     test.describe(scheme, () => {
       test.beforeEach(async ({context}) => {
+        // 0. Pin the appearance.
+        //
+        // emulateMedia alone stopped being enough when dark became the default: with nothing
+        // stored, theme-init sets color-scheme to `dark only`, which light-dark() reads instead of
+        // the media query. Both halves of this suite then rendered dark and the light half tested
+        // nothing. The setting has to be stored where theme-init actually looks -- extension
+        // storage, not localStorage, which it treats as a cache and corrects from.
+        let [worker] = context.serviceWorkers();
+        if (!worker) {
+          worker = await context.waitForEvent("serviceworker");
+        }
+        await worker.evaluate(async value => {
+          await chrome.storage.local.set({sfiTheme: value});
+        }, scheme);
+
         // 1. Inject Fake Session Data with model exposure setup
         await injectSessionData(context, {
           host: mockHost,
@@ -216,6 +231,41 @@ test.describe("Contrast", () => {
           expect(failures, `${name} (${scheme}) has text below WCAG AA:\n${report}\n`).toEqual([]);
         });
       }
+
+      /**
+       * The export result table, which only exists after a query has run.
+       *
+       * The page-level audits above load each page and measure what is on it, and a table that
+       * appears only in response to a query is not on it. That gap let .scrolltable-cell ship with
+       * `background-color: white` hardcoded: in dark mode it painted white cells under the theme's
+       * near-white text, at 1.12:1, on the flagship feature. Every page audit passed the whole time,
+       * because none of them had ever run a query.
+       */
+      test("export results have no unreadable text", async ({page, extensionId}) => {
+        await page.emulateMedia({colorScheme: scheme});
+        await page.setViewportSize({width: 1440, height: 900});
+        await page.goto(`chrome-extension://${extensionId}/data-export.html?host=${mockHost}`);
+
+        await page.waitForSelector("textarea#query", {timeout: 10000});
+        await page.locator("textarea#query").fill("SELECT Id, Name, Type FROM Account");
+        await page.click("button:has-text('Run Export')");
+        await page.waitForSelector("#result-area table tr td", {timeout: 10000});
+
+        // Clicking leaves the pointer on the button and the focus ring on it, so an audit taken
+        // here measures Run Export's hover state rather than the results. Move both away: this test
+        // is about the table, and the resting button is already covered by the page audit above.
+        await page.mouse.move(0, 0);
+        await page.evaluate(() => document.activeElement && document.activeElement.blur());
+        await page.waitForTimeout(1000);
+
+        const failures = await page.evaluate(auditContrast);
+
+        const report = failures
+          .map(f => `  ${f.ratio}:1 (needs ${f.required}:1)  ${f.color} on ${f.on}  ${f.selector}  "${f.text}"`)
+          .join("\n");
+
+        expect(failures, `export results (${scheme}) have text below WCAG AA:\n${report}\n`).toEqual([]);
+      });
 
       // The popup only runs inside a frame: popup.js reads document.location.ancestorOrigins[0] at
       // module scope, which throws when there is no ancestor, and it renders nothing until the

@@ -32,7 +32,7 @@
   border: 1px solid var(--slds-g-color-border-1);
   overflow: visible;
   padding: 0 4px;
-  background-color: white;
+  background-color: var(--slds-g-color-surface-container-1);
   white-space: pre;
   box-sizing: border-box;
   position: relative;

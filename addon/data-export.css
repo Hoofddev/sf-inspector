@@ -316,7 +316,7 @@ button,
   height: 32px;
   display: inline-block;
   text-decoration: none;
-  background-color: white;
+  background-color: var(--slds-g-color-surface-container-1);
   padding: 0 16px;
   color: var(--sfi-accent-text);
   cursor: pointer;
@@ -573,7 +573,7 @@ svg.button-icon {
   right: 0;
   max-height: 250px;
   overflow: auto;
-  background-color: white;
+  background-color: var(--slds-g-color-surface-container-1);
   border: 1px solid var(--slds-g-color-border-1);
   border-radius: 4px;
   z-index: 1000;
