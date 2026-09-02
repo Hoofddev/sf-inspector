@@ -143,6 +143,16 @@ if codesign -d --entitlements - --xml "$APP_IN_ARCHIVE" 2>/dev/null | grep -q "g
   echo "          an Apple Distribution certificate is in the keychain."
 fi
 
+# Archiving registers the archived app with LaunchServices under a virtual path inside the
+# archive, which leaves a second "SF Inspector" known to the system next to the installed one.
+# build-safari.sh already unregisters its build product for the same reason; this did not, and an
+# archive run duplicated the entry. The record outlives the archive directory, and lsregister
+# cannot remove one whose bundle is already gone, so it has to be undone here while it still can.
+LSREGISTER=/System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/LaunchServices.framework/Versions/A/Support/lsregister
+if [ -x "$LSREGISTER" ]; then
+  "$LSREGISTER" -u "$APP_IN_ARCHIVE" 2>/dev/null || true
+fi
+
 if [ "$ARCHIVE_ONLY" = "1" ]; then
   echo
   echo "Stopped after archiving, as asked. Export with:"
