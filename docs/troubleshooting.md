@@ -33,8 +33,6 @@ You may have seen this message because of an expired token, and since this was t
 
 Delete the generated token from the Option page
 
-<img width="938" alt="Delete Token" src="https://github.com/user-attachments/assets/f38ece82-a0db-44ab-98d7-bd856a2f2445" />
-
 Or run this in Safari's Web Inspector console, with the extension's panel inspected (Develop ▸ Web Inspector, then pick the SF Inspector panel):
 
 ```js

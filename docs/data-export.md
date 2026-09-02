@@ -11,7 +11,7 @@ The search is made on the field label and name.
 
 ## Multiple Query Tabs
 
-<img width="1428" alt="Multiple Query tabs" src="https://github.com/user-attachments/assets/2e48a0b9-998e-436e-87cf-5a28fba3db58" />
+<img width="1428" alt="Multiple Query tabs" src="assets/images/guide/data-export-01.png" />
 
 The Data Export page now supports multiple query tabs, allowing you to work on several queries at once without losing context.
 
@@ -41,7 +41,7 @@ All tab names and positions are automatically saved and will persist between bro
 
 Option available in Data Export tab
 
-<img width="809" alt="Disable query input" src="https://github.com/user-attachments/assets/6f928f58-e437-47aa-b2d2-378f534e7a08">
+<img width="809" alt="Disable query input" src="assets/images/guide/data-export-04.png">
 
 ## Add custom query templates
 
@@ -56,7 +56,7 @@ Example:
 
 The shortcut is <kbd>Control</kbd> + <kbd>Space</kbd>. Safari has no panel for reassigning an extension's shortcuts, so if it clashes with something else you will need to change the other application's binding instead.
 
-<img width="1133" alt="Customize Select all fields in a query shortcut" src="https://github.com/user-attachments/assets/f0bca12a-7c92-4fbe-9ca4-a8db51b050e9">
+<img width="1133" alt="Customize Select all fields in a query shortcut" src="assets/images/guide/data-export-05.png">
 
 ## Exclude formula fields from data export autocomplete
 
@@ -114,7 +114,7 @@ By default, the Agentforce button is hidden. To enable it:
 2. Enable "Show Agentforce button"
 3. Optionally, you can customize the prompt template name that will be used for generating queries
 
-<img width="1443" alt="Agentforce SOQL builder" src="https://github.com/user-attachments/assets/deab54b8-df9a-4b74-ab81-b27aea5be800" />
+<img width="1443" alt="Agentforce SOQL builder" src="assets/images/guide/data-export-06.png" />
 
 
 GenerateSOQL.genAiPromptTemplate meta content:

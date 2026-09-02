@@ -3,9 +3,6 @@
 ## Overview
 The Event Monitor page allows users to subscribe to and display Salesforce Platform Events in real-time. It supports Change Events, Custom Channel, Standard and Custom Platform Events. The page uses the CometD library to connect to Salesforce and stream events directly to the user's browser.
 
-![Event Monitor](https://github.com/user-attachments/assets/9cd65852-9171-4e5f-9964-fc09851ab37d)
-
-
 ## Key Features
 
 - **Subscribe to Platform Events:** Users can select or manually specify a channel and subscribe to it to receive live updates.
@@ -60,14 +57,14 @@ History and saved events are stored per Salesforce org (scoped by host).
 ## Subscribe to an Event from the Popup
 You can also directly access the Event Monitor page and pre-select the Event from the popup by clicking the `Subscribe to Event` button.
 
-<img width="278" alt="Subscribe from popup" src="https://github.com/user-attachments/assets/a087944d-df38-4e38-a05f-dcdd3bf57b28">
+<img width="278" alt="Subscribe from popup" src="assets/images/guide/event-monitor-01.png">
 
 ## Replay From Parameter Warning
 The `Replay From` parameter is a powerful feature that allows users to replay past events by specifying an event replay ID. However, it must be used with **great caution** in production environments.
 
 ## Display Platform Event Allocations and pre-build queries on PlatformEventUsageMetric
 
-<img width="1442" alt="Platform Event Allocations" src="https://github.com/user-attachments/assets/df2c5aa4-a432-4646-a450-d7a64efaae0e" />
+<img width="1442" alt="Platform Event Allocations" src="assets/images/guide/event-monitor-02.png" />
 
 If you are facing the error: No such column 'EventName' on entity 'PlatformEventUsageMetric', please check related [documentation](https://developer.salesforce.com/docs/atlas.en-us.244.0.api_meta.meta/api_meta/meta_platformeventsettings.htm) to enable it.
 

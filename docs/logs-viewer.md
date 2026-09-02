@@ -19,7 +19,7 @@ By default, the Agentforce button is hidden. To enable it:
 
 The Debug Logs Viewer allows you to view, filter, analyze, and manage Salesforce debug logs directly from the extension. With advanced features like Agentforce-powered analysis, grep-like filtering, and smart pagination, it transforms the debug log experience into a productive workflow.
 
-<img width="1437" height="827" alt="Logs Viewer" src="https://github.com/user-attachments/assets/2b916cb5-8ca8-4ebf-9d92-880b12d97d25" />
+<img width="1437" height="827" alt="Logs Viewer" src="assets/images/guide/logs-viewer-01.png" />
 
 ## Key Features
 
@@ -81,7 +81,7 @@ Each log entry displays:
 
 Click the **Preview** button on any log to open the preview modal:
 
-<img width="1281" height="652" alt="Log Preview" src="https://github.com/user-attachments/assets/5714396c-1a45-4293-ae51-df5893294a7c" />
+<img width="1281" height="652" alt="Log Preview" src="assets/images/guide/logs-viewer-02.png" />
 
 #### Search in Log
 
@@ -124,7 +124,7 @@ Example: `USER_DEBUG|EXCEPTION_THROWN|SOQL_EXECUTE_BEGIN`
 
 Transform your debugging experience with Agentforce-powered log analysis.
 
-<img width="1262" height="656" alt="Log Analysis" src="https://github.com/user-attachments/assets/e5b3aa35-15bc-4611-91ed-ce7bbb550f70" />
+<img width="1262" height="656" alt="Log Analysis" src="assets/images/guide/logs-viewer-03.png" />
 
 When you click **"Analyze with Agentforce"**, the system performs a deep analysis covering:
 
@@ -141,7 +141,7 @@ When you click **"Analyze with Agentforce"**, the system performs a deep analysi
 
 Customize the Agentforce analysis instructions to focus on what matters to you:
 
-<img width="1272" height="395" alt="Customized Log Analysis" src="https://github.com/user-attachments/assets/114c96e8-43b3-41dc-99cc-b7032e046e76" />
+<img width="1272" height="395" alt="Customized Log Analysis" src="assets/images/guide/logs-viewer-04.png" />
 
 **Features:**
 

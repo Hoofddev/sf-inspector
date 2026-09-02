@@ -23,7 +23,7 @@ The Flow Scanner in Salesforce Inspector Reloaded is powered by the [Lightning F
 1. **Open SF Inspector** from any Salesforce page in Safari.
 2. Navigate to a Salesforce Flow in your org.
 3. Look for the **Flow Scanner** button or option (usually available in the Inspector's UI when viewing a Flow):
-![image](https://github.com/user-attachments/assets/222f22b0-235a-4f23-b346-6e9d6f8b275b)
+![image](assets/images/guide/flow-scanner-01.png)
 
 4. Click the **Flow Scanner** button to open the scanner overlay.
 
@@ -56,7 +56,7 @@ After scanning, you'll see a results panel with:
 - **Info:** Recommendations or minor suggestions
 
 Exemple of a scan result:
-![image](https://github.com/user-attachments/assets/0a1879e1-ee4f-489b-970c-785fe8ed083f)
+![image](assets/images/guide/flow-scanner-02.png)
 
 **No Issues?**
 
@@ -82,7 +82,7 @@ You can export the scan results as a CSV file for documentation or sharing:
 - Re-run the scan for updated results.
 
 Option page:
-![image](https://github.com/user-attachments/assets/24e2b297-7d8f-4db8-b0dd-353fcd742e5f)
+![image](assets/images/guide/flow-scanner-03.png)
 
 ---
 
