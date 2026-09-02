@@ -4,7 +4,7 @@
 
 The Dependencies Explorer page allows users to analyze Salesforce metadata dependencies. It reveals what a metadata item depends on and what references it, helping with impact analysis, migration planning, and understanding complex relationships across your org.
 
-<img width="1437" height="828" alt="Dependencies Explorer" src="https://github.com/user-attachments/assets/0e3838b6-84f2-42e1-9163-6d789a4d4555" />
+<img width="1437" height="828" alt="Dependencies Explorer" src="assets/images/guide/dependencies-explorer-01.png" />
 
 ## Key Features
 

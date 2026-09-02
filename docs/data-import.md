@@ -21,10 +21,10 @@ If true for a Case or Lead, uses the default (active) assignment rule for a Case
   '{"AssignmentRuleHeader": {"useDefaultRule": true}}',
 ```
 
-<img width="503" alt="SOAP Custom Headers" src="https://github.com/user-attachments/assets/e2d21970-ddc5-4c42-a54e-ffb7ffdcb278">
+<img width="503" alt="SOAP Custom Headers" src="assets/images/guide/data-import-01.png">
 
 ## Grey out skipped columns in data import
 
 From the 'Options' tab, enable the 'Grey Out Skipped Columns in Data Import' option and perform the data import. The un-imported columns will be greyed out.
 
-<img width="571" alt="Grey out un-imported columns" src="https://github.com/user-attachments/assets/8f23f00b-0b8f-4c5b-8c92-aa97b3975daf" />
+<img width="571" alt="Grey out un-imported columns" src="assets/images/guide/data-import-02.png" />

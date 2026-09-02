@@ -1,6 +1,6 @@
 # Org Limits
 
-<img width="1443" alt="Org Limits UI" src="https://github.com/user-attachments/assets/b44a025d-e50b-4cdc-99f3-988c2126ea78">
+<img width="1443" alt="Org Limits UI" src="assets/images/guide/limits-01.png">
 
 The Org Limits page provides a comprehensive overview of your Salesforce organization's API and feature usage limits. It helps you monitor consumption, avoid hitting critical limits, and optimize your org's performance.
 

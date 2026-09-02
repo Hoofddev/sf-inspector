@@ -69,7 +69,7 @@ The import button provides multiple ways to load existing metadata configuration
 
 The metadata preview feature allows you to view the content of individual metadata files directly in your browser without downloading them first. This is particularly useful when you need to quickly inspect metadata content.
 
-<img width="309" height="67" alt="View Metadata Button" src="https://github.com/user-attachments/assets/7ba1350d-842d-49ba-b235-ec345a2451b2" />
+<img width="309" height="67" alt="View Metadata Button" src="assets/images/guide/download-metadata-01.png" />
 
 #### How to View Metadata
 
@@ -78,7 +78,7 @@ The metadata preview feature allows you to view the content of individual metada
 3. Use the "Copy" button to copy the entire metadata content to your clipboard.
 4. The preview supports various metadata types including Apex classes, triggers, custom objects, and more.
 
-<img width="678" height="714" alt="Metadata File Preview" src="https://github.com/user-attachments/assets/175f3c92-e450-4118-ade1-2af21320210c" />
+<img width="678" height="714" alt="Metadata File Preview" src="assets/images/guide/download-metadata-02.png" />
 
 #### Key Benefits
 

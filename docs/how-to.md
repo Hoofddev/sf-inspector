@@ -142,7 +142,7 @@ Notes:
 
 If you want to disable metadata search for the default (unprefixed) queries, update related option:
 
-<img width="892" alt="image" src="https://github.com/user-attachments/assets/2541fc22-9f1b-4cd1-90cd-d4615b313d96">
+<img width="892" alt="image" src="assets/images/guide/how-to-01.png">
 
 ## Compare Flow Versions
 
@@ -191,7 +191,7 @@ You can bulk deactivate flows using the Data Import feature with the Tooling API
 
 ## Add custom links to "Shortcut" tab
 
-<img width="1234" alt="Use custom shortcuts" src="https://github.com/user-attachments/assets/036045b8-133c-46c1-90d0-1db7aa81a190" />
+<img width="1234" alt="Use custom shortcuts" src="assets/images/guide/how-to-09.png" />
 
 You can add custom links to the "Shortcut" tab. By default, links are org-specific and stored in the `sfHost + "_orgLinks"` localStorage variable. The links are stored as a JSON array with the following properties:
 
@@ -245,7 +245,7 @@ To sort links:
 
 The links are stored in the browser's localStorage, so they will persist between sessions. The links are specific to each org, so you can have different links for different orgs.
 
-<img width="278" alt="Custom Link Search" src="https://github.com/user-attachments/assets/5ccd6778-4fb2-46d5-9b54-cd47cb03c7bb" />
+<img width="278" alt="Custom Link Search" src="assets/images/guide/how-to-13.png" />
 
 ### Switch between Lightning apps
 
@@ -253,11 +253,11 @@ You can add custom shortcuts to jump directly to any Lightning app — no more n
 
 In Lightning, each app has a URL you can find in the browser by copying the link. Use that relative path as the **Link** value when creating a shortcut.
 
-<img width="1325" height="454" alt="Custom shortcuts configuration for switching apps" src="https://github.com/user-attachments/assets/a0e8a68d-5e0e-4f6f-83ad-5c118eea1c6f" />
+<img width="1325" height="454" alt="Custom shortcuts configuration for switching apps" src="assets/images/guide/how-to-14.png" />
 
 Once configured, the shortcuts appear in the popup and can be triggered by typing their label in the search box:
 
-<img width="278" height="702" alt="Switching apps from the shortcut tab" src="https://github.com/user-attachments/assets/23c6f67f-16a1-406a-b443-2a67a2ee889e" />
+<img width="278" height="702" alt="Switching apps from the shortcut tab" src="assets/images/guide/how-to-15.png" />
 
 ### Switch between Classic and Lightning
 
@@ -276,7 +276,7 @@ Since Winter 24, there is a beta functionality to view a summary of the Permissi
 
 You can enable this view for the Shortcut search by enabling the option as shown below.
 
-<img width="883" alt="Enable Summary" src="https://github.com/user-attachments/assets/4487d0a4-8ed0-4467-993a-17900bc79ce6">
+<img width="883" alt="Enable Summary" src="assets/images/guide/how-to-16.png">
 
 Then when you click on a PermissionSet / PermissionSetGroups search result, you'll be redirected to the summary.
 
@@ -304,7 +304,7 @@ Since the plugin's api version is only updated when all productions have been up
 Sometimes you need to purge the ApexLogs from you org, mostly when the maximum size limit is reached.
 You can now delete all apex logs with a simple click. From the popup, select 'Org' tab and click 'Delete All ApexLogs' button.
 
-<img width="278" alt="Delete All Apex Logs" src="https://github.com/user-attachments/assets/7ba32e4d-1fdd-43e7-89cd-9c480c913211" />
+<img width="278" alt="Delete All Apex Logs" src="assets/images/guide/how-to-17.png" />
 
 ## Enable debug logs
 
@@ -327,7 +327,7 @@ You can update the debug level (configuration is per organization) and duration 
 Enable debug mode to make it easier to debug JavaScript code from Lightning components.
 Warning: Salesforce is slower for users who have debug mode enabled.
 
-<img width="278" alt="Enable Debug Mode" src="https://github.com/user-attachments/assets/f4dabb96-6b1d-48a1-828d-cc7d5da92e57" />
+<img width="278" alt="Enable Debug Mode" src="assets/images/guide/how-to-18.png" />
 
 ## Enable API Call Debug Statistics
 
@@ -343,7 +343,7 @@ From the option page, you can customize the default favicon by:
 
 The customization is linked to the org, it means you can have different colors for DEV and UAT env for example.
 
-<img width="878" alt="image" src="https://github.com/user-attachments/assets/fdf24a37-2cab-402e-a101-4a20bc4e1ae4">
+<img width="878" alt="image" src="assets/images/guide/how-to-19.png">
 
 Now if you want to populate all the orgs you visited with a custom favicon, you have two options:
 
@@ -356,9 +356,9 @@ Note: orgs with an existing customized favicon won't be affected.
 ## Customize sandbox banner color
 
 From the option page, enable "Use favicon color on sandbox banner"
-<img width="772" alt="image" src="https://github.com/user-attachments/assets/28cb7f5f-01fd-48b9-a5da-f50f6cbb2f81">
+<img width="772" alt="image" src="assets/images/guide/how-to-20.png">
 
-<img width="1087" alt="image" src="https://github.com/user-attachments/assets/f90999c2-f93e-423a-bcb7-18a8aa717a17">
+<img width="1087" alt="image" src="assets/images/guide/how-to-21.png">
 
 ## Keyboard shortcuts
 
@@ -383,7 +383,7 @@ Production environment are critical, to avoid confusion with other orgs, you can
 
 Under `User Experience` tab, enable the option `Highlight PROD with a top border (color from favicon)`.
 
-<img width="955" alt="highlight prod with a top border" src="https://github.com/user-attachments/assets/4ff26e23-08b2-447a-be8d-004488f2a3a1">
+<img width="955" alt="highlight prod with a top border" src="assets/images/guide/how-to-22.png">
 
 ## Import / Export configuration (saved query etc.)
 
@@ -391,20 +391,20 @@ Under `User Experience` tab, enable the option `Highlight PROD with a top border
 
 To export and import your current configuration, go to the options page and click the corresponding icon in the header:
 
-<img width="889" alt="Import / Export Configuration" src="https://github.com/user-attachments/assets/00428039-9b83-4c14-9a27-5e5034c52753">
+<img width="889" alt="Import / Export Configuration" src="assets/images/guide/how-to-23.png">
 
 ## Hide some buttons in the popup
 
 Since the extension offers more features, the number of button is increasing.
 Some of the users may don't need some of those, to make the popup lighter some of the buttons can be hidden:
 
-<img width="1024" alt="Hide Buttons" src="https://github.com/user-attachments/assets/50b4cb3c-7886-4b38-96a9-b5a6d93b69e6">
+<img width="1024" alt="Hide Buttons" src="assets/images/guide/how-to-24.png">
 
 ## Switch user language from the popup
 
 From the User tab in the popup, click on the user language flag to display the available languages.
 
-![2024-12-04_16-07-35 (1)](https://github.com/user-attachments/assets/d07da946-dba0-4bb4-8f3b-313392bbf557)
+![2024-12-04_16-07-35 (1)](assets/images/guide/how-to-25.gif)
 
 ## Default Popup Tab
 
@@ -506,7 +506,7 @@ Clear the SObjects List cache when:
 
 The User tab in the popup allows you to search for users across your Salesforce org. You can customize both the search fields used and apply filters to exclude certain types of users from the search results.
 
-<img width="1386" alt="User Search Customization" src="https://github.com/user-attachments/assets/f325e7b8-5b2f-4ad2-80b4-63089c770eda" />
+<img width="1386" alt="User Search Customization" src="assets/images/guide/how-to-26.png" />
 
 ### Configuring Search Fields
 
@@ -545,7 +545,7 @@ From a DeployRequest record, click on the `Generate package.xml` button to downl
 > [!NOTE]
 > If you retrieve the related metadata it may have been modified since the deployment, so you are not sure to retrieve what was deployed.
 
-<img width="1143" alt="Generate package.xml from a deployment" src="https://github.com/user-attachments/assets/4acb7422-0547-409d-9e23-d8c3176f8055" />
+<img width="1143" alt="Generate package.xml from a deployment" src="assets/images/guide/how-to-27.png" />
 
 ## Perform a field usage analysis for an SObject
 
@@ -584,7 +584,7 @@ This feature is particularly useful for:
 * Documentation and audit requirements
 * Understanding field adoption across your organization
 
-![Smart Field Usage demo](https://github.com/user-attachments/assets/ef93bf3c-8737-4a21-b38b-ce4822f8b573)
+![Smart Field Usage demo](assets/images/guide/how-to-28.gif)
 
 ## Use Agentforce to analyze formula fields
 
@@ -682,12 +682,9 @@ This feature enables a **Reset Password** button on the **User Tab** page in Sal
 * **On** – the **Reset Password** button is displayed on the **User Tab**.
 * **Off** – the **Reset Password** button is hidden.
 
-<img width="2912" height="1230" alt="Rest Password option" src="https://github.com/user-attachments/assets/0de7deaa-5800-46ef-9af4-27cfed57efa7" />
+<img width="2912" height="1230" alt="Rest Password option" src="assets/images/guide/how-to-29.png" />
 
 When enabled, the **Reset Password** button appears while inspecting a User record and allows you to reset the user’s password directly from the User Tab, without navigating to Salesforce Setup.
 
-<img width="278" height="126" alt="Reset password success" src="https://github.com/user-attachments/assets/377ea58f-d230-4d19-905e-987dce47a802" />
-
 > **Note:** If the current session does not have sufficient permissions to access user information or perform a password reset, Salesforce returns an **INSUFFICIENT_ACCESS** error.
 
-<img width="278" height="161" alt="Reset password error" src="https://github.com/user-attachments/assets/5814e9d5-f037-41af-8f84-1997ab539292" />
