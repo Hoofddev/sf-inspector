@@ -66,26 +66,43 @@ TEAM="$(security find-certificate -c "Apple Development" -p 2>/dev/null \
   | openssl x509 -noout -subject 2>/dev/null \
   | sed -n 's/.*OU=\([A-Z0-9]\{10\}\).*/\1/p')"
 
-if security find-identity -v 2>/dev/null | grep -qE "Apple Distribution|3rd Party Mac Developer Application"; then
-  HAVE_DISTRIBUTION=1
-else
-  HAVE_DISTRIBUTION=0
-fi
+# A Mac App Store submission needs two different certificates, and missing either one fails the
+# same way: the archive builds, then the export dies with a signing error. They are checked
+# together because checking only the first is what let a run get all the way to the export before
+# reporting that the second was missing.
+#
+#   Apple Distribution        signs the .app
+#   Mac Installer Distribution  signs the .pkg that wraps it
+#
+# The installer certificate is not a codesigning identity, so find-identity never lists it however
+# it is queried; it has to be looked for as a certificate.
+HAVE_APP_CERT=0
+HAVE_INSTALLER_CERT=0
+security find-identity -v 2>/dev/null \
+  | grep -qE "Apple Distribution|3rd Party Mac Developer Application" && HAVE_APP_CERT=1
+for name in "Mac Installer Distribution" "3rd Party Mac Developer Installer"; do
+  if security find-certificate -c "$name" >/dev/null 2>&1; then
+    HAVE_INSTALLER_CERT=1
+  fi
+done
 
-if [ "$HAVE_DISTRIBUTION" = "0" ] && [ "$ARCHIVE_ONLY" = "0" ]; then
+if [ "$ARCHIVE_ONLY" = "0" ] && { [ "$HAVE_APP_CERT" = "0" ] || [ "$HAVE_INSTALLER_CERT" = "0" ]; }; then
   echo >&2
-  echo "error: no distribution certificate in the keychain." >&2
+  echo "error: the keychain is missing a certificate an App Store build needs." >&2
   echo >&2
-  echo "  The keychain has:" >&2
-  security find-identity -v -p codesigning 2>/dev/null | sed 's/^/  /' >&2
+  [ "$HAVE_APP_CERT" = "1" ] \
+    && echo "  present: Apple Distribution          (signs the .app)" >&2 \
+    || echo "  MISSING: Apple Distribution          (signs the .app)" >&2
+  [ "$HAVE_INSTALLER_CERT" = "1" ] \
+    && echo "  present: Mac Installer Distribution  (signs the .pkg)" >&2 \
+    || echo "  MISSING: Mac Installer Distribution  (signs the .pkg)" >&2
   echo >&2
-  echo "  An App Store build needs an Apple Distribution certificate, which Xcode creates for you" >&2
-  echo "  once it is signed in:" >&2
+  echo "  Xcode creates either one for you:" >&2
   echo >&2
-  echo "    1. Xcode > Settings > Accounts, add your Apple ID." >&2
-  echo "    2. Select the team, then Manage Certificates, and add an Apple Distribution one." >&2
+  echo "    Xcode > Settings > Accounts > select the team > Manage Certificates," >&2
+  echo "    then the + button, and pick the missing certificate by that name." >&2
   echo >&2
-  echo "  To check that the archive itself builds before doing any of that, run:" >&2
+  echo "  To check that the archive itself builds without them, run:" >&2
   echo "    npm run safari-app-archive -- --archive-only" >&2
   exit 1
 fi
@@ -102,6 +119,7 @@ xcodebuild archive \
   -configuration Release \
   -archivePath "$ARCHIVE" \
   -derivedDataPath "$OUT/DerivedData" \
+  -allowProvisioningUpdates \
   MARKETING_VERSION="$MARKETING_VERSION" \
   DEVELOPMENT_TEAM="$TEAM" \
   >"$LOG" 2>&1
@@ -188,6 +206,7 @@ xcodebuild -exportArchive \
   -archivePath "$ARCHIVE" \
   -exportPath "$EXPORT_DIR" \
   -exportOptionsPlist "$OUT/ExportOptions.plist" \
+  -allowProvisioningUpdates \
   >"$LOG" 2>&1
 STATUS=$?
 set -e
