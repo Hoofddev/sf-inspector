@@ -79,29 +79,6 @@ test.describe("Options", () => {
       await expect(page.locator("a[role='tab']:has-text('Custom Shortcuts')")).toBeVisible();
     });
 
-    test("Toggle Option - Popup Dark Theme", async ({page, extensionId}) => {
-      await initOptionsPage(page, extensionId);
-
-      // Find Popup Dark theme checkbox by key
-      const checkbox = page.locator("input#popupDarkTheme");
-      await expect(checkbox).toBeVisible();
-
-      // Get initial state
-      const initialChecked = await checkbox.isChecked();
-
-      // Find the parent container and click the toggle span
-      const checkboxContainer = checkbox.locator("..").locator("..");
-      const toggleSpan = checkboxContainer.locator("span.slds-checkbox_faux_container");
-      await toggleSpan.click();
-
-      // Wait for state to update
-      await page.waitForTimeout(500);
-
-      // Verify state changed
-      const newChecked = await checkbox.isChecked();
-      await expect(newChecked).toBe(!initialChecked);
-    });
-
     test("MultiCheckboxButtonGroup - Show Buttons", async ({page, extensionId}) => {
       await initOptionsPage(page, extensionId);
 
@@ -527,7 +504,7 @@ test.describe("Options", () => {
       // Create test options JSON
       const testOptions = {
         "scrollOnFlowBuilder": "true",
-        "popupDarkTheme": "false"
+        "openLinksInNewTab": "false"
       };
 
       // Set up file input - create a temporary file

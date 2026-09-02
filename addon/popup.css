@@ -79,22 +79,6 @@ a > span {
   overflow-y: scroll;
 }
 
-.header-light {
-  background: var(--sfir-light-gray);
-  color: var(--sfir-dark-blue);
-}
-.header-light svg {
-  fill: var(--sfir-dark-blue);
-}
-
-.header-dark {
-  background: var(--sfir-dark-blue);
-  color: var(--sfir-light-gray);
-}
-.header-dark svg {
-  fill: var(--sfir-light-gray);
-}
-
 button,
 input {
   width: 100%;

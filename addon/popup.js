@@ -402,10 +402,9 @@ class App extends React.PureComponent {
     const browser = getBrowserType();
     const clientId = getClientId(sfHost);
     const bannerUrlAction = this.getBannerUrlAction(sessionError, sfHost, clientId, browser);
-    const popupTheme = localStorage.getItem("popupDarkTheme") == "true" ? " header-dark" : " header-light";
     return (
       h("div", {},
-        h("div", {className: "slds-page-header slds-theme_shade popup-header" + popupTheme},
+        h("div", {className: "slds-page-header slds-theme_shade popup-header"},
           h("div", {className: "slds-page-header__row"},
             h("div", {className: "slds-page-header__col-title"},
               h("div", {className: "slds-media"},

@@ -87,7 +87,6 @@ class OptionsTabSelector extends React.Component {
                 {label: "Apex Classes", name: "classes", checked: false}
               ]}
           },
-          {group: "Popup", option: Option, props: {type: "toggle", title: "Popup Dark theme", key: "popupDarkTheme"}},
           {
             group: "Popup",
             option: MultiCheckboxButtonGroup,
