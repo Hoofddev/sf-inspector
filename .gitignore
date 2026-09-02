@@ -47,3 +47,8 @@ addon/_gallery.html
 # tracked, so this ignores the image directories rather than store-assets as a whole.
 store-assets/screenshots/
 store-assets/raw/
+
+# Anything named *.local.* is machine-local and never committed. The App Review notes need the
+# demo org's credentials, and this repository is public, so the filled-in copy lives here and the
+# tracked listing keeps a placeholder.
+*.local.md

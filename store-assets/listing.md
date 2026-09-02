@@ -124,8 +124,13 @@ Reviewers get a Mac with Safari and no Salesforce account. Without a login they 
 extension, enable it, and then see nothing at all - which reads as a broken app. App Review
 guideline 2.1 requires a demo account for anything behind a sign-in.
 
-**You must create a dedicated Salesforce Developer Edition org for review** (they are free, at
-developer.salesforce.com/signup) and give its credentials below. Do not use your own org.
+**The demo org's credentials are deliberately not in this file.** This repository is public, so
+the filled-in copy lives in `store-assets/review-notes.local.md`, which is gitignored. Keep the
+placeholder below; paste the real values into App Store Connect directly.
+
+The org should be one created for review and nothing else (free, at developer.salesforce.com/signup),
+holding sample data only — App Review signs in and clicks around, and these notes tell Apple that
+is all it contains.
 
 ```
 SF Inspector is a Safari extension. It has no interface of its own beyond a first-run screen; it
