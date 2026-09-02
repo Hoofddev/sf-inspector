@@ -194,7 +194,7 @@ Each log row provides instant actions:
 
 ## Usage Instructions
 
-1. **Open the Logs Viewer**: Click on the **"Logs"** button in the Org tab of the Salesforce Inspector Reloaded popup, or navigate directly to the Debug Logs page from any Salesforce org
+1. **Open the Logs Viewer**: Click on the **"Logs"** button in the Org tab of the SF Inspector popup, or navigate directly to the Debug Logs page from any Salesforce org
 
 2. **Configure Fetch Bodies** (optional): Toggle the "Fetch Bodies" switch in the header to enable/disable fetching log bodies for detailed action information
 

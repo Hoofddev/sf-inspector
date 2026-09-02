@@ -1,6 +1,6 @@
 # How to
 
-## Use Sf Inspector with a connected app
+## Use SF Inspector with a connected app
 
 ---
 
@@ -57,7 +57,7 @@ The creation of Connected Apps is soon to be deprecated (planned for Spring 26')
 
     <img width="275" alt="Generate Token" src="assets/images/guide/how-to-05.png">
 
-## Migrate saved queries from legacy extension to Salesforce Inspector Reloaded
+## Migrate saved queries from legacy extension to SF Inspector
 
 1. Open data export page on legacy extension
    <img alt="Inspect legacy" src="../assets/images/how-to/inspect-legacy.png?raw=true" height="300">
@@ -146,7 +146,7 @@ If you want to disable metadata search for the default (unprefixed) queries, upd
 
 ## Compare Flow Versions
 
-Salesforce Inspector Reloaded provides quick access to Salesforce's Flow Compare feature, allowing you to visually compare different versions of a flow side-by-side in the Flow Builder.
+SF Inspector provides quick access to Salesforce's Flow Compare feature, allowing you to visually compare different versions of a flow side-by-side in the Flow Builder.
 
 ### What is Flow Compare?
 
@@ -162,7 +162,7 @@ For more details, see the [official Salesforce documentation](https://help.sales
 ### How to Access Flow Compare
 
 1. Open Flow Builder
-2. Open Salesforce Inspector Reloaded popup
+2. Open SF Inspector popup
 3. Look for the **Flow Compare** button (appears when viewing a flow version)
 4. Click the button to open Flow Builder with the compare view
 
@@ -332,7 +332,7 @@ Warning: Salesforce is slower for users who have debug mode enabled.
 ## Enable API Call Debug Statistics
 
 Sometimes we may want to know which queries are performed to the Salesforce backend (by type, method, endpoint ...)
-This can help to correlate logs in Salesforce and what is performed by Salesforce Inspector Reloaded extension
+This can help to correlate logs in Salesforce and what is performed by SF Inspector extension
 
 ## Customize extension's favicon
 
@@ -434,7 +434,7 @@ When disabled, no API call is made to the RecentlyViewed object, which can reduc
 
 ## API Cache Configuration
 
-Salesforce Inspector Reloaded uses a caching system to reduce the number of API calls made to Salesforce, improving performance and reducing API usage. The extension caches API response data to optimize queries and avoid unnecessary API requests.
+SF Inspector uses a caching system to reduce the number of API calls made to Salesforce, improving performance and reducing API usage. The extension caches API response data to optimize queries and avoid unnecessary API requests.
 
 All cache settings are configured in the **Cache** tab of the Options page:
 
@@ -670,11 +670,11 @@ This feature is particularly useful for:
 
 ## User Tab Toggle Reset Password button
 
-This feature enables a **Reset Password** button on the **User Tab** page in Salesforce Inspector Reloaded. The button can be displayed **on or off** from the extension **Options** page.
+This feature enables a **Reset Password** button on the **User Tab** page in SF Inspector. The button can be displayed **on or off** from the extension **Options** page.
 
 ### How it works
 
-1. Open **Salesforce Inspector Reloaded**.
+1. Open **SF Inspector**.
 2. Navigate to the **Options** page.
 3. Locate the **Enable Reset Password button on User Tab** option.
 4. Toggle the option:
