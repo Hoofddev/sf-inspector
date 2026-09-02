@@ -43,5 +43,7 @@ addon/_gallery.html
 
 # App Store screenshots. Regenerated deterministically by tests/screenshots/store.capture.js
 # (npx playwright test -c playwright.screenshots.config.js), so the PNGs are output, not source --
-# and they are ~4MB that git would keep forever.
-store-assets/
+# and they are ~4MB that git would keep forever. The listing copy beside them is source, and is
+# tracked, so this ignores the image directories rather than store-assets as a whole.
+store-assets/screenshots/
+store-assets/raw/
