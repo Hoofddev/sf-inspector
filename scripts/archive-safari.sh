@@ -59,6 +59,46 @@ echo "==> Syncing payload into the Xcode project"
 mkdir -p "$RESOURCES"
 rsync -a --delete "$PAYLOAD/" "$RESOURCES/"
 
+# The privacy manifests, checked before anything is built.
+#
+# 2.1.0 (1) was rejected during processing with ITMS-91056 on both of them. Nothing local caught
+# it: they were valid plists, plutil -lint accepted them, and the keys and types were right. The
+# only fault was an XML comment inside, which Apple's validator rejects and no local tool minds.
+#
+# That cost a build number to discover, because this check runs server-side after delivery and
+# build numbers are consumed on delivery. So it is worth a few milliseconds here.
+echo "==> Checking the privacy manifests"
+for manifest in "safari/$APP_NAME/$APP_NAME/PrivacyInfo.xcprivacy" \
+                "safari/$APP_NAME/$APP_NAME Extension/PrivacyInfo.xcprivacy"; do
+  if [ ! -f "$manifest" ]; then
+    echo "error: missing $manifest" >&2
+    exit 1
+  fi
+  if ! plutil -lint "$manifest" >/dev/null 2>&1; then
+    echo "error: $manifest is not a valid plist" >&2
+    exit 1
+  fi
+  if grep -q '<!--' "$manifest"; then
+    echo >&2
+    echo "error: $manifest contains an XML comment." >&2
+    echo >&2
+    echo "  Apple rejects this with ITMS-91056 even though the file is a valid plist and" >&2
+    echo "  plutil -lint accepts it. Explanations belong in safari/PRIVACY-MANIFESTS.md." >&2
+    exit 1
+  fi
+  # Only the four documented keys. Anything else is a typo or an invention, and both are rejected
+  # the same way -- with a build number already spent.
+  unexpected="$(plutil -convert json -o - "$manifest" 2>/dev/null \
+    | tr ',{}' '\n' | sed -n 's/^"\([A-Za-z]*\)":.*/\1/p' \
+    | grep -vxE "NSPrivacyTracking|NSPrivacyTrackingDomains|NSPrivacyCollectedDataTypes|NSPrivacyAccessedAPITypes" || true)"
+  if [ -n "$unexpected" ]; then
+    echo "error: $manifest has keys Apple does not document:" >&2
+    echo "$unexpected" | sed 's/^/    /' >&2
+    exit 1
+  fi
+  echo "    $(basename "$(dirname "$manifest")"): $(wc -c < "$manifest" | tr -d ' ') bytes, no comments, keys valid"
+done
+
 # A distribution certificate is what separates an archive that can be uploaded from one that
 # cannot, and the failure without it is late and unhelpful: the archive builds, the export fails
 # with a signing error that does not say what is missing. So it is checked first.
