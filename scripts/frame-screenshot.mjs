@@ -16,11 +16,23 @@ import {chromium} from "@playwright/test";
 import fs from "fs";
 import path from "path";
 
-const [input, output, caption] = process.argv.slice(2);
+const args = process.argv.slice(2);
+const flags = Object.fromEntries(
+  args.filter(a => a.startsWith("--"))
+    .map(a => a.replace(/^--/, "").split("="))
+    .map(([k, v]) => [k, Number(v) || 0])
+);
+const [input, output, caption] = args.filter(a => !a.startsWith("--"));
 if (!input || !output) {
-  console.error("usage: node scripts/frame-screenshot.mjs <input.png> <output.png> [\"Caption\"]");
+  console.error("usage: node scripts/frame-screenshot.mjs [--crop-top=N --crop-right=N --crop-bottom=N --crop-left=N] <input.png> <output.png> [\"Caption\"]");
   process.exit(1);
 }
+const crop = {
+  top: flags["crop-top"] || 0,
+  right: flags["crop-right"] || 0,
+  bottom: flags["crop-bottom"] || 0,
+  left: flags["crop-left"] || 0
+};
 if (!fs.existsSync(input)) {
   console.error(`no such file: ${input}`);
   process.exit(1);
@@ -57,10 +69,10 @@ await page.setContent(`<!doctype html>
   }
   figure {
     /* Fit inside the canvas with a margin, keeping the shot's own aspect ratio. */
-    max-width: 1180px; max-height: ${caption ? 760 : 800}px;
+    max-width: 1290px; max-height: ${caption ? 770 : 810}px;
     display: flex;
   }
-  img {
+  img, canvas {
     max-width: 100%; max-height: 100%;
     object-fit: contain;
     border-radius: 12px;
@@ -77,6 +89,31 @@ await page.waitForFunction(() => {
   const img = document.querySelector("img");
   return img && img.complete && img.naturalWidth > 0;
 });
+
+// Cropping happens on a canvas rather than with overflow tricks, so the framed element really is
+// the cropped region -- the fit, the rounded corner and the shadow then all apply to it, instead
+// of to a box with the unwanted strip hidden behind it.
+if (crop.top || crop.right || crop.bottom || crop.left) {
+  const cropped = await page.evaluate(box => {
+    const img = document.querySelector("img");
+    const width = img.naturalWidth - box.left - box.right;
+    const height = img.naturalHeight - box.top - box.bottom;
+    if (width <= 0 || height <= 0) {
+      return null;
+    }
+    const canvas = document.createElement("canvas");
+    canvas.width = width;
+    canvas.height = height;
+    canvas.getContext("2d").drawImage(img, box.left, box.top, width, height, 0, 0, width, height);
+    img.replaceWith(canvas);
+    return {width, height};
+  }, crop);
+  if (!cropped) {
+    console.error("  crop removes the whole image");
+    process.exit(1);
+  }
+  console.log(`  cropped to ${cropped.width}x${cropped.height}`);
+}
 await page.screenshot({path: output});
 await browser.close();
 
