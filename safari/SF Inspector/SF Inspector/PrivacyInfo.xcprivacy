@@ -2,28 +2,13 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<!--
-	  Nothing is collected and nothing is tracked.
-
-	  The extension reads the reader's own Salesforce org over Salesforce's APIs, using the session
-	  they are already signed in with, and everything it reads stays on their machine. There is no
-	  server of ours for it to reach: manifest.json grants host permissions for Salesforce domains
-	  and nothing else, so there is nowhere else it could send anything.
-
-	  Settings, saved queries and query history are kept in the browser's own storage, which is not
-	  collection: it never leaves the device.
-
-	  No API requiring a declared reason is called. The Swift side is three small files -- an app
-	  delegate, a view controller and the extension handler -- and none of them touches UserDefaults,
-	  the file system, disk space, uptime or an active keyboard.
-	-->
-	<key>NSPrivacyTracking</key>
-	<false/>
-	<key>NSPrivacyTrackingDomains</key>
+	<key>NSPrivacyAccessedAPITypes</key>
 	<array/>
 	<key>NSPrivacyCollectedDataTypes</key>
 	<array/>
-	<key>NSPrivacyAccessedAPITypes</key>
+	<key>NSPrivacyTracking</key>
+	<false/>
+	<key>NSPrivacyTrackingDomains</key>
 	<array/>
 </dict>
 </plist>
