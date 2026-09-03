@@ -7,132 +7,64 @@ recording only you can make.
 Paste the block below **both** as a reply on the App Review page **and** into the Notes field of
 App Review Information, which is what they asked for.
 
+The Notes field caps at **4000 characters**, counting spaces and punctuation. The first draft came
+to 6655 and had to be cut; `node scripts/check-review-reply.mjs` measures it.
+
 The demo account is already in the Sign-In Information fields, so the reply refers to it rather
 than repeating the password — this file is tracked in a public repository.
 
 ---
 
 ```
-Thank you for reviewing SF Inspector. Answers to each point are below, and a screen recording is
-attached.
+A screen recording is attached. Answers below.
 
 1. SCREEN RECORDING
 
-Attached. It was captured on a Mac running the current version of macOS and shows, in order:
-launching the SF Inspector app, enabling the extension in Safari's settings, granting it access to
-Salesforce domains, signing in to the demo org, opening the panel on a Salesforce page, running a
-SOQL query in Data Export, and using the flow search in Setup.
+Attached, recorded on a Mac running the current macOS. It shows launching the app, enabling the extension in Safari's settings, granting it access to Salesforce domains, signing in to the demo org, opening the panel, running a SOQL query, and using the flow search.
 
-There is no account registration, no login of our own, and no user-generated content. The app
-creates no account and stores no user content, so there is nothing to delete and no reporting or
-blocking mechanism to show. Sign-in is to the user's own Salesforce organisation, using Salesforce's
-own login page.
+No account registration and no user-generated content. The app creates no account and stores no user content, so there is nothing to delete and no reporting or blocking mechanism to show. Sign-in is to the user's own Salesforce organisation, via Salesforce's login page.
 
 2. PURPOSE AND TARGET AUDIENCE
 
-SF Inspector is a developer and administrator tool for Salesforce, delivered as a Safari extension
-for macOS.
+A developer and administrator tool for Salesforce, delivered as a Safari extension for macOS. Its audience is Salesforce administrators, developers and consultants.
 
-The audience is Salesforce administrators, developers and consultants: people who configure and
-maintain a Salesforce organisation as their job.
+Routine Salesforce work means leaving the page you are on: reading a record's raw data, exporting, or finding one flow among hundreds in a Setup list that has no search.
 
-The problem it solves is that routine work in Salesforce means leaving the page you are on. To read
-the underlying data of a record you open a separate query tool. To export records you use a
-separate client. To find a flow among hundreds you page through a list that has no search, because
-Salesforce's own Setup provides none.
-
-SF Inspector puts those tools one click away, in a panel over the page the user is already looking
-at: query and export data, import records, inspect every field on a record with its API name and
-type, download metadata, search the full flow list, build REST API calls, and check org limits.
-
-It is a productivity tool for professionals. It has no consumer use.
+SF Inspector puts those tools in a panel over that page: query and export data, import records, inspect every field with its API name and type, download metadata, search the full flow list, build REST calls, and check org limits. A professional tool with no consumer use.
 
 3. SETTING UP AND ACCESSING THE MAIN FEATURES
 
-The extension works inside Salesforce, so a Salesforce login is required to see anything. Demo
-credentials are in the Sign-In Information fields of App Review Information. The org is a Salesforce
-Developer Edition organisation provided for this review and contains sample data only.
+A Salesforce login is required. Demo credentials are in the Sign-In Information fields; that org is a Developer Edition organisation for this review, with sample data only. No sample files are needed.
 
-Setup, in order:
+The recording shows the sequence: open the SF Inspector app once, then in Safari > Settings > Extensions tick "SF Inspector" and set it to "Always Allow" on salesforce.com domains.
 
-  a. Open the SF Inspector app once. It shows a first-run screen explaining the two steps below and
-     links directly to them.
-  b. Safari > Settings > Extensions, and tick "SF Inspector".
-  c. In the same panel, set SF Inspector to "Always Allow" on salesforce.com domains.
+That last step is essential and easy to miss. Safari extensions cannot read a page until the user grants access to that site. Without it the extension loads but cannot read the Salesforce session and behaves as though nobody is signed in. This is Safari's permission model, not a defect.
 
-Step (c) is essential and easy to miss. Safari extensions cannot read a page until the user grants
-access to that site. Without it SF Inspector loads but cannot read the Salesforce session, and
-behaves as though nobody is signed in — the panel opens but reports no connection. This is Safari's
-own permission model, not a defect.
-
-  d. Sign in at https://login.salesforce.com with the demo credentials.
-  e. A small arrow appears at the right-hand edge of the page. Click it, or press Control-Option-I,
-     to open the panel.
-
-To exercise the main features:
-
-  - Data Export: from the panel, click "Data Export". Enter:
-        SELECT Id, Name FROM Account
-    and click "Run Export". Results appear in a table which can be filtered and copied as CSV,
-    Excel or JSON.
-  - Field inspection: open any Account record, then click "Show all data" in the panel. Every field
-    is listed with its API name, type, label and value.
-  - Flow search: go to Setup > Process Automation > Flows. A search box appears above the list,
-    marked with an SF Inspector badge, and filters the list as you type.
-  - Org Limits, REST Explorer, Metadata Download and Dependencies Explorer are all reachable from
-    the same panel.
-
-No sample files are needed. Data Import accepts a CSV, but no import is necessary to evaluate the
-app.
+Then sign in at https://login.salesforce.com and click the arrow at the page's right edge to open the panel. "Data Export" runs SOQL such as SELECT Id, Name FROM Account.
 
 4. EXTERNAL SERVICES, TOOLS AND PLATFORMS
 
-One, and only one: the user's own Salesforce organisation.
+One only: the user's own Salesforce organisation.
 
-The extension calls Salesforce's published REST, SOAP, Tooling and Streaming APIs directly from the
-browser, against whichever Salesforce org the user is signed in to. Its host permissions are
-restricted to Salesforce-owned domains — salesforce.com, force.com, visualforce.com,
-salesforce-setup.com, cloudforce.com and Salesforce's government and China equivalents — and no
-others. The manifest requests exactly two browser permissions: "cookies" and "storage".
+The extension calls Salesforce's published REST, SOAP, Tooling and Streaming APIs directly from the browser. Host permissions cover Salesforce-owned domains and no others, and it requests two browser permissions: "cookies" and "storage".
 
-There is no backend of ours. We operate no server, and the app sends nothing to us or to any third
-party. There is no analytics, telemetry, crash reporting or advertising SDK of any kind.
+There is no backend of ours. We operate no server and send nothing to ourselves or any third party. No analytics, telemetry, crash reporting or advertising SDK. No payment processor and no AI service.
 
-There is no authentication service, no payment processor and no AI service. Authentication is
-Salesforce's own: the extension reuses the session the browser already holds for that org, so it
-acts strictly as the signed-in user and can access nothing that user could not access already.
-Where an organisation enables API Access Control, the user configures a Salesforce Connected App
-themselves and the extension uses Salesforce's OAuth PKCE flow against it.
+Authentication is Salesforce's own: the extension reuses the session the browser already holds, so it acts strictly as the signed-in user.
 
-Third-party code is bundled and runs locally, not called as a service: React (MIT), Prism for
-syntax highlighting (MIT), CometD for Salesforce's streaming API (Apache 2.0), and Lightning Flow
-Scanner, an open-source rule engine used by the Flow Scanner feature (MIT).
+Bundled third-party code runs locally, not as a service: React, Prism, CometD and Lightning Flow Scanner, all open source under permissive licences.
 
 5. REGIONAL DIFFERENCES
 
-None. The app behaves identically in every region. It has no region-specific features, content,
-pricing tiers or restrictions, and no geographic gating of any kind.
-
-Its behaviour depends only on the Salesforce organisation the user signs in to and the permissions
-that organisation grants them, which is the same logic everywhere.
+None. Identical in every region, with no region-specific features, content, pricing or restrictions. Behaviour depends only on the Salesforce organisation the user signs in to and that user's permissions.
 
 6. REGULATED INDUSTRY AND THIRD-PARTY MATERIAL
 
-SF Inspector does not operate in a regulated industry. It is a developer tool. It provides no
-financial, medical, legal or gambling service, and handles no such data of its own — it displays
-whatever the signed-in user is already authorised to see in their own Salesforce organisation.
+Not a regulated industry. A developer tool providing no financial, medical, legal or gambling service, and handling no such data itself — it displays only what the signed-in user is already authorised to see.
 
-Regarding third-party material: SF Inspector is an independent product and is not affiliated with,
-endorsed by, or sponsored by Salesforce, Inc. The name "Salesforce" appears in the description and
-keywords only to describe what the app is compatible with, which is nominative use. The app contains
-no Salesforce code, artwork or branding.
+SF Inspector is independent and not affiliated with, endorsed by, or sponsored by Salesforce, Inc. The name "Salesforce" appears only to describe compatibility, and the app contains no Salesforce code, artwork or branding.
 
-The app is open source under the MIT licence, published at github.com/Hoofddev/sf-inspector. It is a
-fork of Salesforce Inspector Reloaded by Thomas Prouvot, also MIT licensed, and the licence and
-attribution are included in the repository and credited in the App Store description. Every bundled
-library listed in point 4 is open source under a permissive licence.
-
-Please let us know if anything further would help.
+It is open source under the MIT licence at github.com/Hoofddev/sf-inspector, a fork of Salesforce Inspector Reloaded by Thomas Prouvot, also MIT licensed.
 ```
 
 ---
