@@ -67,6 +67,31 @@ rsync -a --delete "$PAYLOAD/" "$RESOURCES/"
 #
 # That cost a build number to discover, because this check runs server-side after delivery and
 # build numbers are consumed on delivery. So it is worth a few milliseconds here.
+# The container app's entitlements, checked because removing them breaks something invisible.
+#
+# Its first-run screen is a local HTML file in a WKWebView. WKWebView in a sandboxed app needs both
+# of these to load even a bundled file: the load goes through WebKit's networking process, and
+# loadFileURL has to hand a sandbox extension for the directory to the web content process. Neither
+# is obvious from the app's own Swift, which makes no network call and opens no file -- which is
+# exactly why they were once removed as unused.
+#
+# The failure mode gives nothing away. The app launches, does not crash, logs nothing, and shows an
+# empty window: the web view is present and correctly sized, with no content in it.
+echo "==> Checking the container app's entitlements"
+for setting in ENABLE_OUTGOING_NETWORK_CONNECTIONS ENABLE_USER_SELECTED_FILES; do
+  if ! awk '/PRODUCT_BUNDLE_IDENTIFIER = be\.hoofdvogel\.sfinspector;/{found=1} found' \
+       "$PROJECT/project.pbxproj" | grep -q "$setting"; then
+    echo >&2
+    echo "error: the app target is missing $setting." >&2
+    echo >&2
+    echo "  WKWebView needs it to load the first-run screen, even though that screen is a local" >&2
+    echo "  file and the app's own code neither reaches the network nor opens a file. Without it" >&2
+    echo "  the app launches to an empty window and reports nothing wrong." >&2
+    exit 1
+  fi
+done
+echo "    network client and file read: both present"
+
 echo "==> Checking the privacy manifests"
 for manifest in "safari/$APP_NAME/$APP_NAME/PrivacyInfo.xcprivacy" \
                 "safari/$APP_NAME/$APP_NAME Extension/PrivacyInfo.xcprivacy"; do
