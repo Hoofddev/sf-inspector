@@ -1,0 +1,335 @@
+/**
+ * The documentation, in the product's own material.
+ *
+ * The extension paints its pages on a soft gradient ground and floats frosted panels on top of it.
+ * This gives the site the same treatment, so the docs, the popup, the tool pages and the app's
+ * first-run screen read as one product rather than four.
+ *
+ * Two things it deliberately does not do. It does not restyle Material's layout -- the grid, the
+ * navigation and the responsive behaviour stay as they are, and fighting them would only make this
+ * brittle across theme updates. And it does not thin the glass to the point where text sits on
+ * whatever happens to be behind it: every surface carrying body copy is opaque enough to hold it,
+ * which is what separates this from the version of the effect that cannot be read.
+ *
+ * Values are defined per colour scheme rather than with light-dark(), because Material switches
+ * schemes with a data attribute of its own and a manual toggle would not move a light-dark() pair.
+ */
+
+/* ==================================================================================================
+ * Tokens
+ * ================================================================================================ */
+
+:root,
+[data-md-color-scheme="default"] {
+  --md-primary-fg-color:        #0071e3;
+  --md-primary-fg-color--light: #3d9bff;
+  --md-primary-fg-color--dark:  #0062c4;
+  --md-accent-fg-color:         #0063c7;
+  --md-typeset-a-color:         #0063c7;
+
+  --md-default-fg-color:          #11151c;
+  --md-default-fg-color--light:   #3c4350;
+  --md-default-fg-color--lighter: #666d7a;
+  --md-default-bg-color:          #f4f2fb;
+
+  --md-code-fg-color: #11151c;
+  --md-code-bg-color: rgba(255, 255, 255, .74);
+
+  /* The footer is glass rather than a dark bar, so its text cannot stay light. */
+  --md-footer-fg-color:         #11151c;
+  --md-footer-fg-color--light:  #3c4350;
+  --md-footer-fg-color--lighter: #666d7a;
+  --md-footer-bg-color:         transparent;
+  --md-footer-bg-color--dark:   transparent;
+
+  /* The material itself. Panel backgrounds stay well above half opacity: the ground beneath is a
+     gradient, and text on anything thinner starts to swim. */
+  --sfi-glass-bg:     rgba(255, 255, 255, .78);
+  --sfi-glass-strong: rgba(255, 255, 255, .90);
+  --sfi-glass-border: rgba(255, 255, 255, .90);
+  --sfi-glass-lip:    inset 0 1px 0 rgba(255, 255, 255, .95);
+  --sfi-glass-blur:   saturate(150%) blur(28px);
+  --sfi-shadow:       0 1px 2px rgba(60, 50, 90, .06), 0 8px 24px rgba(60, 50, 90, .08);
+  --sfi-hairline:     rgba(60, 50, 90, .10);
+}
+
+[data-md-color-scheme="slate"] {
+  --md-primary-fg-color:        #0a84ff;
+  --md-primary-fg-color--light: #6cb6ff;
+  --md-primary-fg-color--dark:  #0062c4;
+  --md-accent-fg-color:         #6cb6ff;
+  --md-typeset-a-color:         #6cb6ff;
+
+  --md-default-fg-color:          #f2f2f7;
+  --md-default-fg-color--light:   #c7c7cc;
+  --md-default-fg-color--lighter: #98989f;
+  --md-default-bg-color:          #16161a;
+
+  --md-code-fg-color: #f2f2f7;
+  --md-code-bg-color: rgba(255, 255, 255, .05);
+
+  --md-footer-fg-color:         #f2f2f7;
+  --md-footer-fg-color--light:  #c7c7cc;
+  --md-footer-fg-color--lighter: #98989f;
+  --md-footer-bg-color:         transparent;
+  --md-footer-bg-color--dark:   transparent;
+
+  --sfi-glass-bg:     rgba(38, 38, 44, .74);
+  --sfi-glass-strong: rgba(38, 38, 44, .88);
+  --sfi-glass-border: rgba(255, 255, 255, .07);
+  --sfi-glass-lip:    inset 0 1px 0 rgba(255, 255, 255, .05);
+  --sfi-glass-blur:   saturate(150%) blur(28px);
+  --sfi-shadow:       0 1px 2px rgba(0, 0, 0, .3), 0 8px 24px rgba(0, 0, 0, .34);
+  --sfi-hairline:     rgba(255, 255, 255, .10);
+}
+
+/* ==================================================================================================
+ * The ground
+ * ================================================================================================ */
+
+/* Painted on html rather than body, and fixed, so the mesh stays put while the page scrolls --
+   the same arrangement the extension's pages use.
+ *
+ * The colours are written out here rather than read from the scheme's variables, and the dark
+ * ground is selected by reaching down to body with :has(). Material puts data-md-color-scheme on
+ * body, and custom properties inherit downward only, so html never sees the scheme's tokens: a
+ * var() here resolves against :root and stays light whatever the reader chose. That shipped once --
+ * a light ground behind a dark panel -- and a selector of "[data-md-color-scheme] html" cannot fix
+ * it either, because html is never a descendant of anything. */
+html {
+  background-color: #f4f2fb;
+  background-image:
+    radial-gradient(74rem 56rem at 2% 4%,    rgba(168, 148, 255, .30), transparent 70%),
+    radial-gradient(64rem 50rem at 98% 2%,   rgba(255, 176, 156, .24), transparent 68%),
+    radial-gradient(66rem 50rem at 46% 114%, rgba(140, 226, 214, .22), transparent 64%),
+    radial-gradient(46rem 40rem at 88% 58%,  rgba(176, 200, 255, .20), transparent 66%);
+  background-attachment: fixed;
+}
+
+html:has(body[data-md-color-scheme="slate"]) {
+  background-color: #16161a;
+  background-image:
+    radial-gradient(74rem 56rem at 2% 4%,    rgba(120, 100, 220, .24), transparent 70%),
+    radial-gradient(64rem 50rem at 98% 2%,   rgba(210, 130, 120, .18), transparent 68%),
+    radial-gradient(66rem 50rem at 46% 114%, rgba(90, 180, 175, .16),  transparent 64%),
+    radial-gradient(46rem 40rem at 88% 58%,  rgba(110, 140, 210, .14), transparent 66%);
+}
+
+/* The ground shows through everything above it. */
+body,
+.md-main,
+.md-container,
+.md-content {
+  background: none;
+}
+
+/* ==================================================================================================
+ * Chrome
+ * ================================================================================================ */
+
+.md-header {
+  background-color: var(--sfi-glass-bg);
+  -webkit-backdrop-filter: var(--sfi-glass-blur);
+  backdrop-filter: var(--sfi-glass-blur);
+  border-bottom: 1px solid var(--sfi-hairline);
+  box-shadow: none;
+  color: var(--md-default-fg-color);
+}
+
+.md-tabs {
+  background: none;
+  color: var(--md-default-fg-color);
+}
+
+/* Search sits in the header, so it needs to read as a control on glass rather than a hole in it. */
+.md-search__form {
+  border-radius: .6rem;
+  background-color: var(--sfi-glass-strong);
+  box-shadow: none;
+}
+
+.md-search__form:hover {
+  background-color: var(--sfi-glass-strong);
+}
+
+.md-search__input::placeholder,
+.md-search__icon {
+  color: var(--md-default-fg-color--lighter);
+}
+
+.md-search__output {
+  border-radius: .6rem;
+}
+
+/* ==================================================================================================
+ * The reading surface
+ * ================================================================================================ */
+
+/* The page itself is the panel: one sheet of glass carrying the prose, floating on the mesh. */
+.md-content__inner {
+  margin-bottom: 2rem;
+  padding: 1.6rem 2rem 2rem;
+  border: 1px solid var(--sfi-glass-border);
+  border-radius: 1rem;
+  background-color: var(--sfi-glass-bg);
+  -webkit-backdrop-filter: var(--sfi-glass-blur);
+  backdrop-filter: var(--sfi-glass-blur);
+  box-shadow: var(--sfi-shadow), var(--sfi-glass-lip);
+}
+
+/* Material's edit button hangs off the top-right corner and lands on the panel's border. */
+.md-content__button {
+  margin: 1.2rem .4rem 0 0;
+}
+
+/* The navigation columns are not panels: they sit on the ground so the mesh reads as one field
+   behind the whole page rather than as a strip between two cards. */
+.md-sidebar {
+  background: none;
+}
+
+/* Material keeps a sticky nav title legible by painting the page's own background behind it, plus
+   a spread shadow of the same colour to hide whatever scrolls underneath. On a flat background that
+   is invisible; on a gradient it stamps a rectangle of one flat colour across the mesh, which is
+   what it did here.
+ *
+ * These are Material's own three selectors, matched exactly. A first attempt used .md-nav__title
+ * and .md-nav__link--active, which lose on specificity to .md-nav--secondary .md-nav__title and to
+ * the four-class chain behind the lifted active link, so nothing changed.
+ *
+ * Scoped to the width at which the sidebars appear. Below it, the same title is the drawer's
+   header, sliding over the page content -- there it genuinely needs to be opaque. */
+@media screen and (min-width: 76.25em) {
+  .md-nav--primary .md-nav__title,
+  .md-nav--secondary .md-nav__title,
+  .md-nav--lifted > .md-nav__list > .md-nav__item--active > .md-nav__link {
+    background-color: transparent;
+    box-shadow: none;
+  }
+}
+
+/* ==================================================================================================
+ * Components
+ * ================================================================================================ */
+
+.md-typeset pre > code,
+.md-typeset > .highlight {
+  border-radius: .6rem;
+}
+
+.md-typeset code {
+  border-radius: .35rem;
+}
+
+.md-typeset .admonition,
+.md-typeset details {
+  border: 1px solid var(--sfi-hairline);
+  border-radius: .75rem;
+  background-color: var(--sfi-glass-strong);
+  box-shadow: none;
+}
+
+.md-typeset table:not([class]) {
+  border: 1px solid var(--sfi-hairline);
+  border-radius: .75rem;
+  background-color: var(--sfi-glass-strong);
+  box-shadow: none;
+}
+
+.md-typeset table:not([class]) th {
+  background-color: transparent;
+}
+
+/* Screenshots carry their own edges, so they get a hairline and the same corner as everything
+   else rather than sitting flat on the panel. */
+.md-typeset img {
+  border: 1px solid var(--sfi-hairline);
+  border-radius: .6rem;
+}
+
+.md-footer {
+  background-color: var(--sfi-glass-bg);
+  -webkit-backdrop-filter: var(--sfi-glass-blur);
+  backdrop-filter: var(--sfi-glass-blur);
+  color: var(--md-default-fg-color);
+}
+
+.md-footer-meta {
+  background: none;
+  border-top: 1px solid var(--sfi-hairline);
+}
+
+/* Material's footer is normally light text on a dark bar. The bar is glass now, so the text has to
+   come with it -- left as it was, the copyright line sat at 1:1 against its own background and was
+   simply not there. */
+.md-footer-meta,
+.md-copyright,
+.md-copyright__highlight,
+.md-footer-meta .md-footer__link,
+.md-footer-meta a {
+  color: var(--md-default-fg-color--light);
+}
+
+.md-footer-meta a:hover {
+  color: var(--md-typeset-a-color);
+}
+
+/* Material's slate syntax colours sit at about 3:1 against a dark code block -- readable as
+   decoration, marginal as text. These are the same hues the extension's own code viewer uses,
+   pitched to clear 4.5:1 on this ground. Only the tokens that fell short are changed; the rest of
+   the palette is Material's. */
+[data-md-color-scheme="slate"] .highlight .nt,
+[data-md-color-scheme="slate"] .highlight .nc,
+[data-md-color-scheme="slate"] .highlight .nf { color: #6fc6e8; }
+
+[data-md-color-scheme="slate"] .highlight .s,
+[data-md-color-scheme="slate"] .highlight .s1,
+[data-md-color-scheme="slate"] .highlight .s2,
+[data-md-color-scheme="slate"] .highlight .na { color: #8bd97a; }
+
+[data-md-color-scheme="slate"] .highlight .ni,
+[data-md-color-scheme="slate"] .highlight .o { color: #d6b48c; }
+
+[data-md-color-scheme="slate"] .highlight .cp,
+[data-md-color-scheme="slate"] .highlight .c,
+[data-md-color-scheme="slate"] .highlight .c1 { color: #9aa7b4; }
+
+/* ==================================================================================================
+ * Type
+ * ================================================================================================ */
+
+body,
+input,
+.md-typeset {
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, "Helvetica Neue", sans-serif;
+}
+
+code,
+kbd,
+pre,
+.md-typeset code {
+  font-family: ui-monospace, "SF Mono", SFMono-Regular, Menlo, monospace;
+}
+
+.md-typeset h1,
+.md-typeset h2,
+.md-typeset h3 {
+  font-weight: 600;
+  letter-spacing: -.018em;
+}
+
+.md-typeset h1 {
+  color: var(--md-default-fg-color);
+}
+
+/* Backdrop blur is expensive to composite and does nothing for someone who has asked for less
+   movement and fewer effects; the surfaces stay, the blur goes. */
+@media (prefers-reduced-transparency: reduce) {
+  .md-header,
+  .md-content__inner,
+  .md-footer {
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    background-color: var(--sfi-glass-strong);
+  }
+}
