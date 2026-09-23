@@ -2,6 +2,8 @@
 
 Salesforce productivity tools for Safari on macOS.
 
+Download on the app store for safari here: https://apps.apple.com/be/app/sf-inspector/id6807771786?mt=12
+
 Inspect and edit any record's fields inline, run SOQL exports, import data, browse and
 download metadata, explore the REST API, read debug logs and watch platform events —
 without leaving the Salesforce tab you are already in.
