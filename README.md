@@ -2,14 +2,11 @@
 
 Salesforce productivity tools for Safari on macOS.
 
-Download on the app store for safari here: https://apps.apple.com/be/app/sf-inspector/id6807771786?mt=12
+**[Download SF Inspector on the Mac App Store](https://apps.apple.com/app/id6807771786)**
 
 Inspect and edit any record's fields inline, run SOQL exports, import data, browse and
 download metadata, explore the REST API, read debug logs and watch platform events —
 without leaving the Salesforce tab you are already in.
-
-> **Available on the [Mac App Store](https://apps.apple.com/app/id6807771786).** See
-> [Install](#install).
 
 ## Why this exists
 
@@ -45,8 +42,8 @@ Plus setup shortcuts, user search and quick links from the popup on any Salesfor
 
 ## Install
 
-[**Get SF Inspector on the Mac App Store**](https://apps.apple.com/app/id6807771786) — a
-one-time purchase, with no account or subscription. Requires macOS 14.5 or later.
+SF Inspector is on the Mac App Store, linked at the top of this page. It is a one-time
+purchase, with no account or subscription, and requires macOS 14.5 or later.
 
 After installing, open *Safari → Settings → Extensions*, turn on SF Inspector, and allow it
 on your Salesforce domains. It cannot read anything until you do.
