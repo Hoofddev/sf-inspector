@@ -6,8 +6,8 @@ Inspect and edit any record's fields inline, run SOQL exports, import data, brow
 download metadata, explore the REST API, read debug logs and watch platform events —
 without leaving the Salesforce tab you are already in.
 
-> **Status:** working, not yet released. A signed build is being prepared for the Mac App
-> Store. Until then, see [Building from source](#building-from-source).
+> **Available on the [Mac App Store](https://apps.apple.com/app/id6807771786).** See
+> [Install](#install).
 
 ## Why this exists
 
@@ -43,8 +43,14 @@ Plus setup shortcuts, user search and quick links from the popup on any Salesfor
 
 ## Install
 
-The Mac App Store build is in preparation. It will be a one-time purchase: a signed,
-notarised app that installs in one click and updates itself.
+[**Get SF Inspector on the Mac App Store**](https://apps.apple.com/app/id6807771786) — a
+one-time purchase, with no account or subscription. Requires macOS 14.5 or later.
+
+After installing, open *Safari → Settings → Extensions*, turn on SF Inspector, and allow it
+on your Salesforce domains. It cannot read anything until you do.
+
+Updates arrive through the App Store. If you would rather not pay, the source is all here —
+see [Building from source](#building-from-source).
 
 ## Building from source
 
