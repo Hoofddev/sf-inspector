@@ -1,9 +1,121 @@
-/* global React ReactDOM field-creator.js */
+/* global React ReactDOM field-manager.js */
 import {sfConn, apiVersion} from "./inspector.js";
 import {PageHeader} from "./components/PageHeader.js";
-import {UserInfoModel, createSpinForMethod, getSobjectsList, Constants, applyProductionStyling} from "./utils.js";
+import Toast from "./components/Toast.js";
+import {UserInfoModel, createSpinForMethod, getSobjectsList, Constants, applyProductionStyling, copyToClipboard} from "./utils.js";
 
 let h = React.createElement;
+
+// Types this page can create.
+const FIELD_TYPES = [
+  "Checkbox", "Currency", "Date", "DateTime", "Email", "Location", "Number",
+  "Percent", "Phone", "Picklist", "MultiselectPicklist", "Text", "TextArea",
+  "LongTextArea", "Html", "Url"
+];
+
+// Types that can only be retrieved from an existing object, never created here: creating them needs
+// information this page does not collect (relationship target, summarized field, formula, ...).
+// Editing an existing field only ever changes Label, Description and Help Text (see updateField), so
+// that is safe for any of them. These must never be offered in the create flow.
+const RETRIEVE_ONLY_FIELD_TYPES = {
+  AutoNumber: "Auto Number",
+  Lookup: "Lookup",
+  MasterDetail: "Master-Detail",
+  Summary: "Roll-Up Summary",
+  EncryptedText: "Text (Encrypted)",
+  MetadataRelationship: "Metadata Relationship",
+  ExternalLookup: "External Lookup",
+  IndirectLookup: "Indirect Lookup",
+  Hierarchy: "Hierarchy",
+  Time: "Time"
+};
+
+function csvEscape(value, separator = ",") {
+  const str = value === undefined || value === null ? "" : String(value);
+  const needsQuoting = str.includes(separator) || str.includes("\"") || str.includes("\n");
+  return needsQuoting ? `"${str.replace(/"/g, "\"\"")}"` : str;
+}
+
+// The Tooling API rejects writes where a Metadata sub-field is explicitly null
+// ("Cannot deserialize instance of complexvalue from VALUE_NULL") for several compound properties
+// (formula, defaultValue, valueSet, ...). Those have to be left out of the payload, not sent as null.
+// Nested objects (valueSet, its picklist values, ...) are cleaned the same way: an absent property
+// means the same to the Metadata API as a null one, so dropping them changes nothing else.
+function stripNulls(value) {
+  if (Array.isArray(value)) {
+    return value.filter(item => item !== null).map(stripNulls);
+  }
+  if (value && typeof value === "object") {
+    const result = {};
+    Object.keys(value).forEach(key => {
+      if (value[key] !== null) {
+        result[key] = stripNulls(value[key]);
+      }
+    });
+    return result;
+  }
+  return value;
+}
+
+// Runs `fn` over `items` with at most `limit` requests in flight at once.
+async function mapWithConcurrency(items, limit, fn) {
+  const results = new Array(items.length);
+  let nextIndex = 0;
+  async function worker() {
+    while (nextIndex < items.length) {
+      const index = nextIndex++;
+      results[index] = await fn(items[index], index);
+    }
+  }
+  await Promise.all(new Array(Math.min(limit, items.length)).fill().map(worker));
+  return results;
+}
+
+// Info and confirmation dialogs, in the same modal style as the page's Options and Permissions modals.
+class MessageModal extends React.Component {
+  componentDidMount() {
+    window.addEventListener("keydown", this.onKeyDown, true);
+  }
+
+  componentWillUnmount() {
+    window.removeEventListener("keydown", this.onKeyDown, true);
+  }
+
+  onKeyDown = (e) => {
+    if (e.key === "Escape" || e.key === "Esc") {
+      e.stopPropagation();
+      this.props.onClose();
+    }
+  };
+
+  render() {
+    const {id, title, children, buttons, onClose} = this.props;
+    return h("div", {className: "modalBlackBase", id, role: "dialog", "aria-modal": "true", "aria-labelledby": `${id}-title`, onClick: onClose},
+      h("div", {className: "modal-dialog maxWidth600 maxHeight90vh overflowYAuto", onClick: (e) => e.stopPropagation()},
+        h("div", {className: "modal-content flexColumn"},
+          h("div", {className: "modal-header flexSpaceBetween alignItemsCenter marginBottom15"},
+            h("h1", {className: "modal-title", id: `${id}-title`}, title),
+            h("button", {
+              type: "button",
+              "aria-label": "Close",
+              className: "close cursorPointer backgroundNone borderNone fontSize1_5 fontWeightBold",
+              onClick: onClose
+            }, "×")
+          ),
+          h("div", {className: "modal-body"}, children),
+          h("div", {className: "modal-footer marginTop15 flexEnd borderTop1SolidE5 padding10_0_0_0"},
+            buttons.map(button => h("button", {
+              key: button.label,
+              type: "button",
+              className: "btn " + (button.variant === "primary" ? "btn-primary highlighted" : "btn-secondary"),
+              onClick: button.onClick
+            }, button.label))
+          )
+        )
+      )
+    );
+  }
+}
 
 class ProfilesModal extends React.Component {
   constructor(props) {
@@ -332,7 +444,8 @@ class FieldOptionModal extends React.Component {
                   name: "checkboxDefault",
                   value: "checked",
                   checked: field.checkboxDefault === "checked",
-                  onChange: this.handleInputChange
+                  onChange: this.handleInputChange,
+                  disabled: !!field.isExisting
                 }),
                 " Checked"
               )
@@ -344,7 +457,8 @@ class FieldOptionModal extends React.Component {
                   name: "checkboxDefault",
                   value: "unchecked",
                   checked: field.checkboxDefault === "unchecked",
-                  onChange: this.handleInputChange
+                  onChange: this.handleInputChange,
+                  disabled: !!field.isExisting
                 }),
                 " Unchecked"
               )
@@ -364,7 +478,8 @@ class FieldOptionModal extends React.Component {
               className: "form-control input-textBox",
               placeholder: "Max is 18 - Decimal Places",
               value: field.precision,
-              onChange: this.handleInputChange
+              onChange: this.handleInputChange,
+              disabled: !!field.isExisting
             })
           ),
           h("div", {className: "form-group"},
@@ -376,7 +491,8 @@ class FieldOptionModal extends React.Component {
               className: "form-control input-textBox",
               placeholder: "Max is 18 - Length",
               value: field.decimal,
-              onChange: this.handleInputChange
+              onChange: this.handleInputChange,
+              disabled: !!field.isExisting
             })
           ),
           this.renderDescriptionAndHelpText(),
@@ -406,7 +522,8 @@ class FieldOptionModal extends React.Component {
                   name: "geodisplay",
                   value: "degrees",
                   checked: field.geodisplay === "degrees",
-                  onChange: this.handleInputChange
+                  onChange: this.handleInputChange,
+                  disabled: !!field.isExisting
                 }),
                 " Degrees, Minutes, Seconds"
               )
@@ -418,7 +535,8 @@ class FieldOptionModal extends React.Component {
                   name: "geodisplay",
                   value: "decimal",
                   checked: field.geodisplay === "decimal",
-                  onChange: this.handleInputChange
+                  onChange: this.handleInputChange,
+                  disabled: !!field.isExisting
                 }),
                 " Decimal"
               )
@@ -432,7 +550,8 @@ class FieldOptionModal extends React.Component {
               name: "decimal",
               className: "form-control input-textBox",
               value: field.decimal,
-              onChange: this.handleInputChange
+              onChange: this.handleInputChange,
+              disabled: !!field.isExisting
             })
           ),
           this.renderDescriptionAndHelpText(),
@@ -451,7 +570,8 @@ class FieldOptionModal extends React.Component {
               className: "form-control input-textBox",
               placeholder: "Max is 18 less Decimal Places",
               value: field.precision,
-              onChange: this.handleInputChange
+              onChange: this.handleInputChange,
+              disabled: !!field.isExisting
             })
           ),
           h("div", {className: "form-group"},
@@ -463,7 +583,8 @@ class FieldOptionModal extends React.Component {
               className: "form-control input-textBox",
               placeholder: "Max is 18 less Length",
               value: field.decimal,
-              onChange: this.handleInputChange
+              onChange: this.handleInputChange,
+              disabled: !!field.isExisting
             })
           ),
           this.renderDescriptionAndHelpText(),
@@ -484,7 +605,8 @@ class FieldOptionModal extends React.Component {
               rows: "5",
               placeholder: "Enter picklist values separated by line breaks.",
               value: field.picklistvalues,
-              onChange: this.handleInputChange
+              onChange: this.handleInputChange,
+              disabled: !!field.isExisting
             })
           ),
           h("div", {className: "checkbox"},
@@ -494,7 +616,8 @@ class FieldOptionModal extends React.Component {
                 id: `${field.type.toLowerCase()}SortAlpha`,
                 name: "sortalpha",
                 checked: field.sortalpha,
-                onChange: this.handleInputChange
+                onChange: this.handleInputChange,
+                disabled: !!field.isExisting
               }),
               " Sort values alphabetically"
             )
@@ -506,7 +629,8 @@ class FieldOptionModal extends React.Component {
                 id: `${field.type.toLowerCase()}FirstValueDefault`,
                 name: "firstvaluedefault",
                 checked: field.firstvaluedefault,
-                onChange: this.handleInputChange
+                onChange: this.handleInputChange,
+                disabled: !!field.isExisting
               }),
               " Use first value as default"
             )
@@ -520,7 +644,8 @@ class FieldOptionModal extends React.Component {
               className: "form-control input-textBox",
               placeholder: "This field is required.",
               value: field.vislines,
-              onChange: this.handleInputChange
+              onChange: this.handleInputChange,
+              disabled: !!field.isExisting
             })
           ),
           this.renderDescriptionAndHelpText(),
@@ -538,7 +663,8 @@ class FieldOptionModal extends React.Component {
               className: "form-control input-textBox",
               placeholder: "Max is 255 characters.",
               value: field.length ?? 255,
-              onChange: this.handleInputChange
+              onChange: this.handleInputChange,
+              disabled: !!field.isExisting
             })
           ),
           this.renderDescriptionAndHelpText(),
@@ -565,7 +691,8 @@ class FieldOptionModal extends React.Component {
               className: "form-control input-textBox",
               placeholder: "Max is 131,072 characters.",
               value: field.length,
-              onChange: this.handleInputChange
+              onChange: this.handleInputChange,
+              disabled: !!field.isExisting
             })
           ),
           h("div", {className: "form-group"},
@@ -577,14 +704,23 @@ class FieldOptionModal extends React.Component {
               className: "form-control input-textBox",
               placeholder: "This field is required.",
               value: field.vislines,
-              onChange: this.handleInputChange
+              onChange: this.handleInputChange,
+              disabled: !!field.isExisting
             })
           ),
           this.renderDescriptionAndHelpText()
         );
 
       default:
-        return null;
+        // Retrieve-only types (Lookup, Master-Detail, Roll-Up Summary, Auto Number, ...) have no
+        // type-specific inputs here: only Label, Description and Help Text are ever saved for them.
+        if (!field.isExisting) {
+          return null;
+        }
+        return h("div", {className: `field_options ${field.type}_options`},
+          this.renderDescriptionAndHelpText(),
+          this.renderRequiredCheckbox()
+        );
     }
   };
 
@@ -644,7 +780,8 @@ class FieldOptionModal extends React.Component {
           id: "required",
           name: "required",
           checked: field.required,
-          onChange: this.handleInputChange
+          onChange: this.handleInputChange,
+          disabled: !!field.isExisting
         }),
         "Required"
       )
@@ -660,7 +797,8 @@ class FieldOptionModal extends React.Component {
           id: "unique",
           name: "uniqueSetting",
           checked: field.uniqueSetting,
-          onChange: this.handleInputChange
+          onChange: this.handleInputChange,
+          disabled: !!field.isExisting
         }),
         "Unique"
       )
@@ -676,7 +814,8 @@ class FieldOptionModal extends React.Component {
           id: "externalId",
           name: "external",
           checked: field.external,
-          onChange: this.handleInputChange
+          onChange: this.handleInputChange,
+          disabled: !!field.isExisting
         }),
         "External ID"
       )
@@ -711,6 +850,9 @@ class FieldOptionModal extends React.Component {
       h("div", {
         className: "modal-body padding10_0_20_0 maxHeightCalc90vh-150px overflowYAuto"
       },
+      this.state.field.isExisting && h("p", {className: "existingFieldNotice"},
+        "This field already exists on the object. Only Label, Description and Help Text can be changed here; the other attributes are shown for reference."
+      ),
       this.renderFieldOptions()
       ),
       h("div", {
@@ -737,7 +879,7 @@ class FieldOptionModal extends React.Component {
 class FieldRow extends React.Component {
 
   getAvailableFieldTypes() {
-    const {selectedObject} = this.props;
+    const {selectedObject, field} = this.props;
 
     // All available field types
     const allFieldTypes = [
@@ -759,6 +901,12 @@ class FieldRow extends React.Component {
       {value: "Url", label: "URL"}
     ];
 
+    // A retrieved field can have a type this page cannot create (Lookup, Master-Detail, ...). Only
+    // that row's (disabled) select gets it, so it displays correctly; new rows never offer it.
+    if (field.isExisting && RETRIEVE_ONLY_FIELD_TYPES[field.type]) {
+      return [...allFieldTypes, {value: field.type, label: RETRIEVE_ONLY_FIELD_TYPES[field.type]}];
+    }
+
     // Platform events have limited field types
     if (this.props.isPlatformEvent(selectedObject)) {
       const allowedForPlatformEvents = this.props.getAllowedPlatformEventFieldTypes();
@@ -770,7 +918,8 @@ class FieldRow extends React.Component {
   }
 
   render() {
-    document.title = "Field Creator";
+    document.title = "Field Manager";
+    const isExisting = !!this.props.field.isExisting;
 
     let deploymentStatus;
     switch (this.props.field.deploymentStatus) {
@@ -805,7 +954,9 @@ class FieldRow extends React.Component {
     return (
       h("tr", null,
         h("td", {className: "slds-text-align_center slds-align-middle"},
-          h("div", {className: "slds-text-align_center slds-align-middle"},
+          // Cloning a retrieved field would create a new field with the same API name, which the org
+          // rejects as a duplicate, so only new rows can be cloned.
+          !isExisting && h("div", {className: "slds-text-align_center slds-align-middle"},
             h("svg", {
               className: "slds-button slds-icon_x-small slds-icon-text-default slds-m-top_xxx-small cursorPointer width20px",
               viewBox: "0 0 52 52",
@@ -828,6 +979,10 @@ class FieldRow extends React.Component {
         ),
         h("td", {className: "slds-align-middle"},
           h("div", {className: "flexCenter"},
+            isExisting && h("span", {
+              className: "slds-badge existingBadge",
+              title: "Retrieved from the object's metadata"
+            }, "Existing"),
             h("input", {
               type: "text",
               className: "input-textBox",
@@ -843,7 +998,8 @@ class FieldRow extends React.Component {
               type: "text",
               className: "input-textBox",
               placeholder: "Field name...",
-              value: this.props.field.name,
+              value: isExisting ? `${this.props.field.name}__c` : this.props.field.name,
+              disabled: isExisting,
               onChange: (e) => this.props.onNameChange(this.props.index, e.target.value)
             })
           )
@@ -853,6 +1009,7 @@ class FieldRow extends React.Component {
             h("select", {
               className: "form-control",
               value: this.props.field.type,
+              disabled: isExisting,
               onChange: (e) => this.props.onTypeChange(this.props.index, e.target.value)
             },
             this.getAvailableFieldTypes().map(fieldType =>
@@ -889,6 +1046,58 @@ class FieldRow extends React.Component {
 }
 
 class FieldsTable extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      sortColumn: null,
+      sortDirection: "asc"
+    };
+  }
+
+  onSortClick = (column) => {
+    this.setState(prevState => ({
+      sortColumn: column,
+      sortDirection: prevState.sortColumn === column && prevState.sortDirection === "asc" ? "desc" : "asc"
+    }));
+  };
+
+  // Sorting only changes the display order; each row keeps its index into the fields array, which is
+  // what every row callback (delete, clone, label change, ...) addresses.
+  getSortedIndexedFields() {
+    const {sortColumn, sortDirection} = this.state;
+    const indexedFields = this.props.fields.map((field, index) => ({field, index}));
+    if (!sortColumn) {
+      return indexedFields;
+    }
+    const direction = sortDirection === "asc" ? 1 : -1;
+    return indexedFields.sort((a, b) => {
+      const valueA = String(a.field[sortColumn] || "").toLowerCase();
+      const valueB = String(b.field[sortColumn] || "").toLowerCase();
+      if (valueA < valueB) return -1 * direction;
+      if (valueA > valueB) return 1 * direction;
+      return 0;
+    });
+  }
+
+  renderSortableHeader(label, column) {
+    const {sortColumn, sortDirection} = this.state;
+    const isActive = sortColumn === column;
+    return h("th", {"aria-sort": isActive ? (sortDirection === "asc" ? "ascending" : "descending") : "none"},
+      h("a", {
+        href: "#",
+        role: "button",
+        className: "sortableHeader cursorPointer userSelectNone",
+        title: `Sort by ${label}`,
+        onClick: (e) => { e.preventDefault(); this.onSortClick(column); }
+      },
+      label,
+      isActive && h("svg", {className: "sortIcon", "aria-hidden": "true"},
+        h("use", {xlinkHref: `symbols.svg#${sortDirection === "asc" ? "arrowup" : "arrowdown"}`, className: "fillBlue"})
+      )
+      )
+    );
+  }
+
   render() {
     return (
       h("div", {className: "slds-scrollable_x tab"},
@@ -900,16 +1109,16 @@ class FieldsTable extends React.Component {
           h("tr", null,
             h("th", null),
             h("th", null),
-            h("th", null, "Label"),
-            h("th", null, "API Name (__c)"),
-            h("th", null, "Type"),
+            this.renderSortableHeader("Label", "label"),
+            this.renderSortableHeader("API Name (__c)", "name"),
+            this.renderSortableHeader("Type", "type"),
             h("th", null, "Options"),
             h("th", null, "Permissions"),
             h("th", null)
           )
         ),
         h("tbody", null,
-          this.props.fields.map((field, index) =>
+          this.getSortedIndexedFields().map(({field, index}) =>
             h(FieldRow, {
               key: index,
               index,
@@ -958,7 +1167,16 @@ class App extends React.Component {
       fieldErrorMessage: "",
       errorMessageClickable: false,
       filteredObjects: [],
-      includeManagedPackage: localStorage.getItem("fieldCreatorIncludeManaged") === "true"
+      // The storage key predates the rename to Field Manager; it is kept so the setting survives it.
+      includeManagedPackage: localStorage.getItem("fieldCreatorIncludeManaged") === "true",
+      // Deliberately not remembered: overwriting existing fields is opted into per visit, so a
+      // switch left on last time cannot carry over into a session on another org.
+      allowFieldUpdates: false,
+      showUpdateConfirmModal: false,
+      pendingDeployFields: null,
+      infoModal: null,
+      isRetrievingFields: false,
+      toast: null
     };
 
     // Initialize spinFor method
@@ -1000,7 +1218,7 @@ class App extends React.Component {
     this.onSobjectsListRefreshed = (e) => {
       if (e.detail?.sfHost === this.sfHost) {
         const layoutableObjects = e.detail.sobjectsList.filter(obj =>
-          obj.layoutable === true || (obj.keyPrefix && obj.keyPrefix.startsWith("e"))
+          obj.layoutable === true || (obj.keyPrefix && obj.keyPrefix.startsWith("e")) || obj.name.endsWith("__mdt")
         );
         this.setState({objects: layoutableObjects});
       }
@@ -1010,6 +1228,7 @@ class App extends React.Component {
 
   componentWillUnmount() {
     window.removeEventListener(Constants.SOBJECTS_LIST_REFRESHED_EVENT, this.onSobjectsListRefreshed);
+    clearTimeout(this.toastTimer);
   }
 
   handleObjectSearch = (e) => {
@@ -1067,11 +1286,16 @@ class App extends React.Component {
   handleObjectSelect = (obj) => {
     let objectName = obj.name;
 
+    // Fields retrieved from a previously selected object no longer apply
+    let updatedFields = this.state.fields.filter(field => !field.isExisting);
+    if (updatedFields.length === 0) {
+      updatedFields = [{label: "", name: "", type: "Text"}];
+    }
+
     // If switching to a platform event, validate and reset field types that aren't allowed
-    let updatedFields = this.state.fields;
     if (this.isPlatformEvent(obj)) {
       const allowedTypesForPE = this.getAllowedPlatformEventFieldTypes();
-      updatedFields = this.state.fields.map(field => {
+      updatedFields = updatedFields.map(field => {
         if (!allowedTypesForPE.includes(field.type)) {
           return {...field, type: "Text"}; // Default to Text for invalid types
         }
@@ -1091,6 +1315,10 @@ class App extends React.Component {
     const includeManagedPackage = e.target.checked;
     localStorage.setItem("fieldCreatorIncludeManaged", includeManagedPackage);
     this.setState({includeManagedPackage});
+  };
+
+  onUpdateAllowFieldUpdates = (e) => {
+    this.setState({allowFieldUpdates: e.target.checked});
   };
 
 
@@ -1222,6 +1450,38 @@ class App extends React.Component {
       });
   }
 
+  // Updates only Label, Description and Help Text of a field retrieved with Retrieve Fields. It starts
+  // from the untouched Metadata captured at retrieval (field.rawMetadata) and overrides just those
+  // three, so every other attribute -- type, length, picklist values, required, unique, external id
+  // -- is sent back exactly as it already is on the org.
+  updateField(field, objectName) {
+    const isForPlatformEvent = this.isPlatformEvent(this.state.selectedObject);
+
+    const updatedMetadata = {
+      ...stripNulls(field.rawMetadata || {}),
+      label: field.label,
+      description: field.description
+    };
+    if (!isForPlatformEvent) {
+      updatedMetadata.inlineHelpText = field.helptext;
+    }
+    // The Tooling API reads a Roll-Up Summary's operation back in lower case ("count") but rejects
+    // that spelling on write with JSON_PARSER_ERROR; it only accepts the upper-case constant.
+    if (typeof updatedMetadata.summaryOperation === "string") {
+      updatedMetadata.summaryOperation = updatedMetadata.summaryOperation.toUpperCase();
+    }
+
+    return sfConn.rest(`/services/data/v${apiVersion}/tooling/sobjects/CustomField/${field.fieldId}`, {
+      method: "PATCH",
+      body: {Metadata: updatedMetadata}
+    })
+      .then(() => this.setFieldPermissions(field, field.fieldId, objectName))
+      .catch(error => {
+        console.error("Error updating field:", error);
+        throw error;
+      });
+  }
+
   mapFieldType(uiType) {
     const typeMap = {
       "Checkbox": "Checkbox",
@@ -1249,9 +1509,9 @@ class App extends React.Component {
       // Get sobjects list (from cache or fetched from API)
       const sobjectsList = await getSobjectsList(this.sfHost);
 
-      // Filter for layoutable objects (objects that can have layouts or platform events)
+      // Filter for layoutable objects (objects that can have layouts), platform events and custom metadata types
       const layoutableObjects = sobjectsList.filter(obj =>
-        obj.layoutable === true || (obj.keyPrefix && obj.keyPrefix.startsWith("e")) //add layoutable objects and PE objects
+        obj.layoutable === true || (obj.keyPrefix && obj.keyPrefix.startsWith("e")) || obj.name.endsWith("__mdt")
       );
 
       this.setState({objects: layoutableObjects});
@@ -1278,6 +1538,158 @@ class App extends React.Component {
       });
   };
 
+  // Reverse of createField()'s Metadata construction: turns a retrieved CustomField Tooling API record
+  // into the row shape used by the fields table. At deploy time only label, description and helptext
+  // are read back out of the row (see updateField); rawMetadata stays the source of truth for the
+  // rest, so an imperfect reverse mapping here cannot corrupt the field.
+  mapMetadataToUiField(record, objectName) {
+    const metadata = record.Metadata || {};
+    const type = metadata.type;
+    const field = {
+      label: metadata.label || record.DeveloperName,
+      name: record.DeveloperName,
+      type,
+      description: metadata.description || "",
+      helptext: metadata.inlineHelpText || "",
+      required: metadata.required || false,
+      isExisting: true,
+      fieldId: record.Id,
+      fullName: `${objectName}.${record.DeveloperName}__c`,
+      rawMetadata: metadata
+    };
+
+    switch (type) {
+      case "Checkbox":
+        field.checkboxDefault = metadata.defaultValue === true || metadata.defaultValue === "true" ? "checked" : "unchecked";
+        break;
+
+      case "Currency":
+      case "Number":
+      case "Percent": {
+        const scale = metadata.scale || 0;
+        field.decimal = scale;
+        field.precision = Math.max((metadata.precision || 0) - scale, 0);
+        if (type === "Number") {
+          field.uniqueSetting = metadata.unique || false;
+          field.external = metadata.externalId || false;
+        }
+        break;
+      }
+
+      case "Location":
+        field.geodisplay = metadata.displayLocationInDecimal ? "decimal" : "degrees";
+        field.decimal = metadata.scale || 0;
+        break;
+
+      case "Picklist":
+      case "MultiselectPicklist": {
+        const valueSetDefinition = metadata.valueSet && metadata.valueSet.valueSetDefinition;
+        const values = valueSetDefinition ? sfConn.asArray(valueSetDefinition.value) : [];
+        field.picklistvalues = values.map(v => v.fullName).join("\n");
+        field.sortalpha = !!(valueSetDefinition && valueSetDefinition.sorted);
+        field.firstvaluedefault = values.length > 0 && values[0].default === true;
+        if (type === "MultiselectPicklist") {
+          field.vislines = metadata.visibleLines || 4;
+        }
+        break;
+      }
+
+      case "Email":
+        field.uniqueSetting = metadata.unique || false;
+        field.external = metadata.externalId || false;
+        break;
+
+      case "Text":
+        field.length = metadata.length || 255;
+        field.uniqueSetting = metadata.unique || false;
+        field.external = metadata.externalId || false;
+        break;
+
+      case "LongTextArea":
+      case "Html":
+        field.length = metadata.length || 32768;
+        field.vislines = metadata.visibleLines || 6;
+        break;
+
+      default:
+        break;
+    }
+
+    return field;
+  }
+
+  retrieveFields = () => {
+    const {selectedObject, isRetrievingFields} = this.state;
+    if (!selectedObject || this.isPlatformEvent(selectedObject) || isRetrievingFields) {
+      return;
+    }
+    this.setState({isRetrievingFields: true});
+    this.spinFor(this.performRetrieveFields());
+  };
+
+  performRetrieveFields = async () => {
+    const {selectedObject, fields} = this.state;
+
+    try {
+      // Filter on the object's API name through EntityDefinition rather than on TableEnumOrId:
+      // TableEnumOrId holds the 01I Id for custom objects, and the cached sObject list does not
+      // always carry that Id (durableId), so matching it against the name found nothing.
+      const objectName = selectedObject.name.replace(/'/g, "");
+      // The Tooling API rejects a query selecting the Metadata compound field once more than one row
+      // matches, so list the Ids first and then fetch each field's Metadata on its own.
+      const listQuery = `SELECT Id FROM CustomField WHERE EntityDefinition.QualifiedApiName = '${objectName}'`;
+      const listData = await sfConn.rest(`/services/data/v${apiVersion}/tooling/query?q=${encodeURIComponent(listQuery)}`);
+      const ids = (listData.records || []).map(r => r.Id);
+
+      if (ids.length === 0) {
+        this.showInfoModal("Retrieve Fields", "No custom fields found on this object.");
+        return;
+      }
+
+      const records = await mapWithConcurrency(ids, 5, id =>
+        sfConn.rest(`/services/data/v${apiVersion}/tooling/sobjects/CustomField/${id}`)
+      );
+
+      const existingNames = new Set(fields.filter(f => f.isExisting).map(f => f.name));
+      const retrieved = [];
+      let skipped = 0;
+
+      records.forEach(record => {
+        const type = record.Metadata && record.Metadata.type;
+        if (!type || !(FIELD_TYPES.includes(type) || RETRIEVE_ONLY_FIELD_TYPES[type])) {
+          skipped++;
+          return;
+        }
+        if (existingNames.has(record.DeveloperName)) {
+          return;
+        }
+        retrieved.push(this.mapMetadataToUiField(record, selectedObject.name));
+      });
+
+      if (retrieved.length === 0) {
+        this.showInfoModal("Retrieve Fields", skipped > 0
+          ? `No editable fields retrieved. ${skipped} field(s) were skipped (type not supported by this tool).`
+          : "No new fields to retrieve.");
+        return;
+      }
+
+      this.setState(prevState => {
+        const isBlankPlaceholder = f => !f.isExisting && !f.label && !f.name;
+        const remainingFields = prevState.fields.filter(f => !isBlankPlaceholder(f));
+        return {fields: [...remainingFields, ...retrieved]};
+      });
+
+      if (skipped > 0) {
+        this.showInfoModal("Retrieve Fields", `${retrieved.length} field(s) retrieved. ${skipped} field(s) were skipped (type not supported by this tool).`);
+      }
+    } catch (error) {
+      console.error("Error retrieving fields:", error);
+      this.setState({fieldErrorMessage: "Error retrieving fields for this object."});
+    } finally {
+      this.setState({isRetrievingFields: false});
+    }
+  };
+
   addRow = () => {
     this.setState((prevState) => ({
       fields: [...prevState.fields, {label: "", name: "", type: "Text"}],
@@ -1296,6 +1708,11 @@ class App extends React.Component {
       const clonedField = {...prevState.fields[index]};
       delete clonedField.deploymentStatus;
       delete clonedField.deploymentError;
+      // A clone is always a brand new field, independent of any retrieved field it came from
+      delete clonedField.isExisting;
+      delete clonedField.fieldId;
+      delete clonedField.fullName;
+      delete clonedField.rawMetadata;
 
       return {
         fields: [...prevState.fields, clonedField],
@@ -1326,7 +1743,10 @@ class App extends React.Component {
       fields: prevState.fields.map((field, i) => {
         if (i === index) {
           field.label = label;
-          field.name = this.formatApiName(label);
+          // A retrieved field's API name is fixed; only new fields derive it from the label
+          if (!field.isExisting) {
+            field.name = this.formatApiName(label);
+          }
           delete field.deploymentStatus;
           delete field.deploymentError;
         }
@@ -1386,7 +1806,7 @@ class App extends React.Component {
   };
 
   importCsv = () => {
-    const {importCsvContent} = this.state;
+    const {importCsvContent, fields} = this.state;
     // Helper function to detect the separator
     const detectSeparator = (content) => {
       const potentialSeparators = [",", ";", "\t", "|"];
@@ -1411,31 +1831,103 @@ class App extends React.Component {
     const separator = detectSeparator(importCsvContent);
     const lines = importCsvContent.split("\n");
     const newFields = [];
+    // {index in the current fields array, label, description, helptext}
+    const updatesByIndex = [];
     let hasError = false;
-    const validTypes = [
-      "Checkbox", "Currency", "Date", "DateTime", "Email", "Location", "Number",
-      "Percent", "Phone", "Picklist", "MultiselectPicklist", "Text", "TextArea",
-      "LongTextArea", "Html", "Url"
-    ];
+
+    // Skip a leading header row, e.g. pasted back from "Copy CSV" / "Copy Excel"
+    const isHeaderRow = (line) => {
+      const [label, name, type] = line.split(separator).map(item => (item || "").trim().toLowerCase());
+      return label === "label" && name === "name" && type === "type";
+    };
+
     lines.forEach((line, index) => {
-      const [label, name, type] = line.split(separator).map(item => item.trim());
+      if (index === 0 && isHeaderRow(line)) {
+        return;
+      }
+      const [label, name, type, description, helptext] = line.split(separator).map(item => (item || "").trim());
       if (label && name && type) {
-        if (validTypes.includes(type)) {
-          newFields.push({label, name, type});
+        // A row naming a retrieved field updates that field. Only its Label, Description and Help
+        // Text are ever written back (see updateField), so its type does not have to be creatable.
+        const existingIndex = fields.findIndex(f => f.isExisting && f.name === name);
+        if (existingIndex !== -1) {
+          updatesByIndex.push({index: existingIndex, label, description, helptext});
+        } else if (FIELD_TYPES.includes(type)) {
+          newFields.push({label, name, type, description: description || "", helptext: helptext || ""});
         } else {
           this.setState({importError: `Invalid type "${type}" on line ${index + 1}`});
           hasError = true;
         }
       }
     });
+
     if (!hasError) {
-      this.setState(prevState => ({
-        fields: [...prevState.fields, ...newFields],
-        showImportModal: false,
-        importCsvContent: "",
-        importError: ""
-      }));
+      this.setState(prevState => {
+        const updatedFields = [...prevState.fields];
+        updatesByIndex.forEach(({index, label, description, helptext}) => {
+          updatedFields[index] = {
+            ...updatedFields[index],
+            label,
+            description: description || "",
+            helptext: helptext || ""
+          };
+          delete updatedFields[index].deploymentStatus;
+          delete updatedFields[index].deploymentError;
+        });
+        // Drop the initial blank placeholder row so imported fields don't leave it dangling
+        const isBlankPlaceholder = f => !f.isExisting && !f.label && !f.name;
+        const remainingFields = updatedFields.filter(f => !isBlankPlaceholder(f));
+        return {
+          fields: [...remainingFields, ...newFields],
+          showImportModal: false,
+          importCsvContent: "",
+          importError: ""
+        };
+      });
     }
+  };
+
+  exportFieldsCsv = (separator = ",") => {
+    const header = ["Label", "Name", "Type", "Description", "HelpText"];
+    const rows = this.state.fields
+      .filter(field => field.label || field.name)
+      .map(field => [field.label, field.name, field.type, field.description, field.helptext]);
+    return [header, ...rows].map(row => row.map(value => csvEscape(value, separator)).join(separator)).join("\n");
+  };
+
+  downloadFieldsCsv = () => {
+    const csv = this.exportFieldsCsv();
+    const objectName = this.state.selectedObject ? this.state.selectedObject.name : "fields";
+    const url = URL.createObjectURL(new Blob([csv], {type: "text/csv"}));
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${objectName}-fields.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    // Revoked on the next tick: revoking synchronously can cancel the download before it starts.
+    setTimeout(() => URL.revokeObjectURL(url), 0);
+  };
+
+  copyFieldsCsv = () => {
+    copyToClipboard(this.exportFieldsCsv());
+    this.showToast("success", "Fields copied to the clipboard as CSV.");
+  };
+
+  copyFieldsExcel = () => {
+    copyToClipboard(this.exportFieldsCsv("\t"));
+    this.showToast("success", "Fields copied to the clipboard as tab-separated values.");
+  };
+
+  showToast = (variant, title, message = "") => {
+    clearTimeout(this.toastTimer);
+    this.setState({toast: {variant, title, message}});
+    this.toastTimer = setTimeout(() => this.setState({toast: null}), 4000);
+  };
+
+  hideToast = () => {
+    clearTimeout(this.toastTimer);
+    this.setState({toast: null});
   };
 
   onShowDeploymentStatus = (index) => {
@@ -1528,7 +2020,8 @@ class App extends React.Component {
   };
 
   checkAllFieldsHavePermissions = () => {
-    if (this.state.fields.every(field => field.profiles && field.profiles.length > 0)) {
+    // Retrieved fields already have their field-level security; only new fields need it set here
+    if (this.state.fields.filter(field => !field.isExisting).every(field => field.profiles && field.profiles.length > 0)) {
       this.setState({allFieldsHavePermissions: true});
       return true;
     } else {
@@ -1537,18 +2030,68 @@ class App extends React.Component {
     }
   };
 
+  // A retrieved field only needs saving when something this page writes back has changed; an
+  // untouched one is left alone rather than re-sent to the org.
+  isExistingFieldModified = (field) => {
+    const raw = field.rawMetadata || {};
+    return (field.label || "") !== (raw.label || field.name || "")
+      || (field.description || "") !== (raw.description || "")
+      || (field.helptext || "") !== (raw.inlineHelpText || "")
+      || (Array.isArray(field.profiles) && field.profiles.length > 0);
+  };
+
   deploy = () => {
-    const {fields} = this.state;
+    const {fields, allowFieldUpdates} = this.state;
     this.checkAllFieldsHavePermissions();
-    const fieldsToProcess = fields.filter(field => field.deploymentStatus !== "success");
+    let fieldsToProcess = fields.filter(field => field.deploymentStatus !== "success"
+      && (!field.isExisting || this.isExistingFieldModified(field)));
 
     if (fieldsToProcess.length === 0) {
-      alert("All fields have already been successfully deployed.");
+      this.showInfoModal("Deploy Fields", fields.some(field => field.isExisting)
+        ? "Nothing to deploy: no new fields, and no changes to the retrieved fields."
+        : "All fields have already been successfully deployed.");
       return;
     }
 
+    const updatesPending = fieldsToProcess.filter(field => field.isExisting);
+
+    if (updatesPending.length > 0 && !allowFieldUpdates) {
+      fieldsToProcess = fieldsToProcess.filter(field => !field.isExisting);
+      if (fieldsToProcess.length === 0) {
+        this.showInfoModal("Deploy Fields", `${updatesPending.length} existing field(s) have pending changes, but "Allow updating existing fields" is off. Turn it on to save those changes.`);
+        return;
+      }
+      this.showInfoModal(
+        "Deploy Fields",
+        `${updatesPending.length} existing field(s) will be skipped because "Allow updating existing fields" is off. Only new fields will be deployed.`,
+        () => this.runDeploy(fieldsToProcess)
+      );
+      return;
+    }
+
+    if (updatesPending.length > 0) {
+      this.setState({showUpdateConfirmModal: true, pendingDeployFields: fieldsToProcess});
+      return;
+    }
+
+    this.runDeploy(fieldsToProcess);
+  };
+
+  confirmDeployUpdates = () => {
+    const {pendingDeployFields} = this.state;
+    this.setState({showUpdateConfirmModal: false, pendingDeployFields: null});
+    this.runDeploy(pendingDeployFields);
+  };
+
+  cancelDeployUpdates = () => {
+    this.setState({showUpdateConfirmModal: false, pendingDeployFields: null});
+  };
+
+  runDeploy = (fieldsToProcess) => {
+    const {fields} = this.state;
+
     const updatedFields = fields.map(field =>
-      field.deploymentStatus !== "success"
+      fieldsToProcess.includes(field)
         ? {...field, deploymentStatus: "pending"}
         : field
     );
@@ -1556,7 +2099,11 @@ class App extends React.Component {
 
     fieldsToProcess.forEach((field) => {
       const index = fields.findIndex(f => f === field);
-      this.createField(field, this.state.selectedObject.name)
+      const deployPromise = field.isExisting
+        ? this.updateField(field, this.state.selectedObject.name)
+        : this.createField(field, this.state.selectedObject.name);
+
+      deployPromise
         .then(() => {
           const newFields = [...this.state.fields];
           newFields[index].deploymentStatus = "success";
@@ -1571,15 +2118,29 @@ class App extends React.Component {
     });
   };
 
+  showInfoModal = (title, message, onAfterClose) => {
+    this.setState({infoModal: {title, message, onAfterClose}});
+  };
+
+  closeInfoModal = () => {
+    const {onAfterClose} = this.state.infoModal || {};
+    this.setState({infoModal: null});
+    if (onAfterClose) {
+      onAfterClose();
+    }
+  };
+
   render() {
-    const {fields, showModal, showProfilesModal, currentFieldIndex, selectedObject} = this.state;
+    const {fields, showModal, showProfilesModal, currentFieldIndex, selectedObject, isRetrievingFields, toast} = this.state;
+    const hasRetrievedFields = fields.some(field => field.isExisting);
+    const exportTitle = hasRetrievedFields ? null : "Retrieve fields before exporting the table";
 
     return (
       h("div", {onClick: () => this.setState({
         filteredObjects: []
       })},
       h(PageHeader, {
-        pageTitle: "Field Creator",
+        pageTitle: "Field Manager",
         orgName: this.orgName,
         sfLink: this.sfLink,
         sfHost: this.sfHost,
@@ -1591,9 +2152,9 @@ class App extends React.Component {
             className: "slds-builder-header__utilities-item slds-p-top_x-small slds-p-horizontal_x-small sfir-border-none"
           },
           h("a", {
-            href: "https://github.com/Hoofddev/sf-inspector#field-creator",
+            href: "https://github.com/Hoofddev/sf-inspector#field-manager",
             target: "_blank",
-            title: "Field Creator Help",
+            title: "Field Manager Help",
             className: "slds-button slds-button_icon slds-button_icon-border-filled"
           },
           h("svg", {className: "slds-button__icon", "aria-hidden": "true"},
@@ -1642,7 +2203,7 @@ class App extends React.Component {
             )
           ),
           h("br", null),
-          h("div", {className: "flexSpaceBetween alignItemsCenter marginBottom15"},
+          h("div", {className: "toggleRow alignItemsCenter marginBottom15"},
             h("label", {className: "slds-checkbox_toggle max-width-small"},
               h("input", {type: "checkbox", checked: this.state.includeManagedPackage, onChange: this.onUpdateManagedPackageSelection}),
               h("span", {className: "slds-checkbox_faux_container center-label"},
@@ -1650,17 +2211,43 @@ class App extends React.Component {
                 h("span", {className: "slds-checkbox_on"}, "Managed packages included"),
                 h("span", {className: "slds-checkbox_off"}, "Managed packages excluded"),
               )
+            ),
+            h("label", {className: "slds-checkbox_toggle max-width-small", title: "When off, changes to fields fetched with Retrieve Fields are skipped on deploy instead of saved"},
+              h("input", {type: "checkbox", id: "allow_field_updates", checked: this.state.allowFieldUpdates, onChange: this.onUpdateAllowFieldUpdates}),
+              h("span", {className: "slds-checkbox_faux_container center-label"},
+                h("span", {className: "slds-checkbox_faux"}),
+                h("span", {className: "slds-checkbox_on"}, "Updating existing fields allowed"),
+                h("span", {className: "slds-checkbox_off"}, "Updating existing fields off"),
+              )
             )
           ),
           h("div", {className: "col-xs-12 text-center", id: "deploy"},
             h("button", {"aria-label": "Clear Button", className: "btn btn-large", onClick: this.clearAll}, "Clear All"),
             h("button", {"aria-label": "Open Import modal button", className: "btn btn-large", onClick: this.openImportModal}, "Import"),
-            h("button", {"disabled": !this.state.selectedObject, "aria-label": "Deploy Button", className: "btn btn-large highlighted", onClick: this.deploy}, "Deploy Fields"),
+            h("button", {
+              id: "retrieve_fields",
+              disabled: !selectedObject || this.isPlatformEvent(selectedObject) || isRetrievingFields,
+              title: this.isPlatformEvent(selectedObject)
+                ? "Retrieving fields isn't supported for Platform Events"
+                : "Fetch this object's custom fields to edit their Label, Description and Help Text",
+              "aria-label": "Retrieve object fields button",
+              className: "btn btn-large",
+              onClick: this.retrieveFields
+            }, isRetrievingFields ? "Retrieving..." : "Retrieve Fields"),
+            h("button", {"disabled": !this.state.selectedObject || isRetrievingFields, "aria-label": "Deploy Button", className: "btn btn-large highlighted", onClick: this.deploy}, "Deploy Fields"),
             !this.state.allFieldsHavePermissions && !this.isPlatformEvent(selectedObject) && h("p", {className: "errorText"}, "Some fields are missing permissions."),
           )
         )
       ),
       h("div", {className: "area table"},
+        h("div", {className: "tableToolbar"},
+          h("span", {className: "tableCount"}, `Fields (${fields.length})`),
+          h("div", {className: "tableToolbarActions"},
+            h("button", {id: "download_fields_csv", disabled: !hasRetrievedFields, title: exportTitle || "Download the fields table as a CSV file", "aria-label": "Download fields as CSV button", className: "btn btn-sm", onClick: this.downloadFieldsCsv}, "Download CSV"),
+            h("button", {id: "copy_fields_csv", disabled: !hasRetrievedFields, title: exportTitle || "Copy the fields table to the clipboard as CSV", "aria-label": "Copy fields as CSV button", className: "btn btn-sm", onClick: this.copyFieldsCsv}, "Copy CSV"),
+            h("button", {id: "copy_fields_excel", disabled: !hasRetrievedFields, title: exportTitle || "Copy the fields table as tab-separated values, to paste into Excel or Numbers", "aria-label": "Copy fields as Excel button", className: "btn btn-sm", onClick: this.copyFieldsExcel}, "Copy Excel")
+          )
+        ),
         h(FieldsTable, {
           fields,
           selectedObject,
@@ -1703,7 +2290,7 @@ class App extends React.Component {
               className: "closeButton"
             }, "×")
           ),
-          h("p", null, "Enter " + (localStorage.getItem("csvSeparator") || ",") + "  separated values of Label, ApiName, Type."),
+          h("p", null, "Enter " + (localStorage.getItem("csvSeparator") || ",") + "  separated values of Label, ApiName, Type, and optionally Description and HelpText, or paste rows copied with Copy CSV / Copy Excel. A row whose ApiName matches a field fetched with Retrieve Fields updates that field's Label, Description and Help Text instead of adding a new row."),
           h("textarea", {
             value: this.state.importCsvContent,
             onChange: this.handleImportCsvChange,
@@ -1755,7 +2342,43 @@ class App extends React.Component {
           )
           )
         )
-      ))
+      )),
+
+      this.state.showUpdateConfirmModal && h(MessageModal, {
+        id: "updateConfirmModal",
+        title: "Update Existing Fields",
+        onClose: this.cancelDeployUpdates,
+        buttons: [
+          {label: "Cancel", onClick: this.cancelDeployUpdates},
+          {label: "Update", variant: "primary", onClick: this.confirmDeployUpdates}
+        ]
+      },
+      h("p", {className: "existingFieldNotice"},
+        "This overwrites the Label, Description and Help Text of the existing field(s) below on "
+          + (selectedObject ? selectedObject.name : "") + ". Everything else about them is sent back unchanged. This cannot be undone from this page."
+      ),
+      h("ul", {className: "slds-list_dotted"},
+        (this.state.pendingDeployFields || []).filter(f => f.isExisting).map(f =>
+          h("li", {key: f.fullName || f.name}, `${f.label} (${f.name}__c)`)
+        )
+      )
+      ),
+
+      this.state.infoModal && h(MessageModal, {
+        id: "infoModal",
+        title: this.state.infoModal.title,
+        onClose: this.closeInfoModal,
+        buttons: [{label: "OK", variant: "primary", onClick: this.closeInfoModal}]
+      },
+      h("p", {}, this.state.infoModal.message)
+      ),
+
+      toast && h(Toast, {
+        variant: toast.variant,
+        title: toast.title,
+        message: toast.message,
+        onClose: this.hideToast
+      })
       )
     );
   }

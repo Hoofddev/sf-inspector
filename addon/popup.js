@@ -131,7 +131,7 @@ class App extends React.PureComponent {
       exportHref: "data-export.html?" + hostArg,
       importHref: "data-import.html?" + hostArg,
       eventMonitorHref: "event-monitor.html?" + hostArg,
-      fieldCreatorHref: "field-creator.html?" + hostArg,
+      fieldManagerHref: "field-manager.html?" + hostArg,
       limitsHref: "limits.html?" + hostArg,
       apiStatisticsHref: "api-statistics.html?" + hostArg,
       latestNotesViewed:
@@ -280,7 +280,7 @@ class App extends React.PureComponent {
       e: ["click", "dataExportBtn"],
       i: ["click", "dataImportBtn"],
       l: ["click", "limitsBtn"],
-      t: ["click", "fieldCreatorBtn"],
+      t: ["click", "fieldManagerBtn"],
       d: ["click", "metaRetrieveBtn"],
       x: ["click", "apiExploreBtn"],
       h: ["click", "homeBtn"],
@@ -394,7 +394,7 @@ class App extends React.PureComponent {
       exportHref,
       importHref,
       eventMonitorHref,
-      fieldCreatorHref,
+      fieldManagerHref,
       limitsHref,
       apiStatisticsHref,
       isFieldsPresent,
@@ -547,12 +547,15 @@ class App extends React.PureComponent {
               h(
                 "a",
                 {
-                  ref: "fieldCreatorBtn",
-                  href: fieldCreatorHref,
+                  ref: "fieldManagerBtn",
+                  href: fieldManagerHref,
                   target: linkTarget,
                   className: "page-button slds-button slds-button_neutral",
+                  // The shortcut stays "t" from when this was Field Creator, so existing users keep it.
+                  // "Field Manager" has no t to underline, so the tooltip is where it shows.
+                  title: "Shortcut: t",
                 },
-                h("span", {}, "Field Crea", h("u", {}, "t"), "or")
+                h("span", {}, "Field Manager")
               )
             ),
             h("div", {className: "slds-col slds-size_1-of-1 slds-p-horizontal_xx-small  slds-m-bottom_xx-small"},
@@ -1094,7 +1097,7 @@ class AllDataBox extends React.PureComponent {
 
   /**
    * Check if sobjects should be loaded
-   * Only load in popup/button context (when inInspector is false), not when embedded in data-export, field-creator, etc.
+   * Only load in popup/button context (when inInspector is false), not when embedded in data-export, field-manager, etc.
    * @returns {boolean} True if Objects tab is active and popup is expanded, or if preload option is enabled and popup is not yet expanded
    */
   shouldLoadSobjects() {

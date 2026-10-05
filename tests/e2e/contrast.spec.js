@@ -37,7 +37,7 @@ test.describe("Contrast", () => {
     {name: "explore-api", url: `explore-api.html?host=${mockHost}`},
     {name: "event-monitor", url: `event-monitor.html?host=${mockHost}`},
     {name: "dependencies-explorer", url: `dependencies-explorer.html?host=${mockHost}`},
-    {name: "field-creator", url: `field-creator.html?host=${mockHost}`},
+    {name: "field-manager", url: `field-manager.html?host=${mockHost}`},
     {name: "api-statistics", url: `api-statistics.html?host=${mockHost}`},
     {name: "inspect", url: `inspect.html?host=${mockHost}&objectType=Account&recordId=${accountRecordId}`},
     {name: "debug-log", url: `debug-log.html?host=${mockHost}`},
