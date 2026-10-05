@@ -1,6 +1,6 @@
 /* global React ReactDOM */
 import {sfConn, apiVersion} from "./inspector.js";
-import {UserInfoModel, createSpinForMethod, isRecordId, generatePackageXml} from "./utils.js";
+import {UserInfoModel, createSpinForMethod, createChangeGuard, isRecordId, generatePackageXml} from "./utils.js";
 import {PageHeader} from "./components/PageHeader.js";
 /* global initButton */
 
@@ -2827,11 +2827,24 @@ class App extends React.Component {
     let root = document.getElementById("root");
     let model = new Model(sfHost, args);
     window.sfConn = sfConn;
+    // Only re-run Prism when the JSON debug content changed, not on every unrelated render.
+    // The panel is unmounted when hidden and remounted when shown, so the first render after it
+    // becomes visible always highlights, even when the content equals what the guard saw before.
+    let jsonDebugHighlightGuard = createChangeGuard();
+    let wasJsonDebugVisible = false;
     model.reactCallback = cb => {
       ReactDOM.render(h(App, {model}), root, () => {
         if (window.Prism && model.showJsonDebug) {
-          window.Prism.highlightAll();
+          let signature = JSON.stringify(model.getJsonDebugData());
+          if (!wasJsonDebugVisible) {
+            window.Prism.highlightAll();
+            // Record what was just highlighted, so the next render does not highlight it again.
+            jsonDebugHighlightGuard(signature, () => {});
+          } else {
+            jsonDebugHighlightGuard(signature, () => window.Prism.highlightAll());
+          }
         }
+        wasJsonDebugVisible = model.showJsonDebug;
         if (cb) cb();
       });
     };
