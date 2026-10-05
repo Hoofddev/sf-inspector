@@ -76,9 +76,14 @@ SF Inspector is open source and a fork of Salesforce Inspector Reloaded by Thoma
 ## What's New in This Version  *(limit 4000)*
 
 ```
-First release on the Mac App Store.
+Field Creator is now Field Manager. Besides creating fields, it retrieves an object's existing custom fields and lets you change their label, description and help text - Lookup, Master-Detail and Roll-Up Summary fields included - while leaving everything else about them exactly as it was. Columns sort, and the table copies or downloads as CSV.
 
-SF Inspector is a Safari-native build of the Salesforce inspector many admins already use daily, rewritten for macOS: a dark interface that follows your system appearance, and a flow search that Setup has never had.
+Also in this version:
+
+- The record you are looking at is recognised again on Lightning addresses with extra parts, such as pc-rnd orgs, so the panel offers "Show all data" there too.
+- Show All Data no longer reports an error for the usage of Geolocation fields.
+- GET requests in REST Explorer work again.
+- Pages with highlighted code - Explore API, REST Explorer, Metadata Download, Event Monitor and Dependencies Explorer - stay responsive while you type.
 ```
 
 ---
