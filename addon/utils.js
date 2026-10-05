@@ -650,10 +650,14 @@ export async function safariApiRequest({method, url, headers, body, responseType
         chrome.runtime.sendMessage({message: "apiAbort", requestId});
       };
     }
+    // XMLHttpRequest.send() ignores a body on GET and HEAD, but fetch() in the background throws on
+    // one ("Request with GET/HEAD method cannot have body"). REST Explorer passes its body field even
+    // when it is empty, so match XHR here rather than make every caller avoid it.
+    const bodyAllowed = !["GET", "HEAD"].includes(String(method).toUpperCase());
     chrome.runtime.sendMessage({
       message: "apiFetch",
       requestId,
-      request: {method, url, headers, body, hasBody: body !== undefined}
+      request: {method, url, headers, body, hasBody: bodyAllowed && body !== undefined}
     }, resolve);
   });
 
