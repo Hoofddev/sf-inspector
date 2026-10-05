@@ -71,6 +71,8 @@
   /* The same accent as a label rather than a fill. #0a84ff is a fine surface on the dark ground but
      only reaches 4.3:1 as text on it, so anything written in the accent uses this instead. */
   --sfi-accent-text:  light-dark(#0063c7, #6cb6ff);
+  /* A tint of the accent under the row or list item the pointer is on. */
+  --sfi-row-hover:    light-dark(rgba(0, 113, 227, .06), rgba(10, 132, 255, .10));
 
   --slds-g-color-accent-1:           var(--sfi-accent);
   --slds-g-color-accent-2:           var(--sfi-accent-hover);
@@ -838,7 +840,16 @@ body.sfi-page table.slds-table tbody tr:nth-child(even) > td {
 }
 
 body.sfi-page table.slds-table tbody tr:hover > td {
-  background-color: light-dark(rgba(0, 113, 227, .06), rgba(10, 132, 255, .10));
+  background-color: var(--sfi-row-hover);
+}
+
+/* Lists whose items are clickable as a whole, like the group and sub URLs in Explore API. */
+body.sfi-page .sfi-hover-row {
+  transition: background-color .2s;
+}
+
+body.sfi-page .sfi-hover-row:hover {
+  background-color: var(--sfi-row-hover);
 }
 
 pre,

@@ -331,9 +331,7 @@ class App extends React.Component {
               style: {
                 maxHeight: "40em",
                 overflowY: "auto",
-                border: "1px solid #dddbda",
-                borderRadius: "4px",
-                backgroundColor: "#f3f2f2"
+                borderRadius: "4px"
               }
             },
             h("pre", {
@@ -353,7 +351,7 @@ class App extends React.Component {
                     h("tr", {
                       key,
                       className: key === 0 ? "slds-line-height_reset" : "",
-                      style: key === 0 ? {fontWeight: "700", backgroundColor: "#FAFAF9"} : {}
+                      style: key === 0 ? {fontWeight: "700"} : {}
                     },
                     row.map((cell, cellKey) =>
                       (key === 0
@@ -371,13 +369,11 @@ class App extends React.Component {
                 model.apiResponse.apiGroupUrls.map((apiGroupUrl, key) =>
                   h("li", {
                     key,
+                    className: "sfi-hover-row",
                     style: {
                       padding: "4px",
-                      cursor: "pointer",
-                      transition: "background-color 0.2s"
-                    },
-                    onMouseEnter: e => e.currentTarget.style.backgroundColor = "#e0f3ff",
-                    onMouseLeave: e => e.currentTarget.style.backgroundColor = "transparent"
+                      cursor: "pointer"
+                    }
                   },
                   h("a", {href: model.openGroupUrl(apiGroupUrl), className: "slds-text-link"}, apiGroupUrl.jsonPath),
                   " - " + apiGroupUrl.label
@@ -391,13 +387,11 @@ class App extends React.Component {
                 model.apiResponse.apiSubUrls.map((apiSubUrl, key) =>
                   h("li", {
                     key,
+                    className: "sfi-hover-row",
                     style: {
                       padding: "4px",
-                      cursor: "pointer",
-                      transition: "background-color 0.2s"
-                    },
-                    onMouseEnter: e => e.currentTarget.style.backgroundColor = "#e0f3ff",
-                    onMouseLeave: e => e.currentTarget.style.backgroundColor = "transparent"
+                      cursor: "pointer"
+                    }
                   },
                   h("a", {href: model.openSubUrl(apiSubUrl), className: "slds-text-link"}, apiSubUrl.jsonPath),
                   " - " + apiSubUrl.label
