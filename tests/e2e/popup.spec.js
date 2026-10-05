@@ -562,6 +562,39 @@ test.describe("Popup", () => {
       await expect(page.frameLocator(".insext-popup").locator("a:has-text('Fields')")).toBeVisible({timeout: 1000});
       await expect(page.frameLocator(".insext-popup").locator("a[href*='Account/list']")).toBeVisible();
     });
+
+    test("Record Id detection across Salesforce URL shapes", async ({page, extensionId}) => {
+      await initPopupPage(page, extensionId);
+      const popupFrame = page.frames().find(f => f.url().includes("/popup.html"));
+      await popupFrame.waitForFunction(() => typeof window.getRecordId === "function");
+
+      const id = TEST_CONSTANTS.accountRecordId;
+      const cases = [
+        // Plain Lightning domains
+        [`https://acme.lightning.force.com/lightning/r/Account/${id}/view`, id],
+        [`https://acme.lightning.force.mil/lightning/r/Account/${id}/view`, id],
+        [`https://acme.lightning.crmforce.mil/lightning/r/Account/${id}/view`, id],
+        [`https://acme.lightning.force.com.mcas.ms/lightning/r/Account/${id}/view`, id],
+        // Lightning domains with extra labels between "lightning" and the base domain
+        [`https://orgfarm-x.test1.lightning.pc-rnd.force.com/lightning/r/Account/${id}/view`, id],
+        [`https://orgfarm-x.test1.lightning.pc-rnd.force.com/one/one.app#/sObject/${id}/view`, id],
+        // /one/one.app hash route
+        [`https://acme.lightning.force.com/one/one.app#/sObject/${id}/view`, id],
+        // Classic and Visualforce
+        [`https://acme.my.salesforce.com/${id}`, id],
+        [`https://acme--c.vf.force.com/apex/MyPage?id=${id}`, id],
+        // Id passed as another parameter
+        [`https://acme--c.vf.force.com/apex/MyPage?recordId=${id}`, id],
+        [`https://acme.lightning.force.com/lightning/setup/ObjectManager/home?address=%2F${id}`, id],
+        // Not a Lightning domain: "lightning" must be a label of a Salesforce base domain
+        [`https://notlightning.force.com/lightning/r/Account/${id}/view`, null],
+        [`https://acme.lightning.example.com/lightning/r/Account/${id}/view`, null],
+      ];
+      const results = await popupFrame.evaluate(urls => urls.map(u => window.getRecordId(u)), cases.map(([url]) => url));
+      cases.forEach(([url, expected], i) => {
+        expect(results[i], url).toBe(expected);
+      });
+    });
   });
 
   test.describe("Users Tab", () => {
