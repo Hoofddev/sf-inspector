@@ -2,16 +2,17 @@ import {test, expect} from "./fixtures";
 import {
   TEST_CONSTANTS,
   injectSessionData,
-  waitSuccessfulHttpResponse
+  waitSuccessfulHttpResponse,
+  fulfillSuccess
 } from "./test-helpers";
 import {routeMock} from "./test-mock";
 
-test.describe("Field Creator", () => {
+test.describe("Field Manager", () => {
   const {mockHost, mockToken, apiVersion} = TEST_CONSTANTS;
 
-  /** @desc Initializes the field creator page, waits for objects to load and selects an object */
+  /** @desc Initializes the field manager page, waits for objects to load and selects an object */
   async function initPage(page, extensionId, objectName){
-    await page.goto(`chrome-extension://${extensionId}/field-creator.html?host=${mockHost}`);
+    await page.goto(`chrome-extension://${extensionId}/field-manager.html?host=${mockHost}`);
     await page.waitForSelector("#object_select");
 
     // Wait for objects and entity definitions to load (utils.js fetches sobjects, tooling/sobjects, and EntityDefinition via COUNT + batched queries)
@@ -61,8 +62,8 @@ test.describe("Field Creator", () => {
   });
 
   test("Load Page and Verify Initial State", async ({page, extensionId}) => {
-    const creatorUrl = `chrome-extension://${extensionId}/field-creator.html?host=${mockHost}`;
-    await page.goto(creatorUrl);
+    const managerUrl = `chrome-extension://${extensionId}/field-manager.html?host=${mockHost}`;
+    await page.goto(managerUrl);
 
     // Wait for page to load
     await page.waitForSelector("#object_select");
@@ -94,8 +95,8 @@ test.describe("Field Creator", () => {
   });
 
   test("Add Field Row", async ({page, extensionId}) => {
-    const creatorUrl = `chrome-extension://${extensionId}/field-creator.html?host=${mockHost}`;
-    await page.goto(creatorUrl);
+    const managerUrl = `chrome-extension://${extensionId}/field-manager.html?host=${mockHost}`;
+    await page.goto(managerUrl);
 
     await page.waitForSelector("#add_row");
 
@@ -109,8 +110,8 @@ test.describe("Field Creator", () => {
   });
 
   test("Edit Field Label and Name", async ({page, extensionId}) => {
-    const creatorUrl = `chrome-extension://${extensionId}/field-creator.html?host=${mockHost}`;
-    await page.goto(creatorUrl);
+    const managerUrl = `chrome-extension://${extensionId}/field-manager.html?host=${mockHost}`;
+    await page.goto(managerUrl);
 
     await page.waitForSelector("#fields_table tbody tr");
 
@@ -256,8 +257,8 @@ test.describe("Field Creator", () => {
   });
 
   test("Field Permissions Modal - Select Permissions", async ({page, extensionId}) => {
-    const creatorUrl = `chrome-extension://${extensionId}/field-creator.html?host=${mockHost}`;
-    await page.goto(creatorUrl);
+    const managerUrl = `chrome-extension://${extensionId}/field-manager.html?host=${mockHost}`;
+    await page.goto(managerUrl);
 
     await page.waitForSelector("#fields_table tbody tr");
 
@@ -295,8 +296,8 @@ test.describe("Field Creator", () => {
   });
 
   test("Delete Field Row", async ({page, extensionId}) => {
-    const creatorUrl = `chrome-extension://${extensionId}/field-creator.html?host=${mockHost}`;
-    await page.goto(creatorUrl);
+    const managerUrl = `chrome-extension://${extensionId}/field-manager.html?host=${mockHost}`;
+    await page.goto(managerUrl);
 
     await page.waitForSelector("#add_row");
 
@@ -313,8 +314,8 @@ test.describe("Field Creator", () => {
   });
 
   test("Clone Field Row", async ({page, extensionId}) => {
-    const creatorUrl = `chrome-extension://${extensionId}/field-creator.html?host=${mockHost}`;
-    await page.goto(creatorUrl);
+    const managerUrl = `chrome-extension://${extensionId}/field-manager.html?host=${mockHost}`;
+    await page.goto(managerUrl);
 
     await page.waitForSelector("#fields_table tbody tr");
 
@@ -333,8 +334,8 @@ test.describe("Field Creator", () => {
   });
 
   test("Open Import Modal", async ({page, extensionId}) => {
-    const creatorUrl = `chrome-extension://${extensionId}/field-creator.html?host=${mockHost}`;
-    await page.goto(creatorUrl);
+    const managerUrl = `chrome-extension://${extensionId}/field-manager.html?host=${mockHost}`;
+    await page.goto(managerUrl);
 
     await page.waitForSelector("button:has-text('Import')");
 
@@ -348,8 +349,8 @@ test.describe("Field Creator", () => {
   });
 
   test("Import CSV Fields", async ({page, extensionId}) => {
-    const creatorUrl = `chrome-extension://${extensionId}/field-creator.html?host=${mockHost}`;
-    await page.goto(creatorUrl);
+    const managerUrl = `chrome-extension://${extensionId}/field-manager.html?host=${mockHost}`;
+    await page.goto(managerUrl);
 
     await page.waitForSelector("button:has-text('Import')");
 
@@ -370,7 +371,7 @@ test.describe("Field Creator", () => {
 
     // Verify modal closes and fields are added
     await expect(page.locator("text=CSV Import (beta)")).not.toBeVisible();
-    await expect(page.locator("#fields_table tbody tr")).toHaveCount(3); // 1 initial + 2 imported
+    await expect(page.locator("#fields_table tbody tr")).toHaveCount(2); // the 2 imported rows replace the blank initial one
   });
 
   test("Deploy Fields - Success", async ({page, extensionId}) => {
@@ -423,10 +424,10 @@ test.describe("Field Creator", () => {
     await initPage(page, extensionId, "Account");
 
     // Find the managed package toggle label (click on the label instead of checkbox)
-    const managedToggleLabel = page.locator("label.slds-checkbox_toggle");
+    const managedToggleLabel = page.locator("label.slds-checkbox_toggle", {hasText: "Managed packages"});
 
     // Verify initial state (should be unchecked by default)
-    const checkbox = page.locator("label.slds-checkbox_toggle input[type='checkbox']");
+    const checkbox = managedToggleLabel.locator("input[type='checkbox']");
     await expect(checkbox).not.toBeChecked();
 
     // Click on the label to toggle (this avoids the interception issue)
@@ -436,9 +437,21 @@ test.describe("Field Creator", () => {
     await expect(checkbox).toBeChecked();
   });
 
+  test("Updating existing fields is off on every visit, even after it was turned on", async ({page, extensionId}) => {
+    await initPage(page, extensionId, "Account");
+    const checkbox = page.locator("#allow_field_updates");
+    await expect(checkbox).not.toBeChecked();
+
+    await checkbox.locator("..").click();
+    await expect(checkbox).toBeChecked();
+
+    await page.reload();
+    await expect(page.locator("#allow_field_updates")).not.toBeChecked();
+  });
+
   test("Deploy Button Disabled Without Object Selection", async ({page, extensionId}) => {
-    const creatorUrl = `chrome-extension://${extensionId}/field-creator.html?host=${mockHost}`;
-    await page.goto(creatorUrl);
+    const managerUrl = `chrome-extension://${extensionId}/field-manager.html?host=${mockHost}`;
+    await page.goto(managerUrl);
 
     await page.waitForSelector("button:has-text('Deploy Fields')");
 
@@ -460,5 +473,125 @@ test.describe("Field Creator", () => {
     // Change to a valid type
     await typeSelect.selectOption("Text");
     await expect(typeSelect).toHaveValue("Text");
+  });
+
+  test.describe("Existing fields (mocked Tooling API)", () => {
+    // Retrieve-only and creatable types side by side, with the explicit nulls the Tooling API returns
+    const EXISTING_FIELDS = {
+      "00N000000000001AAA": {Id: "00N000000000001AAA", DeveloperName: "Customer", Metadata: {label: "Customer", type: "Lookup", referenceTo: "Contact", relationshipName: "Customers", deleteConstraint: "SetNull", required: false, description: null, inlineHelpText: null, formula: null, defaultValue: null, valueSet: null}},
+      "00N000000000002AAA": {Id: "00N000000000002AAA", DeveloperName: "Total", Metadata: {label: "Total", type: "Summary", summaryOperation: "count", summaryForeignKey: "Opportunity.AccountId", description: "Count", inlineHelpText: null, formula: null}},
+      "00N000000000003AAA": {Id: "00N000000000003AAA", DeveloperName: "Code", Metadata: {label: "Code", type: "Text", length: 20, unique: true, externalId: true, required: true, description: null, inlineHelpText: null, formula: null}}
+    };
+    const RETRIEVE_ONLY_LABELS = ["Auto Number", "Lookup", "Master-Detail", "Roll-Up Summary", "Text (Encrypted)", "Metadata Relationship", "External Lookup", "Indirect Lookup", "Hierarchy", "Time"];
+
+    test.skip(!TEST_CONSTANTS.mockEnabled, "Needs the mocked Tooling API");
+
+    let patches;
+    test.beforeEach(async ({page}) => {
+      patches = [];
+      await page.route("**/tooling/query**", async (route, request) => {
+        if (decodeURIComponent(request.url()).includes("FROM CustomField")) {
+          const records = Object.keys(EXISTING_FIELDS).map(Id => ({attributes: {type: "CustomField"}, Id}));
+          await fulfillSuccess(route, {totalSize: records.length, done: true, records});
+          return;
+        }
+        await route.fallback();
+      });
+      await page.route("**/tooling/sobjects/CustomField/00N*", async (route, request) => {
+        const id = new URL(request.url()).pathname.split("/").pop();
+        if (request.method() === "PATCH") {
+          patches.push({id, body: request.postDataJSON()});
+          await route.fulfill({status: 204, body: ""});
+          return;
+        }
+        await fulfillSuccess(route, EXISTING_FIELDS[id]);
+      });
+    });
+
+    test("Retrieve Fields lists existing fields, retrieve-only types stay out of the create flow", async ({page, extensionId}) => {
+      await initPage(page, extensionId, "Account");
+      await page.locator("#retrieve_fields").click();
+      await expect(page.locator(".existingBadge")).toHaveCount(3);
+
+      const rows = page.locator("#fields_table tbody tr");
+      const lookupSelect = rows.filter({has: page.locator(".existingBadge")}).nth(0).locator("select");
+      await expect(lookupSelect).toBeDisabled();
+      await expect(lookupSelect.locator("option:checked")).toHaveText("Lookup");
+
+      await page.locator("#add_row").click();
+      const newRowOptions = await rows.last().locator("select option").allTextContents();
+      expect(newRowOptions.filter(o => RETRIEVE_ONLY_LABELS.includes(o))).toEqual([]);
+    });
+
+    test("Saving an existing field PATCHes the retrieved metadata with only label, description and help text changed", async ({page, extensionId}) => {
+      await initPage(page, extensionId, "Account");
+      await page.locator("#retrieve_fields").click();
+      await expect(page.locator(".existingBadge")).toHaveCount(3);
+
+      const lookupRow = page.locator("#fields_table tbody tr").filter({has: page.locator(".existingBadge")}).nth(0);
+      await lookupRow.locator("input[placeholder='Field label...']").fill("Primary Customer");
+      await lookupRow.locator("button:has-text('Options')").click();
+      await page.locator("#fieldOptionModal #description").fill("Main contact");
+      await page.locator("#fieldOptionModal #helpText").fill("Who we bill");
+      await page.locator("#fieldOptionModal button:has-text('Save')").click();
+
+      await page.locator("#allow_field_updates").locator("..").click();
+      await page.locator("button:has-text('Deploy Fields')").click();
+      await page.locator("#updateConfirmModal button:has-text('Update')").click();
+      await expect(page.locator("#fields_table use.fillGreen")).toHaveCount(1);
+
+      // Only the edited field is sent, and everything but the three editable properties is reused
+      expect(patches.map(p => p.id)).toEqual(["00N000000000001AAA"]);
+      expect(patches[0].body).toEqual({
+        Metadata: {label: "Primary Customer", type: "Lookup", referenceTo: "Contact", relationshipName: "Customers", deleteConstraint: "SetNull", required: false, description: "Main contact", inlineHelpText: "Who we bill"}
+      });
+    });
+
+    test("Saving a Roll-Up Summary sends its operation in the upper case the Tooling API accepts", async ({page, extensionId}) => {
+      await initPage(page, extensionId, "Account");
+      await page.locator("#retrieve_fields").click();
+      await expect(page.locator(".existingBadge")).toHaveCount(3);
+
+      const summaryRow = page.locator("#fields_table tbody tr").filter({has: page.locator("input[value='Total']")});
+      await summaryRow.locator("button:has-text('Options')").click();
+      await page.locator("#fieldOptionModal #description").fill("Number of opportunities");
+      await page.locator("#fieldOptionModal button:has-text('Save')").click();
+
+      await page.locator("#allow_field_updates").locator("..").click();
+      await page.locator("button:has-text('Deploy Fields')").click();
+      await page.locator("#updateConfirmModal button:has-text('Update')").click();
+      await expect(page.locator("#fields_table use.fillGreen")).toHaveCount(1);
+
+      // The Tooling API reads "count" but only accepts "COUNT" on write
+      expect(patches.map(p => p.id)).toEqual(["00N000000000002AAA"]);
+      expect(patches[0].body.Metadata.summaryOperation).toBe("COUNT");
+      expect(patches[0].body.Metadata.description).toBe("Number of opportunities");
+    });
+
+    test("Sort by column header and copy the table as CSV", async ({page, extensionId}) => {
+      await initPage(page, extensionId, "Account");
+      await page.locator("#retrieve_fields").click();
+      await expect(page.locator(".existingBadge")).toHaveCount(3);
+
+      const labels = () => page.locator("#fields_table tbody input[placeholder='Field label...']").evaluateAll(els => els.map(e => e.value));
+      await page.locator("th a.sortableHeader:has-text('Label')").click();
+      expect(await labels()).toEqual(["Code", "Customer", "Total"]);
+      await page.locator("th a.sortableHeader:has-text('Label')").click();
+      expect(await labels()).toEqual(["Total", "Customer", "Code"]);
+
+      await page.evaluate(() => {
+        window.copiedValues = [];
+        const setData = DataTransfer.prototype.setData;
+        DataTransfer.prototype.setData = function(type, data) { window.copiedValues.push(data); return setData.call(this, type, data); };
+      });
+      await page.locator("#copy_fields_csv").click();
+      const csv = await page.evaluate(() => window.copiedValues.at(-1));
+      expect(csv.split("\n")).toEqual([
+        "Label,Name,Type,Description,HelpText",
+        "Customer,Customer,Lookup,,",
+        "Total,Total,Summary,Count,",
+        "Code,Code,Text,,"
+      ]);
+    });
   });
 });

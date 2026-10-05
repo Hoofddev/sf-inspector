@@ -35,7 +35,7 @@ Details are in [issue #725 upstream](https://github.com/tprouvot/Salesforce-Insp
 | **REST Explore** | Call any REST endpoint against the current org |
 | **Logs Viewer** | Read and search Apex debug logs |
 | **Event Monitor** | Subscribe to platform events and change events |
-| **Field Creator** | Create fields in bulk |
+| **Field Manager** | Create fields in bulk, and edit the label, description and help text of existing ones |
 | **Org Limits, Flow Scanner, Dependencies Explorer, API Statistics** | |
 
 Plus setup shortcuts, user search and quick links from the popup on any Salesforce page.
@@ -86,12 +86,17 @@ session is read and where every API request is made.
 Shortcuts are assigned in *Safari → Settings → Extensions → SF Inspector*. Safari's support
 for extension shortcuts is more limited than Chrome's, so not every command can be bound.
 
-<a id="field-creator"></a>
+<a id="field-manager"></a>
 
-## Field Creator
+## Field Manager
 
-Create multiple custom fields in one pass, including picklist values, formulas and
+Create multiple custom fields in one pass, including picklist values and
 field-level security. Select an object, add rows, and deploy.
+
+Retrieve Fields loads the object's existing custom fields into the same table, where their
+label, description and help text can be edited and saved back. Everything else about an
+existing field is sent back exactly as it is in the org. The table sorts by column and
+exports to CSV.
 
 ## Attribution
 

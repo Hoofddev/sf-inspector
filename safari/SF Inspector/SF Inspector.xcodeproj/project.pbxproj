@@ -20,7 +20,7 @@
 		97FE9D873046F1CB0005806D /* SafariWebExtensionHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 97FE9D863046F1CB0005806D /* SafariWebExtensionHandler.swift */; };
 		97FE9DE53046F1CF0005806D /* metadata-retrieve-legacy.js in Resources */ = {isa = PBXBuildFile; fileRef = 97FE9D933046F1CF0005806D /* metadata-retrieve-legacy.js */; };
 		97FE9DE63046F1CF0005806D /* icon16.png in Resources */ = {isa = PBXBuildFile; fileRef = 97FE9D943046F1CF0005806D /* icon16.png */; };
-		97FE9DE73046F1CF0005806D /* field-creator.html in Resources */ = {isa = PBXBuildFile; fileRef = 97FE9D953046F1CF0005806D /* field-creator.html */; };
+		97FE9DE73046F1CF0005806D /* field-manager.html in Resources */ = {isa = PBXBuildFile; fileRef = 97FE9D953046F1CF0005806D /* field-manager.html */; };
 		97FE9DE83046F1CF0005806D /* flow-search.css in Resources */ = {isa = PBXBuildFile; fileRef = 97FE9D963046F1CF0005806D /* flow-search.css */; };
 		97FE9DE93046F1CF0005806D /* dependencies-explorer.js in Resources */ = {isa = PBXBuildFile; fileRef = 97FE9D973046F1CF0005806D /* dependencies-explorer.js */; };
 		97FE9DEA3046F1CF0005806D /* rest-explore.js in Resources */ = {isa = PBXBuildFile; fileRef = 97FE9D983046F1CF0005806D /* rest-explore.js */; };
@@ -60,11 +60,11 @@
 		97FE9E0C3046F1CF0005806D /* icon128.png in Resources */ = {isa = PBXBuildFile; fileRef = 97FE9DBA3046F1CF0005806D /* icon128.png */; };
 		97FE9E0D3046F1CF0005806D /* flow-scanner.css in Resources */ = {isa = PBXBuildFile; fileRef = 97FE9DBB3046F1CF0005806D /* flow-scanner.css */; };
 		97FE9E0E3046F1CF0005806D /* data-import.js in Resources */ = {isa = PBXBuildFile; fileRef = 97FE9DBC3046F1CF0005806D /* data-import.js */; };
-		97FE9E0F3046F1CF0005806D /* field-creator.js in Resources */ = {isa = PBXBuildFile; fileRef = 97FE9DBD3046F1CF0005806D /* field-creator.js */; };
+		97FE9E0F3046F1CF0005806D /* field-manager.js in Resources */ = {isa = PBXBuildFile; fileRef = 97FE9DBD3046F1CF0005806D /* field-manager.js */; };
 		97FE9E103046F1CF0005806D /* styles in Resources */ = {isa = PBXBuildFile; fileRef = 97FE9DBE3046F1CF0005806D /* styles */; };
 		97FE9E113046F1CF0005806D /* components in Resources */ = {isa = PBXBuildFile; fileRef = 97FE9DBF3046F1CF0005806D /* components */; };
 		97FE9E123046F1CF0005806D /* react.min.js in Resources */ = {isa = PBXBuildFile; fileRef = 97FE9DC03046F1CF0005806D /* react.min.js */; };
-		97FE9E133046F1CF0005806D /* field-creator.css in Resources */ = {isa = PBXBuildFile; fileRef = 97FE9DC13046F1CF0005806D /* field-creator.css */; };
+		97FE9E133046F1CF0005806D /* field-manager.css in Resources */ = {isa = PBXBuildFile; fileRef = 97FE9DC13046F1CF0005806D /* field-manager.css */; };
 		97FE9E143046F1CF0005806D /* flags.css in Resources */ = {isa = PBXBuildFile; fileRef = 97FE9DC23046F1CF0005806D /* flags.css */; };
 		97FE9E153046F1CF0005806D /* api-statistics.html in Resources */ = {isa = PBXBuildFile; fileRef = 97FE9DC33046F1CF0005806D /* api-statistics.html */; };
 		97FE9E163046F1CF0005806D /* metadata-retrieve-legacy.css in Resources */ = {isa = PBXBuildFile; fileRef = 97FE9DC43046F1CF0005806D /* metadata-retrieve-legacy.css */; };
@@ -143,7 +143,7 @@
 		97FE9D883046F1CB0005806D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		97FE9D933046F1CF0005806D /* metadata-retrieve-legacy.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; name = "metadata-retrieve-legacy.js"; path = "Resources/metadata-retrieve-legacy.js"; sourceTree = "<group>"; };
 		97FE9D943046F1CF0005806D /* icon16.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = icon16.png; path = Resources/icon16.png; sourceTree = "<group>"; };
-		97FE9D953046F1CF0005806D /* field-creator.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; name = "field-creator.html"; path = "Resources/field-creator.html"; sourceTree = "<group>"; };
+		97FE9D953046F1CF0005806D /* field-manager.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; name = "field-manager.html"; path = "Resources/field-manager.html"; sourceTree = "<group>"; };
 		97FE9D963046F1CF0005806D /* flow-search.css */ = {isa = PBXFileReference; lastKnownFileType = text.css; name = "flow-search.css"; path = "Resources/flow-search.css"; sourceTree = "<group>"; };
 		97FE9D973046F1CF0005806D /* dependencies-explorer.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; name = "dependencies-explorer.js"; path = "Resources/dependencies-explorer.js"; sourceTree = "<group>"; };
 		97FE9D983046F1CF0005806D /* rest-explore.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; name = "rest-explore.js"; path = "Resources/rest-explore.js"; sourceTree = "<group>"; };
@@ -183,11 +183,11 @@
 		97FE9DBA3046F1CF0005806D /* icon128.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = icon128.png; path = Resources/icon128.png; sourceTree = "<group>"; };
 		97FE9DBB3046F1CF0005806D /* flow-scanner.css */ = {isa = PBXFileReference; lastKnownFileType = text.css; name = "flow-scanner.css"; path = "Resources/flow-scanner.css"; sourceTree = "<group>"; };
 		97FE9DBC3046F1CF0005806D /* data-import.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; name = "data-import.js"; path = "Resources/data-import.js"; sourceTree = "<group>"; };
-		97FE9DBD3046F1CF0005806D /* field-creator.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; name = "field-creator.js"; path = "Resources/field-creator.js"; sourceTree = "<group>"; };
+		97FE9DBD3046F1CF0005806D /* field-manager.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; name = "field-manager.js"; path = "Resources/field-manager.js"; sourceTree = "<group>"; };
 		97FE9DBE3046F1CF0005806D /* styles */ = {isa = PBXFileReference; lastKnownFileType = folder; name = styles; path = Resources/styles; sourceTree = "<group>"; };
 		97FE9DBF3046F1CF0005806D /* components */ = {isa = PBXFileReference; lastKnownFileType = folder; name = components; path = Resources/components; sourceTree = "<group>"; };
 		97FE9DC03046F1CF0005806D /* react.min.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; name = react.min.js; path = Resources/react.min.js; sourceTree = "<group>"; };
-		97FE9DC13046F1CF0005806D /* field-creator.css */ = {isa = PBXFileReference; lastKnownFileType = text.css; name = "field-creator.css"; path = "Resources/field-creator.css"; sourceTree = "<group>"; };
+		97FE9DC13046F1CF0005806D /* field-manager.css */ = {isa = PBXFileReference; lastKnownFileType = text.css; name = "field-manager.css"; path = "Resources/field-manager.css"; sourceTree = "<group>"; };
 		97FE9DC23046F1CF0005806D /* flags.css */ = {isa = PBXFileReference; lastKnownFileType = text.css; name = flags.css; path = Resources/flags.css; sourceTree = "<group>"; };
 		97FE9DC33046F1CF0005806D /* api-statistics.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; name = "api-statistics.html"; path = "Resources/api-statistics.html"; sourceTree = "<group>"; };
 		97FE9DC43046F1CF0005806D /* metadata-retrieve-legacy.css */ = {isa = PBXFileReference; lastKnownFileType = text.css; name = "metadata-retrieve-legacy.css"; path = "Resources/metadata-retrieve-legacy.css"; sourceTree = "<group>"; };
@@ -300,7 +300,7 @@
 			children = (
 				97FE9D933046F1CF0005806D /* metadata-retrieve-legacy.js */,
 				97FE9D943046F1CF0005806D /* icon16.png */,
-				97FE9D953046F1CF0005806D /* field-creator.html */,
+				97FE9D953046F1CF0005806D /* field-manager.html */,
 				97FE9D963046F1CF0005806D /* flow-search.css */,
 				97FE9D973046F1CF0005806D /* dependencies-explorer.js */,
 				97FE9D983046F1CF0005806D /* rest-explore.js */,
@@ -340,11 +340,11 @@
 				97FE9DBA3046F1CF0005806D /* icon128.png */,
 				97FE9DBB3046F1CF0005806D /* flow-scanner.css */,
 				97FE9DBC3046F1CF0005806D /* data-import.js */,
-				97FE9DBD3046F1CF0005806D /* field-creator.js */,
+				97FE9DBD3046F1CF0005806D /* field-manager.js */,
 				97FE9DBE3046F1CF0005806D /* styles */,
 				97FE9DBF3046F1CF0005806D /* components */,
 				97FE9DC03046F1CF0005806D /* react.min.js */,
-				97FE9DC13046F1CF0005806D /* field-creator.css */,
+				97FE9DC13046F1CF0005806D /* field-manager.css */,
 				97FE9DC23046F1CF0005806D /* flags.css */,
 				97FE9DC33046F1CF0005806D /* api-statistics.html */,
 				97FE9DC43046F1CF0005806D /* metadata-retrieve-legacy.css */,
@@ -690,7 +690,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 3;
+				CURRENT_PROJECT_VERSION = 4;
 				DEVELOPMENT_TEAM = 7CKWU4G7TP;
 				ENABLE_APP_SANDBOX = YES;
 				ENABLE_HARDENED_RUNTIME = YES;
@@ -705,7 +705,7 @@
 					"@executable_path/../../../../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 14.5;
-				MARKETING_VERSION = 2.1.0;
+				MARKETING_VERSION = 2.2.0;
 				OTHER_LDFLAGS = (
 					"-framework",
 					SafariServices,
@@ -726,7 +726,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 3;
+				CURRENT_PROJECT_VERSION = 4;
 				DEVELOPMENT_TEAM = 7CKWU4G7TP;
 				ENABLE_APP_SANDBOX = YES;
 				ENABLE_HARDENED_RUNTIME = YES;
@@ -741,7 +741,7 @@
 					"@executable_path/../../../../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 14.5;
-				MARKETING_VERSION = 2.1.0;
+				MARKETING_VERSION = 2.2.0;
 				OTHER_LDFLAGS = (
 					"-framework",
 					SafariServices,
@@ -765,7 +765,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 3;
+				CURRENT_PROJECT_VERSION = 4;
 				DEVELOPMENT_TEAM = 7CKWU4G7TP;
 				ENABLE_APP_SANDBOX = YES;
 				ENABLE_HARDENED_RUNTIME = YES;
@@ -782,7 +782,7 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MARKETING_VERSION = 2.1.0;
+				MARKETING_VERSION = 2.2.0;
 				OTHER_LDFLAGS = (
 					"-framework",
 					SafariServices,
@@ -809,7 +809,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 3;
+				CURRENT_PROJECT_VERSION = 4;
 				DEVELOPMENT_TEAM = 7CKWU4G7TP;
 				ENABLE_APP_SANDBOX = YES;
 				ENABLE_HARDENED_RUNTIME = YES;
@@ -826,7 +826,7 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MARKETING_VERSION = 2.1.0;
+				MARKETING_VERSION = 2.2.0;
 				OTHER_LDFLAGS = (
 					"-framework",
 					SafariServices,

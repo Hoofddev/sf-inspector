@@ -508,6 +508,33 @@ export function createSpinForMethod(context) {
   };
 }
 
+/**
+ * Creates a guard that skips re-running expensive, idempotent work (e.g. Prism syntax highlighting)
+ * when the content it depends on has not changed since the last run.
+ * React lifecycle methods like componentDidUpdate fire on every state change, not only on the ones
+ * that affect the highlighted content, so without a guard every keystroke re-highlights everything.
+ * @returns {Function} guard(signature, fn): runs fn only when signature differs from the previous one.
+ * The signature is any value describing the current content (string, number, object reference...).
+ * An array is compared element by element (length plus identity per index), so several independent
+ * values can be watched at once, e.g. [model.apiResponse, model.selectedTextView].
+ */
+export function createChangeGuard() {
+  let lastSignature;
+  return function(signature, fn) {
+    let changed = Array.isArray(signature)
+      ? !Array.isArray(lastSignature)
+        || signature.length !== lastSignature.length
+        || signature.some((value, i) => value !== lastSignature[i])
+      : signature !== lastSignature;
+    if (!changed) {
+      return;
+    }
+    // Copy arrays, so a caller mutating its signature array afterwards cannot fake "unchanged".
+    lastSignature = Array.isArray(signature) ? signature.slice() : signature;
+    fn();
+  };
+}
+
 // OAuth utilities
 
 // Safari gives every installation of an extension its own random UUID, so
@@ -623,10 +650,14 @@ export async function safariApiRequest({method, url, headers, body, responseType
         chrome.runtime.sendMessage({message: "apiAbort", requestId});
       };
     }
+    // XMLHttpRequest.send() ignores a body on GET and HEAD, but fetch() in the background throws on
+    // one ("Request with GET/HEAD method cannot have body"). REST Explorer passes its body field even
+    // when it is empty, so match XHR here rather than make every caller avoid it.
+    const bodyAllowed = !["GET", "HEAD"].includes(String(method).toUpperCase());
     chrome.runtime.sendMessage({
       message: "apiFetch",
       requestId,
-      request: {method, url, headers, body, hasBody: body !== undefined}
+      request: {method, url, headers, body, hasBody: bodyAllowed && body !== undefined}
     }, resolve);
   });
 

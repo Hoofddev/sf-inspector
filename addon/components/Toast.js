@@ -14,14 +14,16 @@ class Toast extends React.Component {
         return h("p", {}, message);
       }
 
-      // Handle message object with link
-      const {pre, linkText, linkTitle, link, post} = message;
+      // Handle message object with link. The link either navigates (link) or runs a callback
+      // (onLinkClick); without a link it falls back to "#" so it still renders as a link.
+      const {pre, linkText, linkTitle, link, onLinkClick, post} = message;
       return h("p", {},
         pre && h("span", {}, pre),
         linkText && h("a", {
-          href: link,
+          href: link || "#",
           title: linkTitle,
-          className: "slds-text-link"
+          className: "slds-text-link",
+          onClick: onLinkClick ? (e) => { e.preventDefault(); onLinkClick(e); } : undefined
         }, linkText),
         post && h("span", {}, post)
       );

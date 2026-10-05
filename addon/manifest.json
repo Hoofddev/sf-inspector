@@ -1,7 +1,7 @@
 {
   "name": "SF Inspector",
   "description": "Productivity tools for Salesforce administrators and developers to inspect data and metadata directly from the Salesforce UI.",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "version_name": "2.1",
   "icons": {
     "128": "icon128.png"
@@ -85,7 +85,7 @@
         "limits.html",
         "api-statistics.html",
         "inject.js",
-        "field-creator.html",
+        "field-manager.html",
         "options.html",
         "event-monitor.html",
         "flow-scanner.html",
@@ -157,8 +157,8 @@
     "limits": {
       "description": "Org Limits"
     },
-    "field-creator": {
-      "description": "Field Creator"
+    "field-manager": {
+      "description": "Field Manager"
     },
     "explore-api": {
       "description": "Explore API"

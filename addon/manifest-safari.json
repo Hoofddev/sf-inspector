@@ -102,7 +102,7 @@
         "limits.html",
         "api-statistics.html",
         "inject.js",
-        "field-creator.html",
+        "field-manager.html",
         "options.html",
         "event-monitor.html",
         "flow-scanner.html",
@@ -172,8 +172,8 @@
     "limits": {
       "description": "Org Limits"
     },
-    "field-creator": {
-      "description": "Field Creator"
+    "field-manager": {
+      "description": "Field Manager"
     },
     "explore-api": {
       "description": "Explore API"

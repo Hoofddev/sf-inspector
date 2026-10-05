@@ -488,3 +488,69 @@ button:hover,
   border-radius: 0.25rem;
   height: 32px;
 }
+/* Field Manager: retrieved (existing) fields */
+.toggleRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 24px;
+}
+.toggleRow > .slds-checkbox_toggle {
+  width: auto;
+}
+/* A retrieved field's API name, type and type-specific options are shown for reference but locked.
+   The generic disabled rule above dims text to the border colour, which is meant for controls and
+   leaves a value unreadable; these stay legible, a step quieter than editable text. WebKit also
+   fades disabled text through opacity and text-fill-color, so both are set. */
+#fields_table input:disabled,
+#fields_table select:disabled,
+#fieldOptionModal input:disabled,
+#fieldOptionModal textarea:disabled {
+  color: var(--slds-g-color-on-surface-3);
+  -webkit-text-fill-color: var(--slds-g-color-on-surface-3);
+  background-color: var(--slds-g-color-surface-container-2);
+  opacity: 1;
+  cursor: default;
+}
+.existingBadge {
+  flex-shrink: 0;
+  margin-right: 8px;
+}
+.existingFieldNotice {
+  background-color: var(--sfi-info-surface);
+  color: var(--slds-g-color-on-surface-1);
+  border-radius: var(--slds-g-radius-border-1);
+  padding: 8px 12px;
+  margin-bottom: 12px;
+}
+/* Fields table: sortable headers and export toolbar */
+.sortableHeader,
+.sortableHeader:hover,
+.sortableHeader:focus {
+  color: inherit;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+}
+.sortableHeader:hover {
+  color: var(--sfi-accent-hover);
+}
+.sortIcon {
+  width: 12px;
+  height: 12px;
+  margin-left: 4px;
+}
+.tableToolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 4px 0 8px;
+}
+.tableCount {
+  font-weight: 600;
+  color: var(--slds-g-color-on-surface-2);
+}
+.tableToolbarActions button:last-child {
+  margin-right: 0;
+}
