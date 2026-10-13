@@ -3489,14 +3489,14 @@ class UserDetails extends React.PureComponent {
     return user.IsActive && user.NetworkId;
   }
 
-  getLoginAsLink(userId) {
-    let {sfHost, contextOrgId, contextPath} = this.props;
+  // Relative servlet.su path: used for the plain Login As link and as the redirect_uri of the
+  // Single Access request in loginAsInIncognito.
+  getLoginAsPath(userId) {
+    let {contextOrgId, contextPath} = this.props;
     const retUrl = contextPath || "/";
     const targetUrl = contextPath || "/";
     return (
-      "https://"
-      + sfHost
-      + "/servlet/servlet.su"
+      "/servlet/servlet.su"
       + "?oid="
       + encodeURIComponent(contextOrgId)
       + "&suorgadminid="
@@ -3508,7 +3508,32 @@ class UserDetails extends React.PureComponent {
     );
   }
 
-  loginAsInIncognito(userId) {
+  getLoginAsLink(userId) {
+    let {sfHost} = this.props;
+    return "https://" + sfHost + this.getLoginAsPath(userId);
+  }
+
+  async loginAsInIncognito(userId) {
+    // Handing the live session id to frontdoor.jsp in a second browser context gets flagged as a
+    // session hijack, and Salesforce then ends the session in the main tab. The Single Access UI
+    // Bridge API mints a separate one-time frontdoor URL instead, without touching the live session.
+    // A 401 or 403 here only means the org or token does not allow Single Access, so it must not
+    // raise the session error banner in the popup.
+    try {
+      const redirectUri = this.getLoginAsPath(userId).replace(/^\//, "");
+      const singleAccess = await sfConn.rest(
+        "/services/oauth2/singleaccess?redirect_uri=" + encodeURIComponent(redirectUri),
+        {method: "GET", suppressSessionError: true}
+      );
+      if (singleAccess && singleAccess.frontdoor_uri) {
+        this.openUrlInIncognito(singleAccess.frontdoor_uri);
+        return;
+      }
+      console.warn("Single Access returned no frontdoor_uri, falling back to frontdoor.jsp", singleAccess);
+    } catch (e) {
+      console.warn(`Single Access failed (${e.name}: ${e.message}), falling back to frontdoor.jsp`, e);
+    }
+    // Fallback when Single Access is not available for this org or token
     const targetUrl
       = "https://"
       + this.sfHost
