@@ -89,7 +89,8 @@
         "options.html",
         "event-monitor.html",
         "flow-scanner.html",
-        "debug-log.html"
+        "debug-log.html",
+        "object-scanner.html"
       ],
       "matches": [
         "https://*.salesforce.com/*",
@@ -174,6 +175,9 @@
     },
     "debug-log": {
       "description": "Logs Viewer"
+    },
+    "object-scanner": {
+      "description": "Object Scanner"
     },
     "api-statistics": {
       "description": "API Statistics"

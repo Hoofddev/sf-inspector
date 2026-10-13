@@ -2,6 +2,7 @@
 import {sfConn, apiVersion, defaultApiVersion} from "./inspector.js";
 import {nullToEmptyString, getLatestApiVersionFromOrg, Constants, UserInfoModel, createSpinForMethod, DataCache, applyProductionStyling} from "./utils.js";
 import {getFlowScannerRules, FLOW_SCANNER_RULES_STORAGE_KEY} from "./flow-scanner-rules.js";
+import {getObjectScannerRules, OBJECT_SCANNER_RULES_STORAGE_KEY} from "./object-scanner-rules.js";
 /* global initButton, lightningflowscanner */
 import {DescribeInfo} from "./data-load.js";
 import Toast from "./components/Toast.js";
@@ -92,11 +93,12 @@ class OptionsTabSelector extends React.Component {
             option: MultiCheckboxButtonGroup,
             props: {title: "Show buttons",
               key: "hideButtonsOption",
-              length: 8,
+              length: 9,
               checkboxes: [
                 {label: "New", name: "new", checked: true},
                 {label: "Explore API", name: "explore-api", checked: true},
                 {label: "Org Limits", name: "org-limits", checked: true},
+                {label: "Object Scanner", name: "object-scanner", checked: true},
                 {label: "Options", name: "options", checked: true},
                 {label: "Generate Access Token", name: "generate-token", checked: true},
                 {label: "Copy User Id", name: "copy-userId", checked: true},
@@ -364,7 +366,68 @@ class OptionsTabSelector extends React.Component {
               ]}
           },
           {option: Option, props: {type: "text", title: "Prompt Template Name", key: this.sfHost + "_flowScannerAgentForcePrompt", default: Constants.PromptTemplateFlow, tooltip: "Developer name of the prompt template to use for Flow Scanner"}},
-          {option: FlowScannerRules, props: {model: this.model}}
+          {option: ScannerRulesEditor,
+            props: {
+              model: this.model,
+              rulesStorageKey: FLOW_SCANNER_RULES_STORAGE_KEY,
+              refProp: "flowScannerRulesRef",
+              ruleSetLabel: "Flow Scanner",
+              defaultSeverity: "info",
+              keyPrefix: "flowScannerRule_",
+              emptyMessage: "No Flow Scanner rules available. Please ensure the Flow Scanner core library is loaded.",
+              fetchRules: () => typeof lightningflowscanner !== "undefined" ? getFlowScannerRules(lightningflowscanner) : []
+            }}
+        ]
+      },
+      {
+        id: "object-scanner",
+        tabTitle: "Object Scanner",
+        title: "Enabled Rules",
+        description: "Configure which Object Scanner rules are enabled and their settings. Only enabled rules are used when analyzing the data model.",
+        descriptionTooltip: "Object Scanner rules check naming, standard-object replication, over-customization, picklist hygiene, and Salesforce data classification on customizable objects.",
+        actionButtons: [
+          {
+            type: "brand",
+            label: "Check All",
+            title: "Enable all Object Scanner rules",
+            method: this.handleCheckAll.bind(this)
+          },
+          {
+            type: "neutral",
+            label: "Uncheck All",
+            title: "Disable all Object Scanner rules",
+            method: this.handleUncheckAll.bind(this)
+          },
+          {
+            type: "neutral",
+            label: "Reset to Defaults",
+            title: "Reset all rules to their default settings",
+            method: this.handleResetToDefaults.bind(this)
+          },
+          {
+            type: "icon",
+            icon: "download",
+            title: "Export Object Scanner rules configuration to file",
+            method: this.handleExportRules.bind(this)
+          },
+          {
+            type: "icon",
+            icon: "upload",
+            title: "Import Object Scanner rules configuration from file",
+            method: this.handleImportRules.bind(this)
+          }
+        ],
+        content: [
+          {option: ScannerRulesEditor,
+            props: {
+              model: this.model,
+              rulesStorageKey: OBJECT_SCANNER_RULES_STORAGE_KEY,
+              refProp: "objectScannerRulesRef",
+              ruleSetLabel: "Object Scanner",
+              defaultSeverity: "warning",
+              keyPrefix: "objectScannerRule_",
+              fetchRules: () => getObjectScannerRules()
+            }}
         ]
       },
       {
@@ -417,39 +480,42 @@ class OptionsTabSelector extends React.Component {
     this.onTabSelect = this.onTabSelect.bind(this);
   }
 
+  // The Flow Scanner and Object Scanner tabs share these action buttons; they act on whichever
+  // rule set belongs to the tab that is showing.
+  activeRulesRef() {
+    return this.state.selectedTabId === "object-scanner"
+      ? this.model.objectScannerRulesRef
+      : this.model.flowScannerRulesRef;
+  }
+
+  activeRulesStorageKey() {
+    return this.state.selectedTabId === "object-scanner"
+      ? OBJECT_SCANNER_RULES_STORAGE_KEY
+      : FLOW_SCANNER_RULES_STORAGE_KEY;
+  }
+
   handleCheckAll() {
-    // Implementation to check all Flow Scanner rules
-    if (this.model.flowScannerRulesRef) {
-      this.model.flowScannerRulesRef.checkAllRules();
-    }
+    this.activeRulesRef()?.checkAllRules();
   }
 
   handleUncheckAll() {
-    // Implementation to uncheck all Flow Scanner rules
-    if (this.model.flowScannerRulesRef) {
-      this.model.flowScannerRulesRef.uncheckAllRules();
-    }
+    this.activeRulesRef()?.uncheckAllRules();
   }
 
   handleResetToDefaults() {
-    // Implementation to reset Flow Scanner rules to defaults
-    if (this.model.flowScannerRulesRef) {
-      this.model.flowScannerRulesRef.resetToDefaults();
-    }
+    this.activeRulesRef()?.resetToDefaults();
   }
 
   handleExportRules() {
-    // Export only Flow Scanner related localStorage keys
-    const flowScannerFilters = [FLOW_SCANNER_RULES_STORAGE_KEY];
-    // Get reference to App component to call its exportOptions method
+    // Export only the active rule set's localStorage key
     if (this.appRef) {
-      this.appRef.exportOptions(flowScannerFilters);
+      this.appRef.exportOptions([this.activeRulesStorageKey()]);
     }
   }
 
   handleImportRules() {
     if (this.appRef) {
-      this.appRef.pendingImportFilters = [FLOW_SCANNER_RULES_STORAGE_KEY];
+      this.appRef.pendingImportFilters = [this.activeRulesStorageKey()];
       this.appRef.refs.fileInput.click();
     }
   }
@@ -720,6 +786,7 @@ class Option extends React.Component {
     this.onChange = this.onChange.bind(this);
     this.onChangeToggle = this.onChangeToggle.bind(this);
     this.onChangeConfig = this.onChangeConfig.bind(this);
+    this.onChangeConfigField = this.onChangeConfigField.bind(this);
     this.toggleDescriptionExpanded = this.toggleDescriptionExpanded.bind(this);
     this.checkForTruncation = this.checkForTruncation.bind(this);
     this.descriptionRef = {current: null};
@@ -743,6 +810,7 @@ class Option extends React.Component {
     // Configurable rule properties
     this.isConfigurable = props.isConfigurable;
     this.configType = props.configType;
+    this.configFields = props.configFields?.length ? props.configFields : null; // several labelled number inputs instead of one
     this.configStorageKey = props.configStorageKey;
     this.onConfigChange = props.onConfigChange;
     this.onToggleChange = props.onToggleChange;
@@ -765,6 +833,7 @@ class Option extends React.Component {
 
     // Initialize config value if configurable (value comes from props)
     let configValue = props.configValue || null;
+    const config = props.config && typeof props.config === "object" ? {...props.config} : {};
 
     this.state = {
       [this.key || "checked"]: isFlowScannerRule ? value
@@ -772,6 +841,7 @@ class Option extends React.Component {
       : this.type == "select" ? (value || props.default || props.options?.[0]?.value)
       : value,
       configValue,
+      config,
       descriptionExpanded: false,
       showExpandButton: false
     };
@@ -798,6 +868,14 @@ class Option extends React.Component {
     this.setState({configValue});
     if (this.onConfigChange) {
       this.onConfigChange(this.key, configValue);
+    }
+  }
+
+  onChangeConfigField(fieldKey, e) {
+    const config = {...this.state.config, [fieldKey]: e.target.value};
+    this.setState({config});
+    if (this.onConfigChange) {
+      this.onConfigChange(this.key, config);
     }
   }
 
@@ -887,6 +965,30 @@ class Option extends React.Component {
     }
   }
 
+  renderConfigFields() {
+    return h("div", {className: "sfir-option-threshold-fields"},
+      this.configFields.map(field => {
+        const fieldId = `${this.key || this.enhancedTitle || "option"}_${field.key}`;
+        const stored = this.state.config[field.key];
+        const value = stored != null && stored !== "" ? stored : (field.defaultValue ?? "");
+        return h("div", {key: field.key, className: "slds-form-element sfir-option-threshold-field"},
+          h("label", {className: "slds-form-element__label", htmlFor: fieldId}, field.label),
+          h("div", {className: "slds-form-element__control"},
+            h("input", {
+              type: "number",
+              id: fieldId,
+              min: "1",
+              className: "slds-input",
+              value,
+              onChange: (e) => this.onChangeConfigField(field.key, e),
+              title: field.label
+            })
+          )
+        );
+      })
+    );
+  }
+
   renderConfigInput() {
     if (!this.isConfigurable || !this.configType) {
       return null;
@@ -917,7 +1019,7 @@ class Option extends React.Component {
 
     if (isEnhanced) {
       // Enhanced layout
-      return h("div", {className: "enhanced-option-row"},
+      return h("div", {className: "enhanced-option-row" + (this.configFields ? " sfir-option-row-with-thresholds" : "")},
         // Main content area
         h("div", {className: "enhanced-option-content"},
           // Enhanced title with badge
@@ -954,8 +1056,8 @@ class Option extends React.Component {
 
         // Controls on the right
         h("div", {className: "enhanced-option-controls"},
-          // Configuration input (for configurable rules)
-          this.renderConfigInput(),
+          // Configuration input (for configurable rules; multi-field ones get their own row below)
+          !this.configFields && this.renderConfigInput(),
 
           // Severity selector
           this.severity && h("select", {
@@ -989,7 +1091,10 @@ class Option extends React.Component {
 
           // Input controls for non-toggle and non-button types
           !isToggle && !isButton && this.renderInputControl(id, true)
-        )
+        ),
+
+        // Several thresholds do not fit beside the toggle, so they wrap onto a row of their own
+        this.configFields && this.renderConfigFields()
       );
     } else {
       // Standard layout with responsive grid
@@ -1918,7 +2023,9 @@ class CustomShortcuts extends React.Component {
   }
 }
 
-class FlowScannerRules extends React.Component {
+// Shared by the Flow Scanner and Object Scanner "Enabled Rules" tabs. The two editors differ only in
+// storage key, where the rules come from, and a few labels and defaults, so all of that arrives as props.
+class ScannerRulesEditor extends React.Component {
 
   constructor(props) {
     super(props);
@@ -1933,9 +2040,9 @@ class FlowScannerRules extends React.Component {
 
   componentDidMount() {
     this.loadRules();
-    // Set up reference for parent component interaction
+    // Set up reference for parent component interaction (see OptionsTabSelector.activeRulesRef)
     if (this.props.model) {
-      this.props.model.flowScannerRulesRef = this;
+      this.props.model[this.props.refProp] = this;
     }
   }
 
@@ -1946,7 +2053,7 @@ class FlowScannerRules extends React.Component {
       rules: updatedRules,
       resetCounter: prevState.resetCounter + 1
     }));
-    localStorage.setItem(FLOW_SCANNER_RULES_STORAGE_KEY, JSON.stringify(updatedRules));
+    localStorage.setItem(this.props.rulesStorageKey, JSON.stringify(updatedRules));
   }
 
   checkAllRules() {
@@ -1959,33 +2066,25 @@ class FlowScannerRules extends React.Component {
 
   resetToDefaults() {
     // Remove stored rules to force reload with defaults
-    localStorage.removeItem(FLOW_SCANNER_RULES_STORAGE_KEY);
-
-    // Increment reset counter to force component recreation
-    this.setState(prevState => ({
-      resetCounter: prevState.resetCounter + 1
-    }));
-
-    this.loadRules();
+    localStorage.removeItem(this.props.rulesStorageKey);
+    this.loadRules(true);
   }
 
-  async loadRules() {
-    try {
-      // Try to load the actual flow-scanner-core if available
-      let flowScannerCore = null;
-
-      if (typeof lightningflowscanner !== "undefined") {
-        flowScannerCore = lightningflowscanner;
-        const rules = getFlowScannerRules(flowScannerCore);
-        this.setState({rules, loading: false});
-      } else {
-        // No flow scanner core available
+  // bumpKey remounts every rule's <Option>, which caches its checked state, severity and config
+  // internally. The counter and the new rules are set in one update: split across two, the second
+  // render reused the freshly remounted options and they kept the stale values.
+  loadRules(bumpKey = false) {
+    Promise.resolve()
+      .then(() => this.props.fetchRules())
+      .then(rules => this.setState(prevState => ({
+        rules: rules || [],
+        loading: false,
+        resetCounter: bumpKey ? prevState.resetCounter + 1 : prevState.resetCounter
+      })))
+      .catch(error => {
+        console.error(`Error loading ${this.props.ruleSetLabel} rules:`, error);
         this.setState({rules: [], loading: false});
-      }
-    } catch (error) {
-      console.error("Error loading Flow Scanner rules:", error);
-      this.setState({rules: [], loading: false});
-    }
+      });
   }
 
   onRuleChange(ruleName, field, value) {
@@ -1997,6 +2096,10 @@ class FlowScannerRules extends React.Component {
           } else if (field === "severity") {
             return {...rule, severity: value};
           } else if (field === "config") {
+            // Multi-field rules hand over the whole config object
+            if (value && typeof value === "object") {
+              return {...rule, config: {...rule.config, ...value}};
+            }
             // Update the main config object for the scanner, and configValue for the UI
             const newConfig = rule.configType ? {[rule.configType]: value} : {};
             return {...rule, config: newConfig, configValue: value};
@@ -2006,7 +2109,7 @@ class FlowScannerRules extends React.Component {
       });
 
       // Save to localStorage
-      localStorage.setItem(FLOW_SCANNER_RULES_STORAGE_KEY, JSON.stringify(updatedRules));
+      localStorage.setItem(this.props.rulesStorageKey, JSON.stringify(updatedRules));
 
       return {rules: updatedRules};
     });
@@ -2014,6 +2117,7 @@ class FlowScannerRules extends React.Component {
 
   render() {
     const {rules, loading} = this.state;
+    const {ruleSetLabel, defaultSeverity, keyPrefix, emptyMessage} = this.props;
 
     if (loading) {
       return h("div", {className: "slds-text-align_center slds-p-vertical_large"},
@@ -2021,13 +2125,13 @@ class FlowScannerRules extends React.Component {
           h("div", {className: "slds-spinner__dot-a"}),
           h("div", {className: "slds-spinner__dot-b"})
         ),
-        h("p", {className: "slds-m-top_small"}, "Loading Flow Scanner rules...")
+        h("p", {className: "slds-m-top_small"}, `Loading ${ruleSetLabel} rules...`)
       );
     }
 
     if (rules.length === 0) {
       return h("div", {className: "slds-text-align_center slds-p-vertical_large"},
-        h("p", {}, "No Flow Scanner rules available. Please ensure the Flow Scanner core library is loaded.")
+        h("p", {}, emptyMessage || `No ${ruleSetLabel} rules available.`)
       );
     }
 
@@ -2042,23 +2146,16 @@ class FlowScannerRules extends React.Component {
             badge = {label: "Beta", type: "beta"};
           }
 
-          // Resolve config value from rule object
+          // Resolve config value from rule object (multi-field rules render their own inputs)
+          const hasConfigFields = !!rule.configFields?.length;
           let resolvedConfigValue = null;
-          if (rule.isConfigurable) {
+          if (rule.isConfigurable && !hasConfigFields) {
             if (rule.configValue !== undefined && rule.configValue !== null) {
               resolvedConfigValue = rule.configValue;
-            } else if (rule.defaultValue !== undefined && rule.defaultValue !== null) {
+            } else if (rule.config && rule.configType && rule.config[rule.configType] !== undefined) {
+              resolvedConfigValue = rule.config[rule.configType];
+            } else {
               resolvedConfigValue = rule.defaultValue;
-            } else if (rule.config !== undefined && rule.config !== null) {
-              // Extract the specific config value based on configType
-              if (rule.configType === "expression" && rule.config.expression !== undefined) {
-                resolvedConfigValue = rule.config.expression;
-              } else if (rule.configType === "threshold" && rule.config.threshold !== undefined) {
-                resolvedConfigValue = rule.config.threshold;
-              } else {
-                // Fallback to the entire config object (shouldn't happen with well-formed rules)
-                resolvedConfigValue = rule.config;
-              }
             }
           }
 
@@ -2067,14 +2164,16 @@ class FlowScannerRules extends React.Component {
             type: "toggle",
             enhancedTitle: rule.label,
             badge,
-            severity: (rule.severity === "note" ? "info" : rule.severity) || "info",
+            severity: (rule.severity === "note" ? "info" : rule.severity) || defaultSeverity,
             description: rule.description,
-            // No storageKey - managed by FlowScannerRules component
-            key: `flowScannerRule_${rule.name}_${this.state.resetCounter}`,
+            // No storageKey - managed by ScannerRulesEditor
+            key: `${keyPrefix}${rule.name}_${this.state.resetCounter}`,
             checked: rule.checked !== undefined ? rule.checked : true,
             // Rule configuration properties
             isConfigurable: rule.isConfigurable,
             configType: rule.configType,
+            configFields: rule.configFields,
+            config: rule.config,
             configValue: resolvedConfigValue,
             onToggleChange: (checked) => {
               this.onRuleChange(rule.name, "checked", checked);
@@ -2120,7 +2219,7 @@ class App extends React.Component {
           localStorageData[key] = localStorage.getItem(key);
         }
       }
-      filename = `${FLOW_SCANNER_RULES_STORAGE_KEY}.json`;
+      filename = `${filterKeys[0]}.json`;
     } else {
       // Export all localStorage
       localStorageData = {...localStorage};
@@ -2149,6 +2248,10 @@ class App extends React.Component {
     if (this.pendingImportFilters) {
       filterKeys = this.pendingImportFilters;
       this.pendingImportFilters = null; // Clear the flag
+    } else {
+      // This also runs as the file input's onChange handler, and then filterKeys is the change
+      // event rather than a list of keys.
+      filterKeys = Array.isArray(filterKeys) ? filterKeys : null;
     }
 
     const file = fileInput.files[0];
@@ -2170,22 +2273,21 @@ class App extends React.Component {
           }
         }
 
-        // Force refresh of Flow Scanner rules if they exist
+        // Reload the rule set that was imported, so its editor shows the new values
         const {model} = this.props;
-        if (filterKeys && model && model.flowScannerRulesRef) {
-          // Force component re-creation by incrementing reset counter
-          model.flowScannerRulesRef.setState(prevState => ({
-            resetCounter: prevState.resetCounter + 1
-          }));
-          // Reload rules from localStorage (which now has the imported data)
-          model.flowScannerRulesRef.loadRules();
-          // Force a re-render of the parent model
-          model.didUpdate();
+        if (filterKeys && model) {
+          const rulesRef = filterKeys.includes(OBJECT_SCANNER_RULES_STORAGE_KEY)
+            ? model.objectScannerRulesRef
+            : model.flowScannerRulesRef;
+          if (rulesRef) {
+            rulesRef.loadRules(true);
+            model.didUpdate();
+          }
         }
 
         this.setState({
           showToast: true,
-          toastMessage: Array.isArray(filterKeys) ? "Flow Scanner rules imported successfully!" : "Options Imported Successfully!",
+          toastMessage: Array.isArray(filterKeys) ? "Rules imported successfully!" : "Options Imported Successfully!",
           toastVariant: "success",
           toastTitle: "Success"
         });

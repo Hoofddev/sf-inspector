@@ -133,6 +133,7 @@ class App extends React.PureComponent {
       eventMonitorHref: "event-monitor.html?" + hostArg,
       fieldManagerHref: "field-manager.html?" + hostArg,
       limitsHref: "limits.html?" + hostArg,
+      objectScannerHref: "object-scanner.html?" + hostArg,
       apiStatisticsHref: "api-statistics.html?" + hostArg,
       latestNotesViewed:
         localStorage.getItem("latestReleaseNotesVersionViewed")
@@ -289,6 +290,7 @@ class App extends React.PureComponent {
       v: ["click", "logsViewerBtn"],
       b: ["click", "apiStatisticsBtn"],
       c: ["click", "dependenciesExplorerBtn"],
+      j: ["click", "objectScannerBtn"],
       o: ["tab", "objectTab"],
       u: ["tab", "userTab"],
       s: ["tab", "shortcutTab"],
@@ -396,6 +398,7 @@ class App extends React.PureComponent {
       eventMonitorHref,
       fieldManagerHref,
       limitsHref,
+      objectScannerHref,
       apiStatisticsHref,
       isFieldsPresent,
       latestNotesViewed,
@@ -655,7 +658,28 @@ class App extends React.PureComponent {
                 },
                 h("span", {}, "Event ", h("u", {}, "M"), "onitor")
               )
-            )
+            ),
+            isOptionEnabled("object-scanner", hideButtonsOption)
+              ? h(
+                "div",
+                {
+                  className:
+                    "slds-col slds-size_1-of-1 slds-p-horizontal_xx-small slds-m-bottom_xx-small",
+                },
+                h(
+                  "a",
+                  {
+                    ref: "objectScannerBtn",
+                    href: objectScannerHref,
+                    target: linkTarget,
+                    className: "page-button slds-button slds-button_neutral",
+                  },
+                  // "j" is the one letter of the name no other shortcut uses. Its descender swallows a
+                  // normal underline (WebKit skips ink under descenders), so this one sits below it.
+                  h("span", {}, "Ob", h("u", {style: {textDecorationSkipInk: "none", textUnderlineOffset: "0.3em"}}, "j"), "ect Scanner")
+                )
+              )
+              : null
           ),
           h(
             "div",
