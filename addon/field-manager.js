@@ -13,6 +13,16 @@ const FIELD_TYPES = [
   "LongTextArea", "Html", "Url"
 ];
 
+// The values Salesforce's Setup UI fills in when you create a field of that type. One source for the
+// prefill on type change, for field creation and for fields retrieved without these properties.
+const FIELD_TYPE_DEFAULTS = {
+  Checkbox: {checkboxDefault: "unchecked"},
+  Text: {length: 255},
+  MultiselectPicklist: {vislines: 4},
+  LongTextArea: {length: 32768, vislines: 3},
+  Html: {length: 32768, vislines: 25}
+};
+
 // Types that can only be retrieved from an existing object, never created here: creating them needs
 // information this page does not collect (relationship target, summarized field, formula, ...).
 // Editing an existing field only ever changes Label, Description and Help Text (see updateField), so
@@ -662,7 +672,7 @@ class FieldOptionModal extends React.Component {
               name: "length",
               className: "form-control input-textBox",
               placeholder: "Max is 255 characters.",
-              value: field.length ?? 255,
+              value: field.length ?? FIELD_TYPE_DEFAULTS.Text.length,
               onChange: this.handleInputChange,
               disabled: !!field.isExisting
             })
@@ -1417,12 +1427,12 @@ class App extends React.Component {
           }
         };
         if (field.type === "MultiselectPicklist") {
-          newField.Metadata.visibleLines = parseInt(field.vislines) || 4;
+          newField.Metadata.visibleLines = parseInt(field.vislines) || FIELD_TYPE_DEFAULTS.MultiselectPicklist.vislines;
         }
         break;
 
       case "Text":
-        newField.Metadata.length = parseInt(field.length) || 255;
+        newField.Metadata.length = parseInt(field.length) || FIELD_TYPE_DEFAULTS.Text.length;
         break;
 
       case "TextArea":
@@ -1430,9 +1440,13 @@ class App extends React.Component {
         break;
 
       case "LongTextArea":
+        newField.Metadata.length = parseInt(field.length) || FIELD_TYPE_DEFAULTS.LongTextArea.length;
+        newField.Metadata.visibleLines = parseInt(field.vislines) || FIELD_TYPE_DEFAULTS.LongTextArea.vislines;
+        break;
+
       case "Html":
-        newField.Metadata.length = parseInt(field.length) || 32768;
-        newField.Metadata.visibleLines = parseInt(field.vislines) || 6;
+        newField.Metadata.length = parseInt(field.length) || FIELD_TYPE_DEFAULTS.Html.length;
+        newField.Metadata.visibleLines = parseInt(field.vislines) || FIELD_TYPE_DEFAULTS.Html.vislines;
         break;
 
       default:
@@ -1589,7 +1603,7 @@ class App extends React.Component {
         field.sortalpha = !!(valueSetDefinition && valueSetDefinition.sorted);
         field.firstvaluedefault = values.length > 0 && values[0].default === true;
         if (type === "MultiselectPicklist") {
-          field.vislines = metadata.visibleLines || 4;
+          field.vislines = metadata.visibleLines || FIELD_TYPE_DEFAULTS.MultiselectPicklist.vislines;
         }
         break;
       }
@@ -1600,15 +1614,19 @@ class App extends React.Component {
         break;
 
       case "Text":
-        field.length = metadata.length || 255;
+        field.length = metadata.length || FIELD_TYPE_DEFAULTS.Text.length;
         field.uniqueSetting = metadata.unique || false;
         field.external = metadata.externalId || false;
         break;
 
       case "LongTextArea":
+        field.length = metadata.length || FIELD_TYPE_DEFAULTS.LongTextArea.length;
+        field.vislines = metadata.visibleLines || FIELD_TYPE_DEFAULTS.LongTextArea.vislines;
+        break;
+
       case "Html":
-        field.length = metadata.length || 32768;
-        field.vislines = metadata.visibleLines || 6;
+        field.length = metadata.length || FIELD_TYPE_DEFAULTS.Html.length;
+        field.vislines = metadata.visibleLines || FIELD_TYPE_DEFAULTS.Html.vislines;
         break;
 
       default:
@@ -1781,7 +1799,7 @@ class App extends React.Component {
 
     this.setState((prevState) => ({
       fields: prevState.fields.map((field, i) =>
-        i === index ? {...field, type: validatedType} : field
+        i === index ? {...field, type: validatedType, ...(FIELD_TYPE_DEFAULTS[validatedType] || {})} : field
       ),
     }));
   };
