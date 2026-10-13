@@ -95,6 +95,7 @@ nav:
           - Field Manager: field-manager.md
           - Flow Scanner: flow-scanner.md
           - Flow Search: flow-search.md
+          - Object Scanner: object-scanner.md
       - API:
           - Event Monitor: event-monitor.md
           - REST Explorer: rest-explorer.md
