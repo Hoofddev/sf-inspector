@@ -315,6 +315,9 @@ By default, this will enable logs with level "SFDC_DevConsole" for 15 minutes.
 
 <img width="279" alt="Enable Log button" src="assets/images/guide/how-to-10.png">
 
+> **Note**
+> If the configured debug level doesn't exist in the org (e.g. a custom name with no matching Debug Level record), SF Inspector creates a Debug Level named "SF_Inspector" with every category set to FINEST, or reuses it if it already exists, and uses that instead.
+
 You can update the debug level (configuration is per organization) and duration (for all organizations) on the Options page.
 
 <img width="788" alt="DebugLog Options" src="assets/images/guide/how-to-11.png">

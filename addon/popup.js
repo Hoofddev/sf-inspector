@@ -8,6 +8,8 @@ let p = parent;
 let hideButtonsOption = JSON.parse(localStorage.getItem("hideButtonsOption"));
 const isExtensionPage = document.location.ancestorOrigins?.[0].includes(getExtensionId());
 const RECENT_ITEMS_RENDERED_COUNT = 100;
+// DeveloperName of the Debug Level "Enable Log" creates when the configured one does not exist.
+const SFI_DEBUG_LEVEL = "SF_Inspector";
 
 let h = React.createElement;
 if (typeof browser === "undefined") {
@@ -3238,6 +3240,7 @@ class UserDetails extends React.PureComponent {
         this.sfHost + "_debugLogDebugLevel"
       );
       if (debugLogDebugLevel == null) {
+        debugLogDebugLevel = "SFDC_DevConsole";
         localStorage.setItem(
           this.sfHost + "_debugLogDebugLevel",
           "SFDC_DevConsole"
@@ -3246,9 +3249,22 @@ class UserDetails extends React.PureComponent {
 
       let debugLogTimeMinutes = localStorage.getItem("debugLogTimeMinutes");
       if (debugLogTimeMinutes == null) {
+        debugLogTimeMinutes = 15;
         localStorage.setItem("debugLogTimeMinutes", 15);
       }
       let debugTimeInMs = this.getDebugTimeInMs(debugLogTimeMinutes);
+
+      // Resolve the debug level before looking for an existing trace flag, so a missing configured
+      // level always falls back to the same "SF_Inspector" level and repeated clicks extend its
+      // trace flag instead of creating another one.
+      let debugLog = await this.getDebugLog(debugLogDebugLevel);
+      let debugLevelId;
+      if (debugLog && debugLog.size > 0) {
+        debugLevelId = debugLog.records[0].Id;
+      } else {
+        debugLevelId = await this.getOrCreateSfiDebugLevel();
+        debugLogDebugLevel = SFI_DEBUG_LEVEL;
+      }
 
       let traceFlags = await this.getTraceFlags(
         user.Id,
@@ -3263,22 +3279,12 @@ class UserDetails extends React.PureComponent {
         await this.extendTraceFlag(traceFlags.records[0].Id, DTnow, debugTimeInMs);
         //Else create new trace flag
       } else {
-        let debugLog = await this.getDebugLog(debugLogDebugLevel);
-
-        if (debugLog && debugLog.size > 0) {
-          await this.insertTraceFlag(
-            user.Id,
-            debugLog.records[0].Id,
-            DTnow,
-            debugTimeInMs
-          );
-        } else {
-          throw new Error(
-            'Debug Level with developerName = "'
-              + debugLogDebugLevel
-              + '" not found'
-          );
-        }
+        await this.insertTraceFlag(
+          user.Id,
+          debugLevelId,
+          DTnow,
+          debugTimeInMs
+        );
       }
       // Update button state to show it's enabled
       this.setState({
@@ -3397,6 +3403,34 @@ class UserDetails extends React.PureComponent {
       console.error(e);
       return null;
     }
+  }
+
+  async getOrCreateSfiDebugLevel() {
+    let debugLog = await this.getDebugLog(SFI_DEBUG_LEVEL);
+    if (debugLog && debugLog.size > 0) {
+      return debugLog.records[0].Id;
+    }
+    let createdDebugLevel = await this.createDebugLevel(SFI_DEBUG_LEVEL, "SF Inspector");
+    return createdDebugLevel.id;
+  }
+
+  createDebugLevel(developerName, masterLabel) {
+    let newDebugLevel = {
+      DeveloperName: developerName,
+      MasterLabel: masterLabel,
+      ApexCode: "FINEST",
+      ApexProfiling: "FINEST",
+      Callout: "FINEST",
+      Database: "FINEST",
+      System: "FINEST",
+      Validation: "FINEST",
+      Visualforce: "FINEST",
+      Workflow: "FINEST",
+    };
+    return sfConn.rest(
+      "/services/data/v" + apiVersion + "/tooling/sobjects/debuglevel",
+      {method: "POST", body: newDebugLevel}
+    );
   }
 
   insertTraceFlag(userId, debugLogId, DTnow, debugTimeInMs) {
