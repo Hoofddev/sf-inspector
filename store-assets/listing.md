@@ -40,7 +40,7 @@ WHAT IT DOES
 
 Data Export - Write SOQL with autocomplete for objects and fields, run it, and read the results in a filterable table. Copy straight out as CSV, Excel or JSON, or download the file. Save the queries you keep coming back to.
 
-Data Import - Paste or upload a CSV and insert, update, upsert or delete records, with a mapping step and a per-row result you can read afterwards.
+Data Import - Paste or upload a CSV and insert, update, upsert or delete records, with a mapping step and a per-row result you can read or download afterwards.
 
 Field Inspector - Open any record and see every field: API name, type, label and value, side by side, with the value editable in place.
 
@@ -49,6 +49,8 @@ Flow Search - Setup's flow list has no search. This adds one. It loads every flo
 Metadata Download - Retrieve metadata by type and read it in the browser, or take the package away as a zip.
 
 Flow Scanner - Check flows against the Lightning Flow Scanner rule set for the mistakes that are easy to make and hard to spot.
+
+Object Scanner - Check every object and field in the org against hygiene rules you can tune, and export the findings.
 
 REST Explorer - Build and send API requests against the org and read the response, without leaving the browser or reaching for a separate client.
 
@@ -76,14 +78,23 @@ SF Inspector is open source and a fork of Salesforce Inspector Reloaded by Thoma
 ## What's New in This Version  *(limit 4000)*
 
 ```
-Field Creator is now Field Manager. Besides creating fields, it retrieves an object's existing custom fields and lets you change their label, description and help text - Lookup, Master-Detail and Roll-Up Summary fields included - while leaving everything else about them exactly as it was. Columns sort, and the table copies or downloads as CSV.
+Object Scanner is new. It reads every object and field in your org and checks them against hygiene rules you can tune in Options - naming conventions, over-customised objects, unclassified personal data, duplicate labels, missing descriptions and more - and exports the findings as CSV. Open it from the panel.
 
 Also in this version:
 
-- The record you are looking at is recognised again on Lightning addresses with extra parts, such as pc-rnd orgs, so the panel offers "Show all data" there too.
-- Show All Data no longer reports an error for the usage of Geolocation fields.
-- GET requests in REST Explorer work again.
-- Pages with highlighted code - Explore API, REST Explorer, Metadata Download, Event Monitor and Dependencies Explorer - stay responsive while you type.
+- Data Export colours your SOQL as you type, and its query tabs scroll instead of wrapping.
+- Data Import downloads its results as CSV. Batch size and threads can be changed while an import runs, choosing Undelete before pasting data no longer fails, and the object field no longer flashes "Unknown object" while loading.
+- The panel keeps working on Winter '27 orgs, where some internal objects have no name, and the Org tab says "None scheduled" when no major release is planned.
+- Login As in a private window no longer signs you out of the org in your main window.
+- Enable Logs creates an "SF Inspector" debug level when the one set in Options does not exist.
+- Show All Data sorts Usage (%) on the exact value, so fields showing the same percentage are still in the right order.
+- In the debug log viewer, the filter keeps focus while you type and the chosen dates stay put.
+- Event Monitor lists every custom channel, not only when there is just one.
+- Field Manager uses Salesforce's own defaults per field type.
+- Org Limits shows a limit that does not apply to your org (0 of 0) as 0% instead of full.
+- Metadata Download works with VoiceOver: every toggle and checkbox has a name, and filter results and messages are announced.
+- Selected text stands out on highlighted rows, in light and dark.
+- Uses Salesforce API version 67.0.
 ```
 
 ---
