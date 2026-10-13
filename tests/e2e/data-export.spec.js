@@ -161,4 +161,29 @@ test.describe("Data Export", () => {
     expect(clipboardContent).toContain('"' + id + '","' + name + '"');
   });
 
+  test("Query editor highlighting", async ({page, extensionId}) => {
+    await page.goto(`chrome-extension://${extensionId}/data-export.html?host=${mockHost}`);
+    await page.waitForSelector("textarea#query", {timeout: 2000});
+
+    const queryInput = page.locator("textarea#query");
+    const highlight = page.locator(".query-editor .query-highlight code");
+
+    // The highlight layer mirrors the textarea and colours the SOQL keywords.
+    await queryInput.fill("SELECT Id FROM Account WHERE Name = 'Acme'");
+    await expect(highlight).toHaveText("SELECT Id FROM Account WHERE Name = 'Acme'");
+    await expect(highlight.locator(".token.keyword").first()).toHaveText("SELECT");
+    await expect(highlight.locator(".token.string")).toHaveText("'Acme'");
+    await expect(queryInput).not.toHaveClass(/query-plain/);
+
+    // Past the size limit the textarea shows plain text and the layer behind it is cleared.
+    await queryInput.fill("SELECT Id FROM Account -- " + "x".repeat(100000));
+    await expect(queryInput).toHaveClass(/query-plain/);
+    await expect(highlight).toHaveText("");
+
+    // Back under the limit, highlighting resumes.
+    await queryInput.fill("SELECT Name FROM Contact");
+    await expect(queryInput).not.toHaveClass(/query-plain/);
+    await expect(highlight.locator(".token.keyword").first()).toHaveText("SELECT");
+  });
+
 });
