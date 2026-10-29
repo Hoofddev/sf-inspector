@@ -852,6 +852,14 @@ body.sfi-page .sfi-hover-row:hover {
   background-color: var(--sfi-row-hover);
 }
 
+/* Selected text. The system highlight is a pale blue, which blends into a row already tinted by
+   the hover above. A solid accent with white text stays distinct from any row tint. In dark the
+   accent is darkened, because white on #0a84ff only reaches 3.6:1. */
+::selection {
+  background-color: light-dark(var(--sfi-accent), color-mix(in srgb, var(--sfi-accent) 75%, black));
+  color: var(--slds-g-color-on-accent-1);
+}
+
 pre,
 code,
 .slds-textarea {

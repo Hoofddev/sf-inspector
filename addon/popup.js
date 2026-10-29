@@ -8,6 +8,8 @@ let p = parent;
 let hideButtonsOption = JSON.parse(localStorage.getItem("hideButtonsOption"));
 const isExtensionPage = document.location.ancestorOrigins?.[0].includes(getExtensionId());
 const RECENT_ITEMS_RENDERED_COUNT = 100;
+// DeveloperName of the Debug Level "Enable Log" creates when the configured one does not exist.
+const SFI_DEBUG_LEVEL = "SF_Inspector";
 
 let h = React.createElement;
 if (typeof browser === "undefined") {
@@ -133,6 +135,7 @@ class App extends React.PureComponent {
       eventMonitorHref: "event-monitor.html?" + hostArg,
       fieldManagerHref: "field-manager.html?" + hostArg,
       limitsHref: "limits.html?" + hostArg,
+      objectScannerHref: "object-scanner.html?" + hostArg,
       apiStatisticsHref: "api-statistics.html?" + hostArg,
       latestNotesViewed:
         localStorage.getItem("latestReleaseNotesVersionViewed")
@@ -289,6 +292,7 @@ class App extends React.PureComponent {
       v: ["click", "logsViewerBtn"],
       b: ["click", "apiStatisticsBtn"],
       c: ["click", "dependenciesExplorerBtn"],
+      j: ["click", "objectScannerBtn"],
       o: ["tab", "objectTab"],
       u: ["tab", "userTab"],
       s: ["tab", "shortcutTab"],
@@ -396,6 +400,7 @@ class App extends React.PureComponent {
       eventMonitorHref,
       fieldManagerHref,
       limitsHref,
+      objectScannerHref,
       apiStatisticsHref,
       isFieldsPresent,
       latestNotesViewed,
@@ -655,7 +660,28 @@ class App extends React.PureComponent {
                 },
                 h("span", {}, "Event ", h("u", {}, "M"), "onitor")
               )
-            )
+            ),
+            isOptionEnabled("object-scanner", hideButtonsOption)
+              ? h(
+                "div",
+                {
+                  className:
+                    "slds-col slds-size_1-of-1 slds-p-horizontal_xx-small slds-m-bottom_xx-small",
+                },
+                h(
+                  "a",
+                  {
+                    ref: "objectScannerBtn",
+                    href: objectScannerHref,
+                    target: linkTarget,
+                    className: "page-button slds-button slds-button_neutral",
+                  },
+                  // "j" is the one letter of the name no other shortcut uses. Its descender swallows a
+                  // normal underline (WebKit skips ink under descenders), so this one sits below it.
+                  h("span", {}, "Ob", h("u", {style: {textDecorationSkipInk: "none", textUnderlineOffset: "0.3em"}}, "j"), "ect Scanner")
+                )
+              )
+              : null
           ),
           h(
             "div",
@@ -1904,7 +1930,7 @@ class AllDataBoxSObject extends React.PureComponent {
       return null;
     }
     let sobject = sobjectsList.find(
-      (sobject) => sobject.name.toLowerCase() == query.toLowerCase()
+      (sobject) => (sobject.name || "").toLowerCase() == query.toLowerCase()
     );
     let queryKeyPrefix = query.substring(0, 3);
     if (!sobject) {
@@ -1940,33 +1966,38 @@ class AllDataBoxSObject extends React.PureComponent {
     let res = sobjectsList
       .filter(
         (sobject) =>
-          sobject.name.toLowerCase().includes(query.toLowerCase())
-          || sobject.label.toLowerCase().includes(query.toLowerCase())
+          (sobject.name || "").toLowerCase().includes(query.toLowerCase())
+          || (sobject.label || "").toLowerCase().includes(query.toLowerCase())
           || sobject.keyPrefix == queryKeyPrefix
       )
-      .map((sobject) => ({
-        recordId: null,
-        sobject,
-        // TO-DO: merge with the sortRank function in data-export
-        relevance:
-          (sobject.keyPrefix == queryKeyPrefix
-            ? 2
-            : sobject.name.toLowerCase() == query.toLowerCase()
-              ? 3
-              : sobject.label.toLowerCase() == query.toLowerCase()
-                ? 4
-                : sobject.name.toLowerCase().startsWith(query.toLowerCase())
-                  ? 5
-                  : sobject.label.toLowerCase().startsWith(query.toLowerCase())
-                    ? 6
-                    : sobject.name.toLowerCase().includes("__" + query.toLowerCase())
-                      ? 7
-                      : sobject.name.toLowerCase().includes("_" + query.toLowerCase())
-                        ? 8
-                        : sobject.label.toLowerCase().includes(" " + query.toLowerCase())
-                          ? 9
-                          : 10) + (sobject.availableApis.length == 0 ? 20 : 0),
-      }));
+      .map((sobject) => {
+        let sName = (sobject.name || "").toLowerCase();
+        let sLabel = (sobject.label || "").toLowerCase();
+        let q = query.toLowerCase();
+        return {
+          recordId: null,
+          sobject,
+          // TO-DO: merge with the sortRank function in data-export
+          relevance:
+            (sobject.keyPrefix == queryKeyPrefix
+              ? 2
+              : sName == q
+                ? 3
+                : sLabel == q
+                  ? 4
+                  : sName.startsWith(q)
+                    ? 5
+                    : sLabel.startsWith(q)
+                      ? 6
+                      : sName.includes("__" + q)
+                        ? 7
+                        : sName.includes("_" + q)
+                          ? 8
+                          : sLabel.includes(" " + q)
+                            ? 9
+                            : 10) + (sobject.availableApis.length == 0 ? 20 : 0),
+        };
+      });
     query = query || contextRecordId || "";
     queryKeyPrefix = query.substring(0, 3);
     if (query.match(/^([a-zA-Z0-9]{15}|[a-zA-Z0-9]{18})$/)) {
@@ -1980,7 +2011,7 @@ class AllDataBoxSObject extends React.PureComponent {
     res.sort(
       (a, b) =>
         a.relevance - b.relevance
-        || a.sobject.name.localeCompare(b.sobject.name)
+        || (a.sobject.name || "").localeCompare(b.sobject.name || "")
     );
     return res;
   }
@@ -2027,8 +2058,8 @@ class AllDataBoxSObject extends React.PureComponent {
             {className: "dropdown-item slds-wrap", key: "main-" + itemKey},
             value.recordId
               || h(MarkSubstring, {
-                text: value.sobject.name,
-                start: value.sobject.name
+                text: value.sobject.name || "",
+                start: (value.sobject.name || "")
                   .toLowerCase()
                   .indexOf(userQuery.toLowerCase()),
                 length: userQuery.length,
@@ -2046,8 +2077,8 @@ class AllDataBoxSObject extends React.PureComponent {
             }),
             " • ",
             h(MarkSubstring, {
-              text: value.sobject.label,
-              start: value.sobject.label
+              text: value.sobject.label || "",
+              start: (value.sobject.label || "")
                 .toLowerCase()
                 .indexOf(userQuery.toLowerCase()),
               length: userQuery.length,
@@ -2858,14 +2889,16 @@ class AllDataBoxOrg extends React.PureComponent {
 
   getNextMajorRelease(maintenances) {
     if (maintenances) {
-      let event = maintenances.find((event) =>
-        event.name.endsWith("Major Release")
+      let event = maintenances.find((e) =>
+        e && e.name && e.name.endsWith("Major Release")
       );
-      return (
-        event.name.replace(" Major Release", "")
-        + " on "
-        + new Date(event.plannedStartTime).toDateString()
-      );
+      if (event) {
+        return (
+          event.name.replace(" Major Release", "")
+          + " on "
+          + new Date(event.plannedStartTime).toDateString()
+        );
+      }
     }
     return null;
   }
@@ -3106,9 +3139,11 @@ class AllDataBoxOrg extends React.PureComponent {
                 h(
                   "td",
                   {},
-                  this.getNextMajorRelease(
-                    this.state.instanceStatus?.Maintenances
-                  )
+                  this.state.instanceStatus
+                    ? this.getNextMajorRelease(
+                      this.state.instanceStatus.Maintenances
+                    ) || "None scheduled"
+                    : ""
                 )
               )
             )
@@ -3205,6 +3240,7 @@ class UserDetails extends React.PureComponent {
         this.sfHost + "_debugLogDebugLevel"
       );
       if (debugLogDebugLevel == null) {
+        debugLogDebugLevel = "SFDC_DevConsole";
         localStorage.setItem(
           this.sfHost + "_debugLogDebugLevel",
           "SFDC_DevConsole"
@@ -3213,9 +3249,22 @@ class UserDetails extends React.PureComponent {
 
       let debugLogTimeMinutes = localStorage.getItem("debugLogTimeMinutes");
       if (debugLogTimeMinutes == null) {
+        debugLogTimeMinutes = 15;
         localStorage.setItem("debugLogTimeMinutes", 15);
       }
       let debugTimeInMs = this.getDebugTimeInMs(debugLogTimeMinutes);
+
+      // Resolve the debug level before looking for an existing trace flag, so a missing configured
+      // level always falls back to the same "SF_Inspector" level and repeated clicks extend its
+      // trace flag instead of creating another one.
+      let debugLog = await this.getDebugLog(debugLogDebugLevel);
+      let debugLevelId;
+      if (debugLog && debugLog.size > 0) {
+        debugLevelId = debugLog.records[0].Id;
+      } else {
+        debugLevelId = await this.getOrCreateSfiDebugLevel();
+        debugLogDebugLevel = SFI_DEBUG_LEVEL;
+      }
 
       let traceFlags = await this.getTraceFlags(
         user.Id,
@@ -3230,22 +3279,12 @@ class UserDetails extends React.PureComponent {
         await this.extendTraceFlag(traceFlags.records[0].Id, DTnow, debugTimeInMs);
         //Else create new trace flag
       } else {
-        let debugLog = await this.getDebugLog(debugLogDebugLevel);
-
-        if (debugLog && debugLog.size > 0) {
-          await this.insertTraceFlag(
-            user.Id,
-            debugLog.records[0].Id,
-            DTnow,
-            debugTimeInMs
-          );
-        } else {
-          throw new Error(
-            'Debug Level with developerName = "'
-              + debugLogDebugLevel
-              + '" not found'
-          );
-        }
+        await this.insertTraceFlag(
+          user.Id,
+          debugLevelId,
+          DTnow,
+          debugTimeInMs
+        );
       }
       // Update button state to show it's enabled
       this.setState({
@@ -3366,6 +3405,34 @@ class UserDetails extends React.PureComponent {
     }
   }
 
+  async getOrCreateSfiDebugLevel() {
+    let debugLog = await this.getDebugLog(SFI_DEBUG_LEVEL);
+    if (debugLog && debugLog.size > 0) {
+      return debugLog.records[0].Id;
+    }
+    let createdDebugLevel = await this.createDebugLevel(SFI_DEBUG_LEVEL, "SF Inspector");
+    return createdDebugLevel.id;
+  }
+
+  createDebugLevel(developerName, masterLabel) {
+    let newDebugLevel = {
+      DeveloperName: developerName,
+      MasterLabel: masterLabel,
+      ApexCode: "FINEST",
+      ApexProfiling: "FINEST",
+      Callout: "FINEST",
+      Database: "FINEST",
+      System: "FINEST",
+      Validation: "FINEST",
+      Visualforce: "FINEST",
+      Workflow: "FINEST",
+    };
+    return sfConn.rest(
+      "/services/data/v" + apiVersion + "/tooling/sobjects/debuglevel",
+      {method: "POST", body: newDebugLevel}
+    );
+  }
+
   insertTraceFlag(userId, debugLogId, DTnow, debugTimeInMs) {
     try {
       let newTraceFlag = {
@@ -3422,14 +3489,14 @@ class UserDetails extends React.PureComponent {
     return user.IsActive && user.NetworkId;
   }
 
-  getLoginAsLink(userId) {
-    let {sfHost, contextOrgId, contextPath} = this.props;
+  // Relative servlet.su path: used for the plain Login As link and as the redirect_uri of the
+  // Single Access request in loginAsInIncognito.
+  getLoginAsPath(userId) {
+    let {contextOrgId, contextPath} = this.props;
     const retUrl = contextPath || "/";
     const targetUrl = contextPath || "/";
     return (
-      "https://"
-      + sfHost
-      + "/servlet/servlet.su"
+      "/servlet/servlet.su"
       + "?oid="
       + encodeURIComponent(contextOrgId)
       + "&suorgadminid="
@@ -3441,7 +3508,32 @@ class UserDetails extends React.PureComponent {
     );
   }
 
-  loginAsInIncognito(userId) {
+  getLoginAsLink(userId) {
+    let {sfHost} = this.props;
+    return "https://" + sfHost + this.getLoginAsPath(userId);
+  }
+
+  async loginAsInIncognito(userId) {
+    // Handing the live session id to frontdoor.jsp in a second browser context gets flagged as a
+    // session hijack, and Salesforce then ends the session in the main tab. The Single Access UI
+    // Bridge API mints a separate one-time frontdoor URL instead, without touching the live session.
+    // A 401 or 403 here only means the org or token does not allow Single Access, so it must not
+    // raise the session error banner in the popup.
+    try {
+      const redirectUri = this.getLoginAsPath(userId).replace(/^\//, "");
+      const singleAccess = await sfConn.rest(
+        "/services/oauth2/singleaccess?redirect_uri=" + encodeURIComponent(redirectUri),
+        {method: "GET", suppressSessionError: true}
+      );
+      if (singleAccess && singleAccess.frontdoor_uri) {
+        this.openUrlInIncognito(singleAccess.frontdoor_uri);
+        return;
+      }
+      console.warn("Single Access returned no frontdoor_uri, falling back to frontdoor.jsp", singleAccess);
+    } catch (e) {
+      console.warn(`Single Access failed (${e.name}: ${e.message}), falling back to frontdoor.jsp`, e);
+    }
+    // Fallback when Single Access is not available for this org or token
     const targetUrl
       = "https://"
       + this.sfHost

@@ -707,21 +707,21 @@ class RowList {
 
     // Check if all non-empty values are numeric
     let allNumeric = this.rows.every(row => {
-      let val = row.sortKey(this._sortCol);
+      let val = row.sortValue(this._sortCol);
       return val === null || val === undefined || val === "" || val === "Error" || !isNaN(parseFloat(val));
     });
 
     // Also check if we have at least some numeric values
     let hasNumericValues = this.rows.some(row => {
-      let val = row.sortKey(this._sortCol);
+      let val = row.sortValue(this._sortCol);
       return val !== null && val !== undefined && val !== "" && !isNaN(parseFloat(val));
     });
 
     if (allNumeric && hasNumericValues) {
       // Numeric sorting
       this.rows.sort((a, b) => {
-        let aVal = a.sortKey(this._sortCol);
-        let bVal = b.sortKey(this._sortCol);
+        let aVal = a.sortValue(this._sortCol);
+        let bVal = b.sortValue(this._sortCol);
 
         // Handle null/undefined/empty values
         if (aVal === null || aVal === undefined || aVal === "") {
@@ -740,7 +740,7 @@ class RowList {
       });
     } else {
       // String sorting (original logic)
-      this.rows.sort((a, b) => this._sortDir * s(a.sortKey(this._sortCol)).localeCompare(s(b.sortKey(this._sortCol))));
+      this.rows.sort((a, b) => this._sortDir * s(a.sortValue(this._sortCol)).localeCompare(s(b.sortValue(this._sortCol))));
     }
   }
   initColumns(cols) {
@@ -1099,6 +1099,11 @@ class ChildRowList extends RowList {
 }
 
 class TableRow {
+  // The value rows are ordered by. Defaults to sortKey(), which also feeds filtering,
+  // copy and export; override where sorting needs more precision than is displayed.
+  sortValue(col) {
+    return this.sortKey(col);
+  }
   visible() {
     let selectedColumns = Array.from(this.rowList.selectedColumnMap.values());
     let split = terms => terms.trim().toLowerCase().split(/[ \t]+/);
@@ -1283,6 +1288,20 @@ class FieldRow extends TableRow {
     return GET_FIELD_USAGE_LABEL;
   }
 
+  fieldUsageSortKey() {
+    // Sort by the exact (unrounded) usage so fields that display the same
+    // rounded percentage are still ordered by their true populated ratio.
+    if (this.fieldUsageData !== null
+        && this.fieldUsageData !== "Error"
+        && this.fieldUsageDetails
+        && this.fieldUsageDetails.totalCount > 0) {
+      return (this.fieldUsageDetails.nonNullCount / this.fieldUsageDetails.totalCount) * 100;
+    }
+    // Fall back to the display value for all non-data states
+    // (required field = 100, "", "Loading...", "Error", "Get field usage").
+    return this.fieldUsage();
+  }
+
   fieldUsageTitle() {
     // If we don't have field describe info, we can't calculate usage
     if (!this.fieldDescribe || this.fieldDescribe.type === "textarea" || this.fieldDescribe.type === "address" || this.fieldDescribe.type === "location") {
@@ -1453,6 +1472,9 @@ class FieldRow extends TableRow {
       case "usage": return this.fieldUsage();
       default: return this.rowProperties()[col];
     }
+  }
+  sortValue(col) {
+    return col == "usage" ? this.fieldUsageSortKey() : this.sortKey(col);
   }
   showFieldDescription() {
     if (!this.entityParticle || !this.entityParticle.FieldDefinition) {

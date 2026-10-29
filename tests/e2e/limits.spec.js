@@ -2,7 +2,8 @@ import {test, expect} from "./fixtures";
 import {
   TEST_CONSTANTS,
   injectSessionData,
-  waitSuccessfulHttpResponse
+  waitSuccessfulHttpResponse,
+  fulfillSuccess
 } from "./test-helpers";
 import {routeMock} from "./test-mock";
 
@@ -60,6 +61,30 @@ test.describe("Org Limits", () => {
     await expect(limitGauges.first()).toContainText("%");
     // Figcaption shows consumed/total (e.g. "X of Y consumed")
     await expect(page.locator("figcaption").first()).toContainText("consumed");
+  });
+
+  test("Gauge is neutral and shows 0% when a limit is 0 of 0 consumed", async ({page, extensionId}) => {
+    test.skip(!TEST_CONSTANTS.mockEnabled, "Needs the mocked limits API");
+
+    // A limit that does not apply to the org comes back as Max 0, Remaining 0
+    await page.route(url => url.pathname.endsWith("/limits"), async route => {
+      await fulfillSuccess(route, {
+        "DailyApiRequests": {"Max": 10000, "Remaining": 1000},
+        "PrivateConnectOutboundCalloutHourlyLimitMB": {"Max": 0, "Remaining": 0}
+      });
+    });
+    await initLimitsPage(page, extensionId);
+
+    const figure = page.locator("figure", {hasText: "Private Connect"});
+    await expect(figure.locator("figcaption")).toContainText("0 of 0 consumed");
+    // Not a falsely "full" gauge
+    await expect(figure.locator(".meter-value")).toHaveText("0%");
+    await expect(figure.locator(".meter")).toHaveClass(/meter-not-applicable/);
+
+    // A limit that does apply still fills as before
+    const applicable = page.locator("figure", {hasText: "Daily Api Requests"});
+    await expect(applicable.locator(".meter-value")).toHaveText("90%");
+    await expect(applicable.locator(".meter")).not.toHaveClass(/meter-not-applicable/);
   });
 
   test("Copy button is enabled when limits load", async ({page, extensionId}) => {

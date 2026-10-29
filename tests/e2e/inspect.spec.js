@@ -2,7 +2,8 @@ import {test, expect} from "./fixtures";
 import {
   TEST_CONSTANTS,
   injectSessionData,
-  createModelExposureSetup
+  createModelExposureSetup,
+  fulfillSuccess
 } from "./test-helpers";
 import {routeMock} from "./test-mock";
 
@@ -166,6 +167,101 @@ test.describe("Inspect", () => {
         }
       }
     }
+  });
+
+  test("Sort Field Usage by exact ratio, not rounded display value", async ({page, extensionId}) => {
+    test.skip(!TEST_CONSTANTS.mockEnabled, "Requires mocked field usage responses");
+
+    // 124/1000 (12.4%) and 123/1000 (12.3%) both display as "12", but must sort by the exact ratio
+    const totalRecords = 1000;
+    const usageCounts = new Map([["FieldHighUsage__c", 124], ["FieldLowUsage__c", 123]]);
+
+    // Page-level overrides for this test only; everything else falls back to the shared context mock
+    await page.route("**/*", async route => {
+      const request = route.request();
+      const url = request.url();
+      const method = request.method();
+
+      if (method === "GET" && url.includes("/sobjects/Account/describe") && !url.includes("layouts")) {
+        await fulfillSuccess(route, {
+          name: "Account",
+          label: "Account",
+          keyPrefix: "001",
+          createable: true,
+          updateable: true,
+          deletable: true,
+          fields: [
+            {name: "Id", label: "Account ID", type: "id", createable: false, updateable: false, nillable: false, referenceTo: []},
+            {name: "Name", label: "Account Name", type: "string", length: 255, createable: true, updateable: true, nillable: false, nameField: true, referenceTo: []},
+            {name: "FieldHighUsage__c", label: "Field High Usage", type: "string", length: 255, custom: true, createable: true, updateable: true, nillable: true, referenceTo: []},
+            {name: "FieldLowUsage__c", label: "Field Low Usage", type: "string", length: 255, custom: true, createable: true, updateable: true, nillable: true, referenceTo: []}
+          ],
+          childRelationships: [],
+          urls: {
+            sobject: `/services/data/v${apiVersion}/sobjects/Account`,
+            rowTemplate: `/services/data/v${apiVersion}/sobjects/Account/{ID}`,
+            layouts: `/services/data/v${apiVersion}/sobjects/Account/describe/layouts`
+          }
+        });
+        return;
+      }
+
+      // Denominator: SELECT COUNT() FROM Account
+      if (method === "GET" && url.includes("/query/?q=")) {
+        const soql = new URL(url).searchParams.get("q").toLowerCase();
+        if (soql.includes("count()") && soql.includes("from account") && !soql.includes("where")) {
+          await fulfillSuccess(route, {totalSize: totalRecords, done: true, records: []});
+          return;
+        }
+      }
+
+      // Numerators: composite batch of SELECT COUNT() ... WHERE <field> != null
+      if (method === "POST" && url.includes("/composite")) {
+        const body = request.postDataJSON();
+        if (body?.compositeRequest?.some(req => usageCounts.has(req.referenceId.replace("fieldUsage_", "")))) {
+          await fulfillSuccess(route, {
+            compositeResponse: body.compositeRequest.map(req => ({
+              referenceId: req.referenceId,
+              httpStatusCode: 200,
+              body: {totalSize: usageCounts.get(req.referenceId.replace("fieldUsage_", "")) ?? 0, done: true, records: []}
+            }))
+          });
+          return;
+        }
+      }
+
+      await route.fallback();
+    });
+
+    await initInspectPage(page, extensionId);
+
+    await page.waitForSelector(".slds-builder-header_container li span[title=Fields]", {timeout: 1000});
+    await page.locator(".slds-builder-header_container li span[title=Fields]").click();
+
+    await page.waitForSelector("text=Usage (%)", {timeout: 1000});
+    const usageHeader = page.locator("th:has-text('Usage (%)')");
+
+    // Calculate usage for all fields
+    await usageHeader.locator("button").click();
+
+    const rowFor = name => page.locator("tr", {has: page.locator("td.field-name", {hasText: new RegExp(`^${name}$`)})});
+
+    // Both fields show the same rounded percentage
+    await expect(rowFor("FieldHighUsage__c").locator("td.field-usage")).toHaveText("12", {timeout: 3000});
+    await expect(rowFor("FieldLowUsage__c").locator("td.field-usage")).toHaveText("12", {timeout: 3000});
+
+    const fieldOrder = () => page.locator("td.field-name").allTextContents();
+
+    // Ascending: 12.3% before 12.4%
+    await usageHeader.click({position: {x: 5, y: 5}});
+    let order = await fieldOrder();
+    expect(order.indexOf("FieldLowUsage__c")).toBeGreaterThan(-1);
+    expect(order.indexOf("FieldLowUsage__c")).toBeLessThan(order.indexOf("FieldHighUsage__c"));
+
+    // Descending: 12.4% before 12.3%
+    await usageHeader.click({position: {x: 5, y: 5}});
+    order = await fieldOrder();
+    expect(order.indexOf("FieldHighUsage__c")).toBeLessThan(order.indexOf("FieldLowUsage__c"));
   });
 
   test("Enter Edit Mode - Update", async ({page, extensionId}) => {

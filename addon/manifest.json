@@ -1,7 +1,7 @@
 {
   "name": "SF Inspector",
   "description": "Productivity tools for Salesforce administrators and developers to inspect data and metadata directly from the Salesforce UI.",
-  "version": "2.2.0",
+  "version": "2.3.0",
   "version_name": "2.1",
   "icons": {
     "128": "icon128.png"
@@ -89,7 +89,8 @@
         "options.html",
         "event-monitor.html",
         "flow-scanner.html",
-        "debug-log.html"
+        "debug-log.html",
+        "object-scanner.html"
       ],
       "matches": [
         "https://*.salesforce.com/*",
@@ -174,6 +175,9 @@
     },
     "debug-log": {
       "description": "Logs Viewer"
+    },
+    "object-scanner": {
+      "description": "Object Scanner"
     },
     "api-statistics": {
       "description": "API Statistics"

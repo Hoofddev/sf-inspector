@@ -59,6 +59,10 @@ figcaption > div {
   border-radius: 0 0 6rem 6rem;
   background: deepskyblue;
 }
+/* "0 of 0 consumed": the limit does not apply to this org, so the meter is a neutral, not a fill. */
+.meter-not-applicable {
+  background: var(--slds-g-color-surface-3);
+}
 .meter-value-container {
   position: absolute;
   bottom: -0.75rem;

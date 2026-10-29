@@ -1,3 +1,4 @@
+import fs from "node:fs";
 import {test, expect} from "./fixtures";
 import {
   TEST_CONSTANTS,
@@ -291,6 +292,33 @@ test.describe("Data Import", () => {
     await expect(clipboardContent).toContain("apiType=Enterprise");
     await expect(clipboardContent).toContain("action=update");
     await expect(clipboardContent).toContain("object=Inspector_Test__c");
+  });
+
+  test("Download Import Result as CSV", async ({page, context, extensionId}) => {
+    await initImportPage(page, context, extensionId);
+    await createRecords(page);
+
+    const downloadPromise = page.waitForEvent("download");
+    await page.click("button[title='Download as a CSV file']");
+    const download = await downloadPromise;
+
+    // Named after the object, the action and the visible status counts
+    expect(download.suggestedFilename()).toMatch(/^Inspector_Test__c-Create-Succeeded_2-.+\.csv$/);
+    const content = fs.readFileSync(await download.path(), "utf8");
+    expect(content).toContain("Name");
+    expect(content).toContain("__Status");
+    expect(content).toContain("test3-" + TEST_GUID);
+  });
+
+  test("Select Undelete Before Data Is Pasted", async ({page, context, extensionId}) => {
+    const errors = [];
+    page.on("pageerror", e => errors.push(e.message));
+    await initImportPage(page, context, extensionId);
+
+    await page.locator("#form-import-action").selectOption("undelete");
+
+    await expect(page.locator("button:has-text('Run Undelete')")).toBeVisible();
+    expect(errors).toEqual([]);
   });
 
   test("Validation Errors - Empty Data", async ({page, context, extensionId}) => {

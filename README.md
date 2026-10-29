@@ -36,6 +36,7 @@ Details are in [issue #725 upstream](https://github.com/tprouvot/Salesforce-Insp
 | **Logs Viewer** | Read and search Apex debug logs |
 | **Event Monitor** | Subscribe to platform events and change events |
 | **Field Manager** | Create fields in bulk, and edit the label, description and help text of existing ones |
+| **Object Scanner** | Load, search and export the data model, and check objects and fields against hygiene rules |
 | **Org Limits, Flow Scanner, Dependencies Explorer, API Statistics** | |
 
 Plus setup shortcuts, user search and quick links from the popup on any Salesforce page.

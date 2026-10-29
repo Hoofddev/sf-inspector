@@ -50,7 +50,101 @@ textarea[hidden] {
 
 #query {
   height: 5em;
-  min-height: 7em;
+  min-height: 2.5em;
+}
+
+/*
+ * Query editor overlay: a transparent #query textarea sits on top of the
+ * .query-highlight <pre> so the real caret/selection/resize-handle stay
+ * native while Prism-highlighted text shows through underneath.
+ * Font metrics and box model below MUST stay identical between the two
+ * layers (font-family/size/line-height/letter-spacing, box-sizing,
+ * padding, border width, white-space) or characters drift out of
+ * alignment, especially over long lines.
+ */
+.query-editor {
+  position: relative;
+  z-index: 0;
+  width: 100%;
+  /* The editor's ground. It sits here rather than on the highlight layer because that layer is
+     pulled in from the textarea's scrollbars (data-export.js), which would leave them bare. */
+  background-color: var(--slds-g-color-surface-container-1);
+  border-bottom-right-radius: 0.25rem;
+  border-bottom-left-radius: 0.25rem;
+}
+
+.query-editor #query,
+.query-editor .query-highlight {
+  box-sizing: border-box;
+  font-family: var(--slds-g-font-family-monospace, monospace);
+  font-size: 0.9rem;
+  line-height: 1.4;
+  letter-spacing: normal;
+  white-space: pre-wrap;
+  word-wrap: normal;
+  tab-size: 4;
+}
+
+.query-editor #query {
+  position: relative;
+  z-index: 1;
+  background: transparent;
+  color: transparent;
+  caret-color: var(--slds-g-color-on-surface-1);
+}
+
+.query-editor #query.query-plain {
+  /* Colorization is disabled above MAX_HIGHLIGHT_LENGTH (data-export.js), so there is no highlighted
+     backdrop to show through anymore - make the real text visible again instead of transparent. */
+  color: var(--slds-g-color-on-surface-1);
+}
+
+.query-editor #query::selection {
+  /* The selection is painted on the textarea, above the highlight layer, so the syntax colours
+     cannot show through it. Selected text takes the plain text colour instead of transparent. */
+  color: var(--slds-g-color-on-surface-1);
+  background-color: color-mix(in srgb, var(--sfi-accent) 30%, transparent);
+}
+
+.query-editor .query-highlight {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 0;
+  margin: 0;
+  overflow: hidden;
+  pointer-events: none;
+  color: var(--slds-g-color-on-surface-1);
+  background: none;
+  padding: 8px 10px;
+  border: 1px solid transparent;
+}
+
+.query-editor .query-highlight code {
+  display: block;
+  font: inherit;
+  white-space: inherit;
+  background: none;
+  text-shadow: none;
+  padding: 0;
+  margin: 0;
+  /* Override prism.css's unscoped code[class*="language-"] rule, which
+     otherwise gives the code element its own scroll box (height/max-height:
+     inherit + overflow: auto), competing with the scrollTop we sync onto
+     the outer .query-highlight <pre>. */
+  height: auto;
+  max-height: none;
+  overflow: visible;
+}
+
+/* The theme's code viewer gives every Prism <pre> and its <code> a sheet of their own, with
+   !important. Under the transparent textarea both must stay clear, so they are restated with
+   enough weight to win over it. */
+body.sfi-page .query-editor pre.query-highlight,
+body.sfi-page .query-editor pre.query-highlight > code {
+  background-color: transparent !important;
 }
 
 #result-area {
@@ -645,6 +739,24 @@ svg.icon:hover {
   display: flex;
   padding: 0;
   position: relative;
+  overflow-x: auto;
+  flex-wrap: nowrap;
+  scrollbar-width: thin;
+  /* Scrolling clips vertically too, which cut off the pixel the active tab reaches down over the
+     editor's top border. That pixel gets room inside the strip, taken back from the editor below,
+     and the strip stacks above the editor so the tab still covers the border. */
+  padding-bottom: 1px;
+  margin-bottom: -1px;
+  z-index: 1;
+}
+
+/* Safari before 18.2 ignores scrollbar-width; give it the theme's slimmer scrollbar instead. */
+.query-tabs::-webkit-scrollbar {
+  height: 7px;
+}
+
+.query-tabs::-webkit-scrollbar-thumb {
+  border-width: 2px;
 }
 
 .query-tab {

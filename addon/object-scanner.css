@@ -1,0 +1,319 @@
+/*
+ * Object Scanner
+ *
+ * Layout only, plus the few colours this page owns. Everything that makes it look like SF Inspector --
+ * the glass, the ground, the header clearance, the measure -- comes from sf-inspector-theme.css,
+ * which loads after this file. The page is a single viewport-high column (.sfir-page-container, sized
+ * by the theme) in which the object list and the result tables scroll on their own, so every flex
+ * item on the way down needs min-height: 0 or it grows to its content and pushes the page long.
+ */
+
+.sfir-object-scanner-page {
+  gap: var(--sfi-gap);
+}
+
+.sfir-object-scanner-page > * {
+  flex-shrink: 0;
+}
+
+.sfir-object-scanner-page > .sfir-object-scanner-main {
+  flex: 1 1 0;
+}
+
+/* --- Help ---------------------------------------------------------------------------------- */
+
+/* AlertBanner is a full-bleed strip by design; here it sits among rounded panels, so it takes their
+   corners. */
+.sfir-object-scanner-help {
+  border-radius: var(--slds-g-radius-border-3);
+  overflow: hidden;
+  box-shadow: var(--slds-g-shadow-2);
+}
+
+/* --- Toolbar ------------------------------------------------------------------------------- */
+
+/* Chrome over the ground, so it takes the theme's glass and radius (.sfi-panel); only the inset is
+   set here. */
+.sfir-object-scanner-toolbar {
+  padding: .8rem 1.25rem;
+}
+
+.sfir-object-scanner-toolbar .slds-checkbox_toggle {
+  align-items: center;
+}
+
+.sfir-object-scanner-toolbar .slds-checkbox_toggle .slds-form-element__label {
+  padding-inline-end: .6rem;
+}
+
+.sfir-object-scanner-progress {
+  min-width: 12rem;
+  font-size: .8125rem;
+  color: var(--slds-g-color-on-surface-2);
+  font-variant-numeric: tabular-nums;
+}
+
+.sfir-object-scanner-api-stats {
+  font-size: .8125rem;
+  color: var(--slds-g-color-on-surface-2);
+  font-variant-numeric: tabular-nums;
+}
+
+.sfir-object-scanner-api-stats .slds-badge {
+  background-color: light-dark(rgba(60, 50, 90, .06), rgba(255, 255, 255, .08));
+  color: var(--slds-g-color-on-surface-2);
+  border: 0;
+  border-radius: 999px;
+  font-weight: 500;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+/* --- Main split: object list | results ----------------------------------------------------- */
+
+.sfir-object-scanner-main {
+  gap: var(--sfi-gap);
+  min-height: 0;
+}
+
+.sfir-object-scanner-picker {
+  flex: 0 0 22rem;
+  min-width: 16rem;
+  max-width: 28rem;
+  min-height: 0;
+}
+
+.sfir-object-scanner-picker > .slds-card {
+  min-height: 0;
+}
+
+.sfir-object-scanner-picker-body,
+.sfir-object-scanner-picker-list {
+  min-height: 0;
+}
+
+.sfir-object-scanner-picker-list {
+  margin-inline: -.5rem;
+  padding-inline: .5rem;
+}
+
+.sfir-object-scanner-picker-list .slds-form-element + .slds-form-element {
+  margin-top: .3rem;
+}
+
+.sfir-object-scanner-picker .slds-button-group + div .slds-button + .slds-button {
+  margin-inline-start: .4rem;
+}
+
+/* Collapsed, the list shrinks to its toggle: the card's glass goes, so the one button is not left
+   floating inside an empty frosted panel. */
+.sfir-object-scanner-picker-collapsed .sfir-object-scanner-picker {
+  flex: 0 0 auto;
+  min-width: 0;
+  max-width: none;
+  width: auto;
+}
+
+.sfir-object-scanner-picker-collapsed .sfir-object-scanner-picker > .slds-card {
+  flex: none;
+  background: transparent;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  border: 0;
+  box-shadow: none;
+  overflow: visible;
+}
+
+.sfir-object-scanner-picker-collapsed .sfir-object-scanner-picker .slds-card__header {
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.sfir-object-scanner-results {
+  min-height: 0;
+}
+
+/* The results table's header row is sticky, which makes it a positioned layer of its own; this row
+   holds the column picker, and has to sit above it or the header paints through the open picker. */
+.sfir-object-scanner-search {
+  position: relative;
+  z-index: 3;
+}
+
+/* The column picker hangs out of the results column; clipping would cut it off. */
+.sfir-object-scanner-columns-open .sfir-object-scanner-results,
+.sfir-object-scanner-columns-open .sfir-object-scanner-main {
+  overflow: visible;
+}
+
+/* --- Summary ------------------------------------------------------------------------------- */
+
+.sfir-object-scanner-summary-card {
+  min-width: 7rem;
+}
+
+.sfir-object-scanner-summary-card .slds-button {
+  height: 100%;
+  padding-block: .55rem;
+  line-height: 1.3;
+}
+
+.sfir-object-scanner-summary-card .slds-button:disabled {
+  cursor: default;
+}
+
+.sfir-object-scanner-summary-card .slds-text-title {
+  font-size: .75rem;
+}
+
+.sfir-object-scanner-summary-card .slds-text-heading_medium {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Disabled buttons are greyed by the theme; a count card is not a control that is unavailable, it
+   is simply not one, so its number keeps its colour. */
+.sfir-object-scanner-summary-card .slds-button:disabled .slds-text-heading_medium {
+  color: var(--slds-g-color-on-surface-1);
+}
+
+/* The theme loads after this file and gives every neutral button its own shadow, so the ring needs
+   the extra specificity to survive. The same goes for the severity colours below, which would
+   otherwise lose to the theme's heading colour. */
+.sfir-object-scanner-summary-card .slds-button.sfir-object-scanner-summary-selected {
+  box-shadow: inset 0 0 0 2px var(--sfi-accent), var(--slds-g-shadow-1);
+}
+
+.sfir-object-scanner-page .sfir-object-scanner-severity-error {
+  color: var(--sfi-danger);
+}
+
+.sfir-object-scanner-page .sfir-object-scanner-severity-warning {
+  color: var(--sfi-warning);
+}
+
+.sfir-object-scanner-page .sfir-object-scanner-severity-info {
+  color: var(--sfi-info);
+}
+
+td.sfir-object-scanner-severity-error,
+td.sfir-object-scanner-severity-warning,
+td.sfir-object-scanner-severity-info {
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+/* --- Results tabs and tables --------------------------------------------------------------- */
+
+.sfir-object-scanner-results-tabs {
+  min-height: 0;
+}
+
+/* Higher specificity than .slds-show (display: block), so the active panel stays a flex column. */
+.sfir-object-scanner-results-tabs > .slds-tabs_default__content {
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+}
+
+.sfir-object-scanner-results-tabs > .slds-tabs_default__content.slds-hide {
+  display: none;
+}
+
+.sfir-object-scanner-results-tabs > .slds-tabs_default__nav {
+  margin-bottom: .75rem;
+}
+
+/* Where the rows are read, the surface is solid: it is set apart from the ground by luminance and a
+   soft shadow, not by a frame. */
+.sfir-object-scanner-table-wrap {
+  min-height: 0;
+  background-color: var(--slds-g-color-surface-container-1);
+  border-radius: var(--slds-g-radius-border-3);
+  box-shadow: var(--slds-g-shadow-2);
+}
+
+.sfir-object-scanner-table-wrap > .slds-table {
+  border: 0;
+}
+
+.sfir-object-scanner-table-wrap a {
+  color: var(--sfi-accent-text);
+}
+
+.sfir-object-scanner-help-text {
+  max-width: 20rem;
+  white-space: pre-wrap;
+}
+
+/* --- Column picker ------------------------------------------------------------------------- */
+
+/* A menu of checkboxes over a dense table: WebKit does not blur the table's sticky header through
+   the glass, so the header text showed through the menu's labels. Solid here, like the theme's own
+   reduced-transparency fallback. The extra class outranks the theme's .slds-popover, which loads
+   later. */
+.sfir-object-scanner-search .sfir-object-scanner-columns-popover {
+  background-color: var(--slds-g-color-surface-container-1);
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  box-shadow: var(--slds-g-shadow-4);
+}
+
+.sfir-object-scanner-columns-popover {
+  right: 0;
+  top: calc(100% + .4rem);
+  z-index: 20;
+  min-width: 14rem;
+  max-height: 24rem;
+}
+
+.sfir-object-scanner-columns-popover .slds-form-element__legend {
+  font-weight: 600;
+  margin-bottom: .5rem;
+}
+
+.sfir-object-scanner-columns-popover .slds-checkbox {
+  display: block;
+}
+
+.sfir-object-scanner-columns-popover .slds-checkbox + .slds-checkbox {
+  margin-top: .25rem;
+}
+
+.sfir-object-scanner-columns-popover .slds-checkbox__label {
+  display: flex;
+  align-items: center;
+}
+
+.sfir-object-scanner-columns-popover .slds-form-element__label {
+  margin-bottom: 0;
+  padding-left: .5rem;
+}
+
+.sfir-object-scanner-columns-popover hr {
+  border-top-color: var(--slds-g-color-border-1);
+}
+
+/* --- Toasts -------------------------------------------------------------------------------- */
+
+/* Stacked just under the floating header rather than over it. */
+.sfir-object-scanner-toasts {
+  position: fixed;
+  top: calc(var(--sfi-header-top) + var(--sfi-header-height) + .75rem);
+  left: 0;
+  right: 0;
+  z-index: 10000;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: .5rem;
+  pointer-events: none;
+}
+
+.sfir-object-scanner-toasts .slds-notify_container {
+  position: static;
+  width: auto;
+  pointer-events: auto;
+}

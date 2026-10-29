@@ -1,9 +1,14 @@
 /* global React ReactDOM */
 import {sfConn, apiVersion} from "./inspector.js";
-import {getLinkTarget, nullToEmptyString, isOptionEnabled, PromptTemplate, Constants, UserInfoModel, createSpinForMethod, copyToClipboard, downloadCsvFile, StorageHistory} from "./utils.js";
+import {getLinkTarget, nullToEmptyString, isOptionEnabled, PromptTemplate, Constants, UserInfoModel, createSpinForMethod, createChangeGuard, copyToClipboard, downloadCsvFile, StorageHistory} from "./utils.js";
 /* global initButton */
 import {Enumerable, DescribeInfo, initScrollTable, s} from "./data-load.js";
 import {PageHeader} from "./components/PageHeader.js";
+
+// Prism re-tokenizes and rewrites the whole highlight layer on every keystroke. Past this length the
+// cost (mostly the innerHTML write/layout, not the tokenizing itself) makes typing feel unresponsive,
+// so we fall back to plain (uncolored) text instead of colorizing on every keystroke.
+const MAX_HIGHLIGHT_LENGTH = 100000;
 
 function createQueryHistory(storageKey, max) {
   const isSaved = storageKey === "insextSavedQueryHistory";
@@ -1382,6 +1387,9 @@ class App extends React.Component {
     this.onRemoveAllTabs = this.onRemoveAllTabs.bind(this);
     this.onTabClick = this.onTabClick.bind(this);
     this.onQueryInput = this.onQueryInput.bind(this);
+    this.updateQueryHighlight = this.updateQueryHighlight.bind(this);
+    this.syncQueryHighlightLayout = this.syncQueryHighlightLayout.bind(this);
+    this.highlightGuard = createChangeGuard();
     this.onTabNameEdit = this.onTabNameEdit.bind(this);
     this.onTabNameSubmit = this.onTabNameSubmit.bind(this);
     this.onTabDragStart = this.onTabDragStart.bind(this);
@@ -1614,6 +1622,52 @@ class App extends React.Component {
     model.didUpdate();
   }
 
+  // Re-highlights the query text. Called after every render since many model
+  // methods write directly to queryInput.value (history, templates, autocomplete,
+  // AI generation, tab switching, typo fixing) without going through onQueryInput.
+  updateQueryHighlight() {
+    let queryInput = this.refs.query;
+    let queryHighlightCode = this.refs.queryHighlightCode;
+    if (!queryInput || !queryHighlightCode) {
+      return;
+    }
+    let code = queryInput.value;
+    // Textareas render an extra blank line when the value ends with "\n". Mirror that here so the highlight layer does not fall one line short and drift out of alignment.
+    if (code === "" || code.endsWith("\n")) {
+      code += " ";
+    }
+    if (code.length > MAX_HIGHLIGHT_LENGTH) {
+      queryInput.classList.add("query-plain");
+      // Signature stays constant while oversized, so this clears the (now stale) backdrop only once instead of on every keystroke.
+      this.highlightGuard("__plain__", () => {
+        queryHighlightCode.textContent = "";
+      });
+      return;
+    }
+    queryInput.classList.remove("query-plain");
+    // Skip re-highlighting when the query text itself hasn't changed, since componentDidUpdate fires on every unrelated state change too.
+    this.highlightGuard(code, () => {
+      queryHighlightCode.innerHTML = window.Prism.highlight(code, window.Prism.languages.sql, "sql");
+    });
+  }
+
+  // The theme's scrollbars take up room in WebKit, so once the textarea scrolls its text wraps
+  // narrower and it can scroll further than the layer behind it. Pull that layer in from the
+  // scrollbars by the same amount, then copy the scroll position, so every character stays over
+  // its highlighted twin and nothing shows through the transparent scrollbar track.
+  syncQueryHighlightLayout() {
+    let queryInput = this.refs.query;
+    let queryHighlight = this.refs.queryHighlight;
+    if (!queryInput || !queryHighlight) {
+      return;
+    }
+    let style = getComputedStyle(queryInput);
+    queryHighlight.style.right = (queryInput.offsetWidth - queryInput.clientWidth - parseFloat(style.borderLeftWidth) - parseFloat(style.borderRightWidth)) + "px";
+    queryHighlight.style.bottom = (queryInput.offsetHeight - queryInput.clientHeight - parseFloat(style.borderTopWidth) - parseFloat(style.borderBottomWidth)) + "px";
+    queryHighlight.scrollTop = queryInput.scrollTop;
+    queryHighlight.scrollLeft = queryInput.scrollLeft;
+  }
+
   onTabNameEdit(e, index) {
     e.stopPropagation();
     let {model} = this.props;
@@ -1719,6 +1773,12 @@ class App extends React.Component {
     if (localStorage.getItem("disableQueryInputAutoFocus") !== "true"){
       queryInput.focus();
     }
+    this.updateQueryHighlight();
+    this.syncQueryHighlightLayout();
+    // Keep the highlight layer's scroll position in sync since it sits behind the (scrollable) real textarea.
+    queryInput.addEventListener("scroll", this.syncQueryHighlightLayout);
+    // Resizing the textarea by its handle, or a scrollbar coming or going, changes its text area without a render.
+    new ResizeObserver(this.syncQueryHighlightLayout).observe(queryInput);
 
     function queryAutocompleteEvent() {
       model.queryAutocompleteHandler();
@@ -1783,6 +1843,8 @@ class App extends React.Component {
   }
   componentDidUpdate() {
     this.recalculateSize();
+    this.updateQueryHighlight();
+    this.syncQueryHighlightLayout();
   }
   recalculateSize() {
     // Investigate if we can use the IntersectionObserver API here instead, once it is available.
@@ -1979,12 +2041,18 @@ class App extends React.Component {
               title: "Add new query tab"
             }, "+")
             ),
-            h("textarea", {
-              id: "query",
-              ref: "query",
-              style: {maxHeight: (model.winInnerHeight - 200) + "px"},
-              onChange: this.onQueryInput
-            }),
+            h("div", {className: "query-editor"},
+              h("pre", {className: "query-highlight", ref: "queryHighlight", "aria-hidden": "true"},
+                h("code", {className: "language-sql", ref: "queryHighlightCode"})
+              ),
+              h("textarea", {
+                id: "query",
+                ref: "query",
+                spellCheck: false,
+                style: {maxHeight: (model.winInnerHeight - 200) + "px"},
+                onChange: this.onQueryInput
+              })
+            ),
             h("div", {className: "autocomplete-box" + (model.expandAutocomplete ? " expanded" : "")},
               h("div", {className: "autocomplete-header"},
                 h("span", {className: "slds-m-left_xx-small"}, model.autocompleteResults.title),

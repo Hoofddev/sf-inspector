@@ -710,6 +710,40 @@ test.describe("Popup", () => {
       // Note: Clicking this will trigger API calls, but we'll just verify the button exists
       await expect(enableLogsButton).toBeEnabled();
     });
+
+    test("Enable Debug Logs creates the SF_Inspector Debug Level when the configured one is missing", async ({page, context, extensionId}) => {
+      test.skip(!TEST_CONSTANTS.mockEnabled, "Would create a Debug Level in the org");
+      await context.addInitScript(host => localStorage.setItem(host + "_debugLogDebugLevel", "Missing_Level"), mockHost);
+
+      const debugLevelQueries = [];
+      let createdDebugLevel = null;
+      let insertedTraceFlag = null;
+      await page.route(url => url.pathname.includes("/tooling/query") && url.search.includes("DebugLevel+WHERE"), async route => {
+        debugLevelQueries.push(decodeURIComponent(route.request().url()).match(/DeveloperName='([^']*)'/)[1]);
+        await fulfillSuccess(route, {size: 0, totalSize: 0, done: true, records: []});
+      });
+      await page.route(url => url.pathname.endsWith("/tooling/sobjects/debuglevel"), async route => {
+        createdDebugLevel = route.request().postDataJSON();
+        await fulfillSuccess(route, {id: "7dl000000000NEWAAA", success: true, errors: []}, 201);
+      });
+      await page.route(url => url.pathname.endsWith("/tooling/sobjects/traceflag"), async route => {
+        insertedTraceFlag = route.request().postDataJSON();
+        await fulfillSuccess(route, {id: "7tf000000000001AAA", success: true, errors: []}, 201);
+      });
+
+      await initPopupPage(page, extensionId);
+      const popup = page.frameLocator(".insext-popup");
+      await popup.locator(".slds-tabs_scoped__item:has-text('Users')").click();
+      await popup.locator("input[placeholder*='Name, username']").fill(TEST_CONSTANTS.testUserSearchTerm);
+      await popup.locator(".slds-dropdown__item:has-text('" + TEST_CONSTANTS.testUserSearchTerm + "')").first().click();
+      const enableLogsButton = popup.locator("a#enableDebugLog");
+      await enableLogsButton.click();
+
+      await expect(enableLogsButton).toHaveText("Logs Enabled");
+      expect(debugLevelQueries).toEqual(["Missing_Level", "SF_Inspector"]);
+      expect(createdDebugLevel).toMatchObject({DeveloperName: "SF_Inspector", MasterLabel: "SF Inspector", ApexCode: "FINEST"});
+      expect(insertedTraceFlag).toMatchObject({DebugLevelId: "7dl000000000NEWAAA"});
+    });
   });
 
   test.describe("Shortcuts Tab", () => {
