@@ -10,7 +10,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const isDark = scheme === "slate";
 
     const config = {
-      startOnLoad: true,
+      // Rendered below from the stored source; mermaid's own pass reads innerHTML, <code> wrapper included
+      startOnLoad: false,
       securityLevel: "strict",
       theme: isDark ? "dark" : "default",
       themeVariables: {
@@ -51,9 +52,34 @@ document.addEventListener("DOMContentLoaded", () => {
     mermaid.initialize(config);
   }
 
-  // Initial configuration
+  // Keep each diagram's source before the first render replaces it with the SVG.
+  // Diagrams Material for MkDocs already rendered into its own (empty) host are skipped.
+  document.querySelectorAll(".mermaid").forEach((diagram) => {
+    const src = diagram.textContent.trim();
+    if (src) {
+      diagram.dataset.mermaidSrc = src;
+    }
+  });
+
+  // Render all mermaid diagrams from their stored source
+  async function renderDiagrams() {
+    const diagrams = document.querySelectorAll(".mermaid[data-mermaid-src]");
+    for (const [index, diagram] of diagrams.entries()) {
+      try {
+        const {svg} = await mermaid.render("mermaid-" + index, diagram.dataset.mermaidSrc);
+        const svgElement = new DOMParser().parseFromString(svg, "text/html").body.firstElementChild;
+        diagram.replaceChildren(svgElement);
+        diagram.setAttribute("data-processed", "true");
+      } catch (error) {
+        console.error("Mermaid render failed", error);
+      }
+    }
+  }
+
+  // Initial configuration and render
   if (typeof mermaid !== "undefined") {
     configureMermaid(getCurrentScheme());
+    renderDiagrams();
   }
 
   // Watch for theme changes
@@ -63,18 +89,7 @@ document.addEventListener("DOMContentLoaded", () => {
         // Re-initialize Mermaid with new theme
         if (typeof mermaid !== "undefined") {
           configureMermaid(getCurrentScheme());
-
-          // Re-render all mermaid diagrams
-          const diagrams = document.querySelectorAll(".mermaid");
-          diagrams.forEach((diagram, index) => {
-            const graphDefinition = diagram.textContent;
-            diagram.innerHTML = "";
-            diagram.removeAttribute("data-processed");
-            mermaid.render("mermaid-" + index, graphDefinition, (svg) => {
-              const svgElement = new DOMParser().parseFromString(svg, "text/html").body.firstElementChild;
-              diagram.replaceChildren(svgElement);
-            });
-          });
+          renderDiagrams();
         }
       }
     });
