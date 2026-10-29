@@ -94,7 +94,7 @@ Also in this version:
 - Org Limits shows a limit that does not apply to your org (0 of 0) as 0% instead of full.
 - Metadata Download works with VoiceOver: every toggle and checkbox has a name, and filter results and messages are announced.
 - Selected text stands out on highlighted rows, in light and dark.
-- Uses Salesforce API version 67.0.
+- Uses Salesforce API version 68.0.
 ```
 
 ---
