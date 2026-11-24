@@ -53,6 +53,7 @@ class Model {
     this.isProcessingQueue = false;
     this.importState = null;
     this.greyOutSkippedColumns = localStorage.getItem("greyOutSkippedColumns") === "true";
+    this.showPasteButton = localStorage.getItem("showPasteClipboardButton") !== "false";
     this.showStatus = {
       Queued: true,
       Processing: true,
@@ -454,7 +455,9 @@ class Model {
   canSkipAllUnknownFields() {
     if (this.importData.importTable && this.importData.importTable.header) {
       for (let column of this.importData.importTable.header) {
-        if (!column.columnIgnore() && column.columnUnknownField()) {
+        // Any column error, not just "Unknown field": a header that names an invalid field is just
+        // as unimportable, and leaving the button disabled for it forced the user to skip by hand.
+        if (!column.columnIgnore() && column.columnError()) {
           return true;
         }
       }
@@ -1004,6 +1007,7 @@ class App extends React.Component {
     this.onSkipAllUnknownFieldsClick = this.onSkipAllUnknownFieldsClick.bind(this);
     this.onConfirmPopupYesClick = this.onConfirmPopupYesClick.bind(this);
     this.onConfirmPopupNoClick = this.onConfirmPopupNoClick.bind(this);
+    this.onClipboardPasteClick = this.onClipboardPasteClick.bind(this);
     this.unloadListener = null;
     this.state = {templateValueIndex: -1};
   }
@@ -1037,6 +1041,23 @@ class App extends React.Component {
     let text = e.clipboardData.getData("text/plain");
     model.setData(text);
     model.didUpdate();
+  }
+  onClipboardPasteClick(e) {
+    e.preventDefault();
+    let {model} = this.props;
+    // WebKit only reads the clipboard from inside a user gesture, and without the clipboardRead
+    // permission it puts up a native paste confirmation that the user can dismiss. A refused read
+    // is a realistic outcome here, so it is reported through the same error line as the other data
+    // problems instead of being swallowed -- otherwise the click just looks broken.
+    let reportFailure = () => {
+      model.dataError = "Could not read the clipboard. Confirm the paste when the browser asks for it, or click the box and press Cmd+V.";
+      model.didUpdate();
+    };
+    try {
+      navigator.clipboard.readText().then(text => this.onDataPaste({clipboardData: {getData: () => text}}), reportFailure);
+    } catch {
+      reportFailure();
+    }
   }
   onExternalIdChange(e) {
     let {model} = this.props;
@@ -1302,7 +1323,15 @@ class App extends React.Component {
                           h("div", {className: "slds-form-element"},
                             h("span", {className: "slds-form-element__label", htmlFor: "form-import-data"}, "Data"),
                             h("div", {className: "slds-form-element__control"},
-                              h("textarea", {id: "data-paste", "aria-describedby": "error-data-paste", value: "Paste data here", onPaste: this.onDataPaste, className: model.dataError ? "slds-textarea slds-has-error" : "slds-textarea", disabled: model.isWorking(), readOnly: true, rows: 2}),
+                              h("div", {className: "sfir-data-paste-wrapper"},
+                                h("textarea", {id: "data-paste", "aria-describedby": "error-data-paste", placeholder: "Paste data here", onPaste: this.onDataPaste, className: model.dataError ? "slds-textarea slds-has-error" : "slds-textarea", disabled: model.isWorking(), readOnly: true, rows: 2}),
+                                model.showPasteButton ? h("button", {className: "slds-button sfir-data-paste-button", onClick: this.onClipboardPasteClick, title: "Paste clipboard content", disabled: model.isWorking()},
+                                  h("svg", {className: "slds-button__icon", "aria-hidden": "true"},
+                                    h("use", {xlinkHref: "symbols.svg#paste"})
+                                  ),
+                                  h("span", {className: "sfir-data-paste-button__label"}, "Paste")
+                                ) : null
+                              ),
                               h("div", {id: "error-data-paste", className: "slds-form-element__help slds-text-color_error slds-m-left_none", hidden: !model.dataError}, model.dataError)
                             )
                           )

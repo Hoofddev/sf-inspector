@@ -179,6 +179,12 @@ export async function routeMock(route, host) {
             label: "Apex Class",
             keyPrefix: "01p",
             layoutable: false
+          },
+          {
+            name: "Flow",
+            label: "Flow Version",
+            keyPrefix: "301",
+            layoutable: false
           }]
       });
       return true;
@@ -488,6 +494,19 @@ export async function routeMock(route, host) {
             TriggerType: "Autopilot",
             TriggerObjectOrEventLabel: "Account",
             DurableId: TEST_CONSTANTS.flowDefId
+          }]
+        });
+        return true;
+      }
+
+      // Mock Flow Version record details (popup: SELECT Id, CreatedDate, LastModifiedDate, MasterLabel FROM Flow)
+      if (path.includes("/tooling/") && query.includes("from flow") && query.includes("masterlabel")) {
+        await fulfillSuccess(route, {
+          records: [{
+            Id: TEST_CONSTANTS.flowId,
+            MasterLabel: "RecordTrigger InspectorTest",
+            CreatedDate: "2023-06-19T10:15:45.000+0000",
+            LastModifiedDate: "2023-08-14T09:17:43.000+0000"
           }]
         });
         return true;

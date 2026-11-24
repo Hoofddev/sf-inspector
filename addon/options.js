@@ -269,7 +269,8 @@ class OptionsTabSelector extends React.Component {
         content: [
           {option: Option, props: {type: "text", title: "Default batch size", key: "defaultBatchSize", placeholder: "200", inputSize: "1"}},
           {option: Option, props: {type: "text", title: "Default thread size", key: "defaultThreadSize", placeholder: "6", inputSize: "1"}},
-          {option: Option, props: {type: "toggle", title: "Grey Out Skipped Columns in Data Import", key: "greyOutSkippedColumns", tooltip: "Control if skipped columns are greyed out or not in data import"}}
+          {option: Option, props: {type: "toggle", title: "Grey Out Skipped Columns in Data Import", key: "greyOutSkippedColumns", tooltip: "Control if skipped columns are greyed out or not in data import"}},
+          {option: Option, props: {type: "toggle", title: "Show Paste Clipboard Button in Data Import", key: "showPasteClipboardButton", default: true, tooltip: "When enabled, shows a Paste button in the bottom right of the data box in Data Import, which reads the clipboard and loads it into the import table."}}
         ]
       },
       {

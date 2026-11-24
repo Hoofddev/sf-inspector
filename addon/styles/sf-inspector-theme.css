@@ -648,6 +648,33 @@ body.sfi-page .highlighted:disabled:hover {
   border-radius: var(--slds-g-radius-border-2);
 }
 
+/* The Paste button in the Data Import data box. It is the one button on these pages that sits on
+   top of content instead of on the page ground, so it deliberately does not take the glass
+   treatment above: the textarea under it is opaque (section 9), there is nothing behind it to
+   frost, and a blurred, translucent fill over an opaque field just reads as a flat pill. It leans
+   on luminance instead -- one surface step away from the field it sits in, which lands lighter in
+   the dark scheme and darker in the light one -- with the usual hairline and a shallow shadow.
+   The shared disabled rule above already covers the state while an import is running. */
+body.sfi-page .sfir-data-paste-button {
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  background-color: var(--slds-g-color-surface-container-3);
+  border: 1px solid var(--slds-g-color-border-1);
+  border-radius: var(--slds-g-radius-border-1);
+  box-shadow: var(--slds-g-shadow-1);
+  color: light-dark(var(--sfi-accent-text), var(--slds-g-color-on-surface-1));
+  font-weight: 500;
+}
+
+/* Hover steps the control down rather than lighting it up, in both schemes: on the white field of
+   the light scheme "lighter" would mean dissolving into the field it sits on. */
+body.sfi-page .sfir-data-paste-button:hover:not(:disabled),
+body.sfi-page .sfir-data-paste-button:focus:not(:disabled) {
+  background-color: var(--slds-g-color-surface-3);
+  border-color: var(--slds-g-color-border-2);
+  color: light-dark(var(--sfi-accent-text), var(--slds-g-color-on-surface-1));
+}
+
 /* Toggles, same glass. SLDS drives the whole control through custom properties, so the track, the
    knob and the checked state are set by overriding those rather than by out-specifying its
    selectors. The track is a tinted well -- an inset shadow rather than a raised one -- so the knob
@@ -721,6 +748,16 @@ body.sfi-page .slds-checkbox_toggle [type="checkbox"]:checked + .slds-checkbox_f
   outline: none;
 }
 
+/* SLDS writes placeholders in the full text colour at opacity 1, so a placeholder reads as real
+   content -- and the Data Import data box now carries "Paste data here" as a placeholder rather
+   than as its value, so that the hint is not picked up when the box is copied. A hint belongs one
+   step down the text scale; on-surface-3 clears 4.5:1 on the field surface in both schemes
+   (5.2:1 on white, 5.5:1 on the dark field). */
+::placeholder {
+  color: var(--slds-g-color-on-surface-3);
+  opacity: 1;
+}
+
 /* A visible ring for keyboard users, since the focus styles above are deliberately quiet. */
 :focus-visible {
   outline: 2px solid var(--sfi-accent);
@@ -761,6 +798,13 @@ body.sfi-page .slds-checkbox_toggle [type="checkbox"]:checked + .slds-checkbox_f
 .slds-form-element__help {
   color: var(--slds-g-color-on-surface-3);
   letter-spacing: .02em;
+}
+
+/* ...except when the help line is an error. The rule above ties with SLDS's .slds-text-color_error
+   on specificity and wins by loading last, which turned every field error -- Data Import's
+   unreadable CSV, a refused clipboard read -- into the same grey as a hint, easy to miss. */
+.slds-form-element__help.slds-text-color_error {
+  color: var(--sfi-danger);
 }
 
 .slds-card__header,
@@ -1260,6 +1304,7 @@ body.sfir-prod .slds-builder-header {
   .slds-input,
   .slds-textarea,
   .slds-select,
+  .sfir-data-paste-button__label,
   body.sfi-page .sfi-group > .slds-grid {
     transition: none;
   }

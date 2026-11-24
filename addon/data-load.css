@@ -89,3 +89,54 @@
   margin: 102px 232px 0 0;
   z-index: 2;
 }
+
+/* The Data Import data box.
+ *
+ * The Paste button sits inside the field's own bottom-right corner, so the wrapper around the
+ * textarea is what establishes the positioning context. The resize handle goes with it: it sat in
+ * exactly that corner, and the box only ever holds a placeholder now -- the pasted data goes
+ * straight to the table below, so there is nothing in there to resize for.
+ *
+ * Geometry only; the button's surface, border and text colour are in styles/sf-inspector-theme.css
+ * with the rest of the controls. These selectors carry the wrapper class because this file loads
+ * before slds.css, and a bare .sfir-data-paste-button would tie with .slds-button on specificity
+ * and lose the padding and line-height to it. */
+.sfir-data-paste-wrapper {
+  position: relative;
+}
+
+.sfir-data-paste-wrapper textarea {
+  resize: none;
+}
+
+.sfir-data-paste-wrapper .sfir-data-paste-button {
+  position: absolute;
+  right: 6px;
+  bottom: 6px;
+  display: inline-flex;
+  align-items: center;
+  height: 24px;
+  padding: 0 8px;
+  font-size: 12px;
+  line-height: 1;
+}
+
+/* The label folds away while the field has focus, so that the placeholder -- and anything the user
+ * is about to paste over -- stays readable in a narrow box. WebKit does not interpolate
+ * grid-template-columns, which is how upstream collapses this, so the fold runs on max-width and
+ * opacity, which it does animate. Single class, so the reduced-motion rule in the theme can switch
+ * the transition off without having to out-specify this one. */
+.sfir-data-paste-button__label {
+  display: inline-block;
+  overflow: hidden;
+  max-width: 4em;
+  margin-inline-start: 6px;
+  white-space: nowrap;
+  transition: max-width .2s ease, margin-inline-start .2s ease, opacity .2s ease;
+}
+
+.sfir-data-paste-wrapper textarea:focus ~ .sfir-data-paste-button .sfir-data-paste-button__label {
+  max-width: 0;
+  margin-inline-start: 0;
+  opacity: 0;
+}
