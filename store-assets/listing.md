@@ -78,23 +78,14 @@ SF Inspector is open source and a fork of Salesforce Inspector Reloaded by Thoma
 ## What's New in This Version  *(limit 4000)*
 
 ```
-Object Scanner is new. It reads every object and field in your org and checks them against hygiene rules you can tune in Options - naming conventions, over-customised objects, unclassified personal data, duplicate labels, missing descriptions and more - and exports the findings as CSV. Open it from the panel.
+Data Import has a Paste button. It sits in the corner of the data box and loads what is on your clipboard with a click - Safari asks you to confirm the paste - so you no longer need the keyboard to bring in data. Pressing Cmd+V in the box still works, and the button can be switched off on the Data Import tab in Options.
 
 Also in this version:
 
-- Data Export colours your SOQL as you type, and its query tabs scroll instead of wrapping.
-- Data Import downloads its results as CSV. Batch size and threads can be changed while an import runs, choosing Undelete before pasting data no longer fails, and the object field no longer flashes "Unknown object" while loading.
-- The panel keeps working on Winter '27 orgs, where some internal objects have no name, and the Org tab says "None scheduled" when no major release is planned.
-- Login As in a private window no longer signs you out of the org in your main window.
-- Enable Logs creates an "SF Inspector" debug level when the one set in Options does not exist.
-- Show All Data sorts Usage (%) on the exact value, so fields showing the same percentage are still in the right order.
-- In the debug log viewer, the filter keeps focus while you type and the chosen dates stay put.
-- Event Monitor lists every custom channel, not only when there is just one.
-- Field Manager uses Salesforce's own defaults per field type.
-- Org Limits shows a limit that does not apply to your org (0 of 0) as 0% instead of full.
-- Metadata Download works with VoiceOver: every toggle and checkbox has a name, and filter results and messages are announced.
-- Selected text stands out on highlighted rows, in light and dark.
-- Uses Salesforce API version 68.0.
+- Opening a Flow Version in Flow Builder now fills the panel's record details: name, created and modified.
+- The Shortcuts tab finds Embedded Service Deployments in Setup.
+- Data Import: "Skip all unknown fields" also skips columns with an invalid field name, and field errors such as an unreadable CSV show in red again instead of the grey of a hint.
+- Placeholder text in fields reads as a hint instead of as content.
 ```
 
 ---
