@@ -25,6 +25,9 @@ The Flow Scanner in SF Inspector is powered by the [Lightning Flow Scanner](http
 3. Look for the **Flow Scanner** button or option (usually available in the Inspector's UI when viewing a Flow):
 ![image](assets/images/guide/flow-scanner-01.png)
 
+   > **Note**
+   > The **Flow Scanner** button (and the **Flow Versions** and **Flow Compare** buttons next to it) only appears for flows that SF Inspector can resolve to a Flow version or Flow definition record in your org (Package State: **Unmanaged**). It is not available for managed-installed flows. See [Limitations](#limitations).
+
 4. Click the **Flow Scanner** button to open the scanner overlay.
 
 ---
@@ -167,17 +170,17 @@ The Flow Scanner follows a multi-step process to analyze your Salesforce Flows:
 
 ```mermaid
 graph TD
-    U[👤 User] --> |1. Opens Flow Scanner| EXT[🔧 S.I.R Extension<br/>• UI Layer<br/>• Configuration<br/>• Flow Processing]
+    U[👤 User] --> |1. Opens Flow Scanner| EXT[🔧 SF Inspector Extension<br/>• UI Layer<br/>• Configuration<br/>• Flow Processing]
 
-    EXT --> |2. Metadata Request| REST[🌐 REST API<br/>/services/data/vXX.0/]
-    EXT --> |3. Flow Definition<br/>Query| TOOL[🔧 Tooling API<br/>/services/data/vXX.0/tooling/]
+    EXT --> |2. FlowDefinitionView<br/>Query| REST[🌐 REST API<br/>/services/data/vXX.0/]
+    EXT --> |3. Flow Metadata &<br/>Versions Composite| TOOL[🔧 Tooling API<br/>/services/data/vXX.0/tooling/]
 
-    REST --> |API Call| SF[(🏢 Salesforce Org<br/>Flow Metadata<br/>XML Definitions)]
+    REST --> |API Call| SF[(🏢 Salesforce Org<br/>Flow Metadata<br/>Flow Definitions)]
     TOOL --> |API Call| SF
 
-    SF --> |4. XML Flow<br/>Metadata| EXT
+    SF --> |4. Flow Metadata JSON<br/>+ Label & Trigger Info| EXT
 
-    EXT --> |5. Flow XML Data| CORE[📚 Lightning Flow Scanner embedded lib<br/>• XML Parser<br/>• Rule Engine 20+ rules<br/>• Flow Analysis]
+    EXT --> |5. Flow Metadata| CORE[📚 Lightning Flow Scanner embedded lib<br/>• Flow Parser<br/>• Rule Engine 20+ rules<br/>• Flow Analysis]
 
     CORE --> |6. Analysis Results| RES[📊 Scan Results<br/>• Error/Warning/Info<br/>• Rule Violations<br/>• CSV Export]
 
@@ -204,14 +207,22 @@ graph TD
 
 1. **Metadata Retrieval**
 
-   GET `/services/data/vXX.0/tooling/sobjects/Flow/{FlowId}`
-   → Returns Flow definition in XML format
-2. **XML Processing**
+   Two requests are sent in parallel:
+
+   - POST `/services/data/vXX.0/tooling/composite` (`allOrNone: false`) with two GET sub-requests against the Tooling API:
+     - `SELECT Id,Metadata FROM Flow WHERE Id='{FlowId}'` (reference `flow`) → the flow version's full definition, returned as a JSON object in the `Metadata` field
+     - `SELECT Id,VersionNumber,Status FROM Flow WHERE DefinitionId='{FlowDefinitionId}' ORDER BY VersionNumber DESC` (reference `versions`) → all versions of the flow, used for the version badge, Purge and Compare features
+   - GET `/services/data/vXX.0/query/?q=SELECT Label,ApiName,ProcessType,TriggerType,TriggerObjectOrEventLabel FROM FlowDefinitionView WHERE DurableId='{FlowDefinitionId}'`
+     → label, API name and trigger information
+2. **Flow Metadata Processing**
+
+   Empty (`null`) attributes are stripped from the returned metadata object, then the metadata is handed to the embedded Lightning Flow Scanner Core:
 
    ```javascript
-   // Lightning Flow Scanner Core processes the XML
-   const flowObject = new Flow(xmlData);
-   const scanResults = scanner.scan(flowObject, userConfig);
+   // Lightning Flow Scanner Core processes the flow metadata object
+   const flow = new flowScannerCore.Flow(flowApiName, flowMetadata);
+   const parsedFlow = {flow, name: flowApiName};
+   const scanResults = flowScannerCore.scan([parsedFlow], ruleConfig);
    ```
 
 3. **Rule Execution**
@@ -227,11 +238,12 @@ graph TD
 
 **Salesforce REST API Endpoints Used:**
 
-- `/services/data/vXX.0/tooling/sobjects/Flow/` - Flow metadata retrieval
-- `/services/data/vXX.0/tooling/query/` - SOQL queries for Flow information
-- `/services/data/vXX.0/sobjects/` - Related object metadata when needed
+- `/services/data/vXX.0/tooling/composite` - Flow metadata and version retrieval, and batched deletion of old flow versions (`DELETE /tooling/sobjects/Flow/{Id}` sub-requests) when purging
+- `/services/data/vXX.0/tooling/query/` - SOQL queries for Flow information (flow versions, resolving the Flow definition from a flow version id)
+- `/services/data/vXX.0/query/` - FlowDefinitionView and Flow Interview queries
+- `/services/data/vXX.0/composite` - Batched deletion of Flow Interviews (`DELETE /sobjects/FlowInterview/{Id}` sub-requests) when purging old versions
 
-**Authentication**: Leverages existing Salesforce Inspector session (handled globally by extension)
+**Authentication**: Leverages the existing SF Inspector Salesforce session (handled globally by extension)
 
 ---
 
@@ -261,7 +273,7 @@ By default, the Agentforce button is hidden. To enable it:
 5. Click **Send** to generate the analysis
 6. The analysis result will appear below the instruction textarea in an SLDS box
 
-The Agentforce feature analyzes the flow's XML metadata and provides insights about:
+The Agentforce feature sends the flow's metadata (the JSON metadata retrieved by the scanner) to the prompt template and provides insights about:
 
 - What the flow does
 - What events trigger it
@@ -309,8 +321,23 @@ Instructions:**
 
 ---
 
+## Limitations
+
+### Managed-installed flows
+
+Flow Scanner, **Flow Versions** and **Flow Compare** are not available for **managed-installed** flows (Package State: *Managed - Installed* in the Flows list view), such as flows that come from Salesforce itself or from an installed package. When you open one of these flows and click the SF Inspector icon, these buttons simply do not appear in the popup.
+
+**Why:** Flow Builder opens such a flow by API name and version instead of by a flow version id, for example
+`/builder_platform_interaction/flowBuilder.app?flowId=standard_approvals__ChkFlowApiName-1`.
+SF Inspector only recognises a `301…` flow version id (or a `300…` flow definition id) in the page URL, and it needs that id to look up the Flow definition through the Tooling API. Managed-installed flows have no Flow or FlowDefinition record in the Tooling API, so their metadata cannot be retrieved for scanning and the flow actions stay hidden.
+
+**Workaround:** If Flow Builder offers **Save As** for the flow (as it does for template flows), save a copy. The copy is an unmanaged flow with a real flow version id, so Flow Scanner and the other flow actions work on it.
+
+---
+
 ## Troubleshooting
 
+- **Flow Scanner button not shown:** Check the flow's Package State in Setup → Flows. Managed-installed flows cannot be scanned (see [Limitations](#limitations)).
 - **No Rules Enabled:** If you see a message about no rules being enabled, open the Options page and enable at least one rule.
 - **Initialization Error:** If the scanner fails to load, check your network connection and ensure you're logged into Salesforce.
 - **Unsupported Flow Type:** Some flow types may not be supported. The scanner will list which types are supported if this occurs.
