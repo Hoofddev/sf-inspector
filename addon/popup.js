@@ -4307,8 +4307,11 @@ class AllDataSelection extends React.PureComponent {
     return this.props.eventMonitorHref + "&channel=" + name + "&generate=1";
   }
   setFlowDefinitionId(recordId) {
-    if (recordId && !this.state.flowDefinitionId) {
+    // This runs from render(), and every render until the answer is back used to send the same
+    // query again -- three or four identical Tooling calls per Flow Version opened. Ask once per id.
+    if (recordId && !this.state.flowDefinitionId && this.flowDefinitionIdRequestedFor !== recordId) {
       if (recordId.startsWith("301")) {
+        this.flowDefinitionIdRequestedFor = recordId;
         sfConn
           .rest(
             "/services/data/v"
