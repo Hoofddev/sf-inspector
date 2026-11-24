@@ -800,6 +800,13 @@ body.sfi-page .slds-checkbox_toggle [type="checkbox"]:checked + .slds-checkbox_f
   letter-spacing: .02em;
 }
 
+/* ...except when the help line is an error. The rule above ties with SLDS's .slds-text-color_error
+   on specificity and wins by loading last, which turned every field error -- Data Import's
+   unreadable CSV, a refused clipboard read -- into the same grey as a hint, easy to miss. */
+.slds-form-element__help.slds-text-color_error {
+  color: var(--sfi-danger);
+}
+
 .slds-card__header,
 .slds-card__body,
 .slds-card__footer {
