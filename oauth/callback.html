@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Authorization callback</title>
+<style>
+  :root {
+    color-scheme: light dark;
+    --ground: #f4f6f9;
+    --surface: #ffffff;
+    --ink: #16202c;
+    --ink-2: #55637a;
+    --rule: #d7dee8;
+    --accent: #1f4fd8;
+    --err: #b5372a;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --ground: #0e131b;
+      --surface: #171e29;
+      --ink: #e7edf6;
+      --ink-2: #a5b1c3;
+      --rule: #2a3340;
+      --accent: #85a6ff;
+      --err: #ff9382;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    min-height: 100vh;
+    display: grid;
+    place-items: center;
+    padding: 24px;
+    background: var(--ground);
+    color: var(--ink);
+    font: 15px/1.6 ui-sans-serif, -apple-system, "Segoe UI", system-ui, sans-serif;
+  }
+  main {
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-radius: 6px;
+    padding: 32px;
+    max-width: 480px;
+    width: 100%;
+  }
+  h1 { font-size: 1.25rem; margin: 0 0 12px; letter-spacing: -.01em; }
+  p { margin: 0 0 12px; color: var(--ink-2); }
+  p:last-child { margin-bottom: 0; }
+  #sfir-status {
+    display: block;
+    margin-top: 20px;
+    padding-top: 16px;
+    border-top: 1px solid var(--rule);
+    font-weight: 600;
+    color: var(--accent);
+  }
+  #sfir-status:empty { display: none; }
+  #sfir-status[data-status="error"] { color: var(--err); }
+  code {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: .88em;
+  }
+</style>
+</head>
+<body>
+<main>
+  <h1>Authorization callback</h1>
+  <p>
+    This page exists so that Salesforce has a fixed address to return to after you authorize the
+    extension. Safari gives every installation its own random identifier, which cannot be registered
+    as a Connected App callback URL, so the authorization lands here first.
+  </p>
+  <p>
+    Nothing is stored or sent anywhere. The page holds no code of its own beyond this text — the
+    extension reads the authorization code straight out of the address bar. The PKCE verifier needed
+    to exchange that code never leaves your browser.
+  </p>
+  <p>
+    If you reached this page on your own, there is nothing to do here. Open the extension from a
+    Salesforce tab instead.
+  </p>
+  <strong id="sfir-status"></strong>
+</main>
+</body>
+</html>
