@@ -23,10 +23,10 @@ The Flow Scanner in SF Inspector is powered by the [Lightning Flow Scanner](http
 1. **Open SF Inspector** from any Salesforce page in Safari.
 2. Navigate to a Salesforce Flow in your org.
 3. Look for the **Flow Scanner** button or option (usually available in the Inspector's UI when viewing a Flow):
-![image](assets/images/guide/flow-scanner-01.png)
+    ![image](assets/images/guide/flow-scanner-01.png)
 
-   > **Note**
-   > The **Flow Scanner** button (and the **Flow Versions** and **Flow Compare** buttons next to it) only appears for flows that SF Inspector can resolve to a Flow version or Flow definition record in your org (Package State: **Unmanaged**). It is not available for managed-installed flows. See [Limitations](#limitations).
+    > **Note**
+    > The **Flow Scanner** button (and the **Flow Versions** and **Flow Compare** buttons next to it) only appears for flows that SF Inspector can resolve to a Flow version or Flow definition record in your org (Package State: **Unmanaged**). It is not available for managed-installed flows. See [Limitations](#limitations).
 
 4. Click the **Flow Scanner** button to open the scanner overlay.
 
